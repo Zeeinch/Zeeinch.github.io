@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjelajah Barisan Tak Hingga</title>
+    <!-- Chosen Palette: Warm Neutrals (Slate background, White cards, Indigo accent) -->
+    <!-- Application Structure Plan: A two-section single-page application. Section 1 is a "Sequence Explorer" allowing users to input a formula or select an example, which dynamically generates a list of terms and a visual plot of the sequence's behavior. This promotes intuitive understanding. Section 2 is an "Interactive Exercises" module that presents the 14 problems from the source report, allowing users to select a problem, attempt a solution, and view the correct answer and a step-by-step guide. This structure separates free exploration from structured practice, enhancing the learning experience compared to the static PDF. -->
+    <!-- Visualization & Content Choices: Report Info: Sequence formulas, terms, plots, limit analysis. Goal: Visualize sequence behavior and test understanding of convergence. Viz/Presentation: Formulas and analysis results are rendered as text using KaTeX for mathematical notation. Sequence terms are shown in a dynamic HTML list. Plots from the PDF are replaced by a dynamic, interactive scatter plot using Chart.js inside a responsive Canvas. Interaction: User input fields for custom formulas, dropdowns to select predefined problems, and buttons to trigger calculations and reveal solutions/steps. Justification: This interactive approach provides immediate feedback and allows for exploration beyond the fixed examples in the PDF, leading to a deeper understanding of the concepts. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" xintegrity="sha384-n8MVd4RsNIU0KOVEMFAPLaiCMGWU1QXAcBcRGigmbKf4bxMlrCiNEQIZDrD7BPAe" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" xintegrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG+vnGctmUb0ZY0l8" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" xintegrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .katex { font-size: 1.1em; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl sm:text-5xl font-bold text-slate-900">Penjelajah Barisan Tak Hingga</h1>
+            <p class="mt-4 text-lg text-slate-600">Alat bantu visual untuk memahami konsep barisan, konvergensi, dan divergensi.</p>
+        </header>
+
+        <main class="space-y-16">
+
+            <!-- Bagian 1: Penjelajah Barisan -->
+            <section id="explorer">
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Penjelajah Barisan</h2>
+                    <p class="text-slate-600 mb-6">Masukkan formula barisan menggunakan 'n' sebagai variabel, atau pilih salah satu contoh untuk melihat bagaimana perilakunya. Aplikasi akan membuat plot visual dan menampilkan beberapa suku pertamanya.</p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                        <select id="example-selector" class="w-full sm:w-1/3 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Pilih Contoh Soal...</option>
+                        </select>
+                        <input type="text" id="formula-input" placeholder="Contoh: n / (2*n + 1)" class="flex-grow p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <button id="plot-button" class="bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-colors duration-300">Jelajahi</button>
+                    </div>
+
+                    <div id="explorer-output" class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+                        <div class="bg-slate-50 p-6 rounded-xl">
+                             <h3 class="text-xl font-semibold mb-4 text-center">Visualisasi Grafik Barisan</h3>
+                             <div class="chart-container">
+                                <canvas id="sequenceChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-6 rounded-xl">
+                            <h3 class="text-xl font-semibold mb-4">Suku-suku Pertama (<span id="sequence-formula-display"></span>)</h3>
+                            <ul id="term-list" class="space-y-2 max-h-80 overflow-y-auto pr-2"></ul>
+                        </div>
+                    </div>
+                     <div id="error-message" class="mt-4 text-red-600 font-semibold hidden"></div>
+                </div>
+            </section>
+
+            <!-- Bagian 2: Latihan Interaktif -->
+            <section id="exercises">
+                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-2">Latihan Interaktif</h2>
+                    <p class="text-slate-600 mb-6">Uji pemahaman Anda dengan mengerjakan soal-soal latihan berikut. Pilih soal dari daftar, coba temukan jawabannya, lalu periksa hasil pekerjaan Anda dengan solusi yang disediakan.</p>
+                    
+                    <div class="mb-6">
+                        <label for="problem-selector" class="font-semibold block mb-2">Pilih Soal Latihan:</label>
+                        <select id="problem-selector" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                             <option value="">Pilih Soal...</option>
+                        </select>
+                    </div>
+
+                    <div id="problem-display" class="mt-6 hidden bg-slate-50 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold mb-4">Soal:</h3>
+                        <div id="problem-statement" class="text-lg mb-4"></div>
+                        
+                        <div class="flex flex-wrap items-center gap-4">
+                           <button id="show-steps-button" class="bg-slate-200 text-slate-800 font-bold py-2 px-5 rounded-lg hover:bg-slate-300 transition-colors duration-300">Tampilkan Cara Menyelesaikan</button>
+                           <button id="show-answer-button" class="bg-indigo-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-indigo-700 transition-colors duration-300">Tampilkan Jawaban Akhir</button>
+                        </div>
+
+                        <div id="steps-display" class="mt-6 hidden pt-6 border-t border-slate-300">
+                            <h4 class="text-lg font-bold mb-2">Langkah-langkah Penyelesaian:</h4>
+                            <div id="steps-content" class="text-slate-700 space-y-4"></div>
+                        </div>
+
+                        <div id="answer-display" class="mt-6 hidden pt-6 border-t border-slate-300">
+                            <h4 class="text-lg font-bold mb-2">Solusi Akhir:</h4>
+                            <div id="answer-content" class="text-slate-700 space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+
+    <script>
+        const problems = [
+            { id: 1, type: 'formula', question: `Analisislah konvergensi barisan $a_n = \\frac{n}{3n-1}$`, formula: 'n / (3*n - 1)', 
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $a_n = \\frac{n}{3n-1}$.<br>$a_1 = \\frac{1}{3(1)-1} = \\frac{1}{3-1} = \\frac{1}{2} = 0.5$<br>$a_2 = \\frac{2}{3(2)-1} = \\frac{2}{6-1} = \\frac{2}{5} = 0.4$<br>$a_3 = \\frac{3}{3(3)-1} = \\frac{3}{9-1} = \\frac{3}{8} = 0.375$<br>$a_4 = \\frac{4}{3(4)-1} = \\frac{4}{12-1} = \\frac{4}{11} \\approx 0.364$<br>$a_{100} = \\frac{100}{3(100)-1} = \\frac{100}{300-1} = \\frac{100}{299} \\approx 0.334$</div><div><strong>Langkah 2: Buktikan konvergensi dengan limit (Metode L'Hôpital).</strong><br><em>Tahap A: Substitusi Langsung</em><br>$\\lim_{n \\to \\infty} \\frac{n}{3n-1} = \\frac{\\infty}{3(\\infty)-1} = \\frac{\\infty}{\\infty}$ (Bentuk Tak Tentu).<br><em>Tahap B: Aturan L'Hôpital (Turunan Pertama)</em><br>Turunkan pembilang dan penyebut terhadap n:<br>$\\lim_{n \\to \\infty} \\frac{\\frac{d}{dn}(n)}{\\frac{d}{dn}(3n-1)} = \\lim_{n \\to \\infty} \\frac{1}{3}$<br><em>Tahap C: Hasil Akhir</em><br>Limit dari konstanta adalah konstanta itu sendiri.<br>$= \\frac{1}{3}$ (Tentu).</div>`,
+              solution: `Barisan <strong>konvergen ke 1/3</strong>.` },
+            { id: 2, type: 'formula', question: `Analisislah konvergensi barisan $b_n = \\frac{3n+2}{n+1}$`, formula: '(3*n + 2) / (n + 1)',
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $b_n = \\frac{3n+2}{n+1}$.<br>$b_1 = \\frac{3(1)+2}{1+1} = \\frac{3+2}{2} = \\frac{5}{2} = 2.5$<br>$b_2 = \\frac{3(2)+2}{2+1} = \\frac{6+2}{3} = \\frac{8}{3} \\approx 2.667$<br>$b_3 = \\frac{3(3)+2}{3+1} = \\frac{9+2}{4} = \\frac{11}{4} = 2.75$<br>$b_4 = \\frac{3(4)+2}{4+1} = \\frac{12+2}{5} = \\frac{14}{5} = 2.8$<br>$b_{100} = \\frac{3(100)+2}{100+1} = \\frac{300+2}{101} = \\frac{302}{101} \\approx 2.990$</div><div><strong>Langkah 2: Buktikan konvergensi dengan limit (Metode L'Hôpital).</strong><br><em>Tahap A: Substitusi Langsung</em><br>$\\lim_{n \\to \\infty} \\frac{3n+2}{n+1} = \\frac{3(\\infty)+2}{\\infty+1} = \\frac{\\infty}{\\infty}$ (Bentuk Tak Tentu).<br><em>Tahap B: Aturan L'Hôpital (Turunan Pertama)</em><br>Turunkan pembilang dan penyebut terhadap n:<br>$\\lim_{n \\to \\infty} \\frac{\\frac{d}{dn}(3n+2)}{\\frac{d}{dn}(n+1)} = \\lim_{n \\to \\infty} \\frac{3}{1}$<br><em>Tahap C: Hasil Akhir</em><br>$= 3$ (Tentu).</div>`,
+              solution: `Barisan <strong>konvergen ke 3</strong>.` },
+            { id: 3, type: 'formula', question: `Analisislah konvergensi barisan $c_n = \\frac{4n^2+2}{n^2+3n-1}$`, formula: '(4*n**2 + 2) / (n**2 + 3*n - 1)',
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $c_n = \\frac{4n^2+2}{n^2+3n-1}$.<br>$c_1 = \\frac{4(1)^2+2}{1^2+3(1)-1} = \\frac{4+2}{1+3-1} = \\frac{6}{3} = 2$<br>$c_2 = \\frac{4(2)^2+2}{2^2+3(2)-1} = \\frac{16+2}{4+6-1} = \\frac{18}{9} = 2$<br>$c_3 = \\frac{4(3)^2+2}{3^2+3(3)-1} = \\frac{36+2}{9+9-1} = \\frac{38}{17} \\approx 2.235$<br>$c_4 = \\frac{4(4)^2+2}{4^2+3(4)-1} = \\frac{64+2}{16+12-1} = \\frac{66}{27} \\approx 2.444$<br>$c_{100} = \\frac{4(100)^2+2}{100^2+3(100)-1} = \\frac{40000+2}{10000+300-1} = \\frac{40002}{10299} \\approx 3.884$</div><div><strong>Langkah 2: Buktikan konvergensi dengan limit (Metode L'Hôpital).</strong><br><em>Tahap A: Substitusi Langsung</em><br>$\\lim_{n \\to \\infty} \\frac{4n^2+2}{n^2+3n-1} = \\frac{4(\\infty)^2+2}{(\\infty)^2+3(\\infty)-1} = \\frac{\\infty}{\\infty}$ (Bentuk Tak Tentu).<br><em>Tahap B: Aturan L'Hôpital (Turunan Pertama)</em><br>Turunkan pembilang dan penyebut:<br>$\\lim_{n \\to \\infty} \\frac{\\frac{d}{dn}(4n^2+2)}{\\frac{d}{dn}(n^2+3n-1)} = \\lim_{n \\to \\infty} \\frac{8n}{2n+3}$<br><em>Tahap C: Substitusi Ulang</em><br>$\\lim_{n \\to \\infty} \\frac{8n}{2n+3} = \\frac{8(\\infty)}{2(\\infty)+3} = \\frac{\\infty}{\\infty}$ (Masih Tak Tentu).<br><em>Tahap D: Aturan L'Hôpital (Turunan Kedua)</em><br>Turunkan lagi pembilang dan penyebut dari hasil Tahap B:<br>$\\lim_{n \\to \\infty} \\frac{\\frac{d}{dn}(8n)}{\\frac{d}{dn}(2n+3)} = \\lim_{n \\to \\infty} \\frac{8}{2}$<br><em>Tahap E: Hasil Akhir</em><br>$= \\frac{8}{2} = 4$ (Tentu).</div>`,
+              solution: `Barisan <strong>konvergen ke 4</strong>.` },
+            { id: 4, type: 'formula', question: `Analisislah konvergensi barisan $d_n = \\frac{3n^2+2}{2n-1}$`, formula: '(3*n**2 + 2) / (2*n - 1)',
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $d_n = \\frac{3n^2+2}{2n-1}$.<br>$d_1 = \\frac{3(1)^2+2}{2(1)-1} = \\frac{3+2}{2-1} = \\frac{5}{1} = 5$<br>$d_2 = \\frac{3(2)^2+2}{2(2)-1} = \\frac{12+2}{4-1} = \\frac{14}{3} \\approx 4.667$<br>$d_3 = \\frac{3(3)^2+2}{2(3)-1} = \\frac{27+2}{6-1} = \\frac{29}{5} = 5.8$<br>$d_4 = \\frac{3(4)^2+2}{2(4)-1} = \\frac{48+2}{8-1} = \\frac{50}{7} \\approx 7.143$<br>$d_{100} = \\frac{3(100)^2+2}{2(100)-1} = \\frac{30000+2}{200-1} = \\frac{30002}{199} \\approx 150.764$</div><div><strong>Langkah 2: Buktikan divergensi dengan limit (Metode L'Hôpital).</strong><br><em>Tahap A: Substitusi Langsung</em><br>$\\lim_{n \\to \\infty} \\frac{3n^2+2}{2n-1} = \\frac{3(\\infty)^2+2}{2(\\infty)-1} = \\frac{\\infty}{\\infty}$ (Bentuk Tak Tentu).<br><em>Tahap B: Aturan L'Hôpital (Turunan Pertama)</em><br>Turunkan pembilang dan penyebut:<br>$\\lim_{n \\to \\infty} \\frac{\\frac{d}{dn}(3n^2+2)}{\\frac{d}{dn}(2n-1)} = \\lim_{n \\to \\infty} \\frac{6n}{2}$<br><em>Tahap C: Substitusi Ulang & Perhitungan</em><br>Substitusi $n = \\infty$ ke bentuk sederhana:<br>$= \\frac{6(\\infty)}{2} = \\frac{\\infty}{2} = \\infty$.<br>Karena hasilnya adalah $\\infty$, barisan tidak memiliki nilai tentu.</div>`,
+              solution: `Barisan <strong>divergen</strong>.` },
+            { id: 5, type: 'formula', question: `Analisislah konvergensi barisan $e_n = \\frac{n^3+3n^2+3n}{(n+1)^3}$`, formula: '(n**3 + 3*n**2 + 3*n) / ((n+1)**3)',
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $e_n = \\frac{n^3+3n^2+3n}{(n+1)^3}$.<br>$e_1 = \\frac{1^3+3(1)^2+3(1)}{(1+1)^3} = \\frac{1+3+3}{2^3} = \\frac{7}{8} = 0.875$<br>$e_2 = \\frac{2^3+3(2)^2+3(2)}{(2+1)^3} = \\frac{8+12+6}{3^3} = \\frac{26}{27} \\approx 0.963$<br>$e_3 = \\frac{3^3+3(3)^2+3(3)}{(3+1)^3} = \\frac{27+27+9}{4^3} = \\frac{63}{64} \\approx 0.984$<br>$e_4 = \\frac{4^3+3(4)^2+3(4)}{(4+1)^3} = \\frac{64+48+12}{5^3} = \\frac{124}{125} = 0.992$<br>$e_{100} = \\frac{100^3+3(100)^2+3(100)}{(101)^3} = \\frac{1030300}{1030301} \\approx 0.9999$</div><div><strong>Langkah 2: Buktikan konvergensi dengan limit (Metode L'Hôpital tanpa ekspansi).</strong><br><em>Tahap A: Substitusi Langsung</em><br>$\\lim_{n \\to \\infty} \\frac{n^3+3n^2+3n}{(n+1)^3} = \\frac{\\infty}{\\infty}$ (Bentuk Tak Tentu).<br><em>Tahap B: L'Hôpital (Turunan Pertama)</em><br>Turunkan pembilang dan penyebut (gunakan Aturan Rantai untuk penyebut):<br>$\\lim_{n \\to \\infty} \\frac{\\frac{d}{dn}(n^3+3n^2+3n)}{\\frac{d}{dn}((n+1)^3)} = \\lim_{n \\to \\infty} \\frac{3n^2+6n+3}{3(n+1)^2 \\cdot 1} = \\lim_{n \\to \\infty} \\frac{3(n^2+2n+1)}{3(n+1)^2} = \\lim_{n \\to \\infty} \\frac{3(n+1)^2}{3(n+1)^2}$<br><em>Tahap C: Penyederhanaan Aljabar</em><br>$\\lim_{n \\to \\infty} 1$<br><em>Tahap D: Hasil Akhir</em><br>$= 1$ (Tentu).</div>`,
+              solution: `Barisan <strong>konvergen ke 1</strong>.` },
+            { id: 6, type: 'formula', question: `Analisislah konvergensi barisan $f_n = \\frac{(-1)^n \\cdot n}{n+2}$`, formula: '((-1)**n * n) / (n+2)',
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $f_n = \\frac{(-1)^n \\cdot n}{n+2}$.<br>$f_1 = \\frac{(-1)^1 \\cdot 1}{1+2} = \\frac{-1}{3} \\approx -0.333$<br>$f_2 = \\frac{(-1)^2 \\cdot 2}{2+2} = \\frac{2}{4} = 0.5$<br>$f_3 = \\frac{(-1)^3 \\cdot 3}{3+2} = \\frac{-3}{5} = -0.6$<br>$f_4 = \\frac{(-1)^4 \\cdot 4}{4+2} = \\frac{4}{6} \\approx 0.667$<br>$f_{100} = \\frac{(-1)^{100} \\cdot 100}{100+2} = \\frac{100}{102} \\approx 0.980$</div><div><strong>Langkah 2: Cek limit untuk n ganjil dan n genap.</strong><br>Faktor $(-1)^n$ menyebabkan osilasi. Kita harus memeriksa dua kasus:<br><em>Kasus 1 (n ganjil):</em> $\\lim_{n \\to \\infty} \\frac{-n}{n+2} = \\lim_{n \\to \\infty} \\frac{-1}{1} = -1$ (menggunakan L'Hôpital).<br><em>Kasus 2 (n genap):</em> $\\lim_{n \\to \\infty} \\frac{n}{n+2} = \\lim_{n \\to \\infty} \\frac{1}{1} = 1$ (menggunakan L'Hôpital).<br>Karena barisan mendekati dua nilai yang berbeda, limit tidak ada.</div>`,
+              solution: `Barisan <strong>divergen</strong>.` },
+            { id: 7, type: 'formula', question: `Analisislah konvergensi barisan $g_n = (\\frac{1}{4})^n$`, formula: '(1/4)**n',
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $g_n = (\\frac{1}{4})^n$.<br>$g_1 = (\\frac{1}{4})^1 = \\frac{1}{4} = 0.25$<br>$g_2 = (\\frac{1}{4})^2 = \\frac{1}{16} = 0.0625$<br>$g_3 = (\\frac{1}{4})^3 = \\frac{1}{64} \\approx 0.0156$<br>$g_4 = (\\frac{1}{4})^4 = \\frac{1}{256} \\approx 0.0039$<br>$g_{100} = (\\frac{1}{4})^{100} \\approx 6.22 \\times 10^{-61} \\approx 0$</div><div><strong>Langkah 2: Gunakan Aturan Konvergensi Barisan Geometri.</strong><br>Ini adalah barisan geometri $\{r^n\}$ dengan rasio $r = 1/4$.<br>Aturan menyatakan jika $|r| < 1$, maka $\\lim_{n \\to \\infty} r^n = 0$.<br>Karena $|1/4| < 1$, barisan konvergen ke 0.</div>`,
+              solution: `Barisan <strong>konvergen ke 0</strong>.` },
+            { id: 8, type: 'formula', question: `Analisislah konvergensi barisan $h_n = 3^n$`, formula: '3**n',
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $h_n = 3^n$.<br>$h_1 = 3^1 = 3$<br>$h_2 = 3^2 = 9$<br>$h_3 = 3^3 = 27$<br>$h_4 = 3^4 = 81$<br>$h_{100} = 3^{100}$ (sebuah angka yang sangat besar)</div><div><strong>Langkah 2: Gunakan Aturan Konvergensi Barisan Geometri.</strong><br>Ini adalah barisan geometri $\{r^n\}$ dengan rasio $r = 3$.<br>Aturan menyatakan jika $|r| > 1$, barisan divergen.<br>Karena $|3| > 1$, nilainya tumbuh tanpa batas. $\\lim_{n \\to \\infty} 3^n = \\infty$.</div>`,
+              solution: `Barisan <strong>divergen</strong>.` },
+            { id: 9, type: 'formula', question: `Analisislah konvergensi barisan $k_n = 2^n + (\\frac{1}{2})^n$`, formula: '2**n + (1/2)**n',
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $k_n = 2^n + (\\frac{1}{2})^n$.<br>$k_1 = 2^1 + (\\frac{1}{2})^1 = 2 + 0.5 = 2.5$<br>$k_2 = 2^2 + (\\frac{1}{2})^2 = 4 + 0.25 = 4.25$<br>$k_3 = 2^3 + (\\frac{1}{2})^3 = 8 + 0.125 = 8.125$<br>$k_4 = 2^4 + (\\frac{1}{2})^4 = 16 + 0.0625 = 16.0625$<br>$k_{100} = 2^{100} + (\\frac{1}{2})^{100}$ (sangat besar, mendekati $2^{100}$)</div><div><strong>Langkah 2: Analisis setiap komponen.</strong><br>Kita dapat memisahkan limitnya: $\\lim_{n \\to \\infty} (2^n + (\\frac{1}{2})^n) = \\lim_{n \\to \\infty} 2^n + \\lim_{n \\to \\infty} (\\frac{1}{2})^n$.<br>Limit pertama, $\\lim_{n \\to \\infty} 2^n = \\infty$ (divergen).<br>Limit kedua, $\\lim_{n \\to \\infty} (\\frac{1}{2})^n = 0$ (konvergen).<br>Hasilnya adalah $\\infty + 0 = \\infty$.</div>`,
+              solution: `Barisan <strong>divergen</strong>.` },
+            { id: 10, type: 'formula', question: `Analisislah konvergensi barisan $l_n = 2 + (0.9)^n$`, formula: '2 + (0.9)**n',
+              steps: `<div><strong>Langkah 1: Tentukan suku-suku yang diuji (n=1, 2, 3, 4, 100).</strong><br>Substitusikan nilai n ke dalam rumus $l_n = 2 + (0.9)^n$.<br>$l_1 = 2 + 0.9^1 = 2.9$<br>$l_2 = 2 + 0.9^2 = 2 + 0.81 = 2.81$<br>$l_3 = 2 + 0.9^3 = 2 + 0.729 = 2.729$<br>$l_4 = 2 + 0.9^4 = 2 + 0.6561 = 2.6561$<br>$l_{100} = 2 + (0.9)^{100} \\approx 2 + 0.000026 = 2.000026$</div><div><strong>Langkah 2: Analisis setiap komponen.</strong><br>Kita dapat memisahkan limitnya: $\\lim_{n \\to \\infty} (2 + (0.9)^n) = \\lim_{n \\to \\infty} 2 + \\lim_{n \\to \\infty} (0.9)^n$.<br>Limit pertama, $\\lim_{n \\to \\infty} 2 = 2$ (konstanta).<br>Limit kedua, $\\lim_{n \\to \\infty} (0.9)^n = 0$ (rasio $|r|<1$).<br>Hasilnya adalah $2 + 0 = 2$.</div>`,
+              solution: `Barisan <strong>konvergen ke 2</strong>.` },
+            { id: 11, type: 'find_formula', question: `Temukan formula untuk barisan $\\frac{1}{2},\\frac{2}{3},\\frac{3}{4},\\frac{4}{5},...$ dan buktikan konvergensinya.`,
+              steps: `<div><strong>Langkah 1: Temukan Pola.</strong><br>Pembilang sama dengan nomor suku ($n$).<br>Penyebut adalah nomor suku ditambah satu ($n+1$).<br>Jadi, formula barisannya adalah $a_n = \\frac{n}{n+1}$.</div><div><strong>Langkah 2: Buktikan Konvergensi dengan L'Hôpital.</strong><br>Substitusi langsung $n = \\infty$ menghasilkan $\\frac{\\infty}{\\infty}$ (Bentuk Tak Tentu).<br>Turunkan pembilang dan penyebut: $\\lim_{n \\to \\infty} \\frac{\\frac{d}{dn}(n)}{\\frac{d}{dn}(n+1)} = \\lim_{n \\to \\infty} \\frac{1}{1} = 1$ (Tentu).</div>`,
+              solution: `<strong>Formula:</strong> $a_n = \\frac{n}{n+1}$. Barisan <strong>konvergen ke 1</strong>.` },
+            { id: 12, type: 'find_formula', question: `Temukan formula untuk barisan $1, 2, 3, 4, ...$ (setelah disederhanakan) dan buktikan konvergensinya.`,
+              steps: `<div><strong>Langkah 1: Temukan Pola.</strong><br>Nilai suku sama dengan nomor sukunya ($n$).<br>Jadi, formula barisannya adalah $a_n = n$.</div><div><strong>Langkah 2: Buktikan Divergensi.</strong><br>$\\lim_{n \\to \\infty} n = \\infty$.<br>Nilai suku terus membesar tanpa batas. Ini adalah kasus divergen.</div>`,
+              solution: `<strong>Formula:</strong> $a_n = n$. Barisan <strong>divergen</strong>.` },
+            { id: 13, type: 'find_formula', question: `Temukan formula untuk barisan $1, \\frac{2}{2^2-1^2}, \\frac{3}{3^2-2^2}, \\frac{4}{4^2-3^2},...$ dan buktikan konvergensinya.`,
+              steps: `<div><strong>Langkah 1: Temukan Formula dari Pola.</strong><br><em>Tahap A: Analisis Pola</em><br>Pembilang untuk setiap suku ke-n adalah $n$.<br>Penyebut untuk suku ke-n (untuk $n>1$) adalah $n^2 - (n-1)^2$.<br><em>Tahap B: Sederhanakan Penyebut</em><br>Kita ekspansi dan sederhanakan penyebutnya:<br>$n^2 - (n-1)^2 = n^2 - (n^2 - 2n + 1) = n^2 - n^2 + 2n - 1 = 2n - 1$.<br><em>Tahap C: Bentuk Formula Umum</em><br>Jadi, formula untuk barisan ini adalah $a_n = \\frac{n}{2n-1}$.<br>Kita cek untuk n=1: $a_1 = \\frac{1}{2(1)-1} = \\frac{1}{1} = 1$. Formula ini berlaku untuk semua suku.</div><div><strong>Langkah 2: Buktikan Konvergensi dengan L'Hôpital.</strong><br><em>Tahap A: Substitusi Langsung</em><br>$\\lim_{n \\to \\infty} \\frac{n}{2n-1} = \\frac{\\infty}{2(\\infty)-1} = \\frac{\\infty}{\\infty}$ (Bentuk Tak Tentu).<br><em>Tahap B: Aturan L'Hôpital (Turunan Pertama)</em><br>Turunkan pembilang dan penyebut terhadap n:<br>$\\lim_{n \\to \\infty} \\frac{\\frac{d}{dn}(n)}{\\frac{d}{dn}(2n-1)} = \\lim_{n \\to \\infty} \\frac{1}{2}$<br><em>Tahap C: Hasil Akhir</em><br>$= \\frac{1}{2}$ (Tentu).</div>`,
+              solution: `<strong>Formula:</strong> $a_n = \\frac{n}{2n-1}$. Barisan <strong>konvergen ke 1/2</strong>.` },
+            { id: 14, type: 'find_formula', question: `Temukan formula untuk barisan $\\frac{1}{2^2}, \\frac{2}{2^3}, \\frac{3}{2^4}, \\frac{4}{2^5},...$ dan buktikan konvergensinya.`,
+              steps: `<div><strong>Langkah 1: Temukan Pola.</strong><br>Pembilang sama dengan nomor suku ($n$).<br>Penyebutnya adalah 2 dipangkatkan dengan nomor suku ditambah satu ($2^{n+1}$).<br>Jadi, formula barisannya adalah $a_n = \\frac{n}{2^{n+1}}$.</div><div><strong>Langkah 2: Buktikan Konvergensi dengan L'Hôpital.</strong><br>Substitusi langsung $n = \\infty$ menghasilkan $\\frac{\\infty}{\\infty}$ (Bentuk Tak Tentu).<br>Turunkan pembilang dan penyebut: $\\lim_{n \\to \\infty} \\frac{\\frac{d}{dn}(n)}{\\frac{d}{dn}(2^{n+1})} = \\lim_{n \\to \\infty} \\frac{1}{2^{n+1} \\ln(2)} = \\frac{1}{\\infty} = 0$ (Tentu).</div>`,
+              solution: `<strong>Formula:</strong> $a_n = \\frac{n}{2^{n+1}}$. Barisan <strong>konvergen ke 0</strong>.` }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const formulaInput = document.getElementById('formula-input');
+            const plotButton = document.getElementById('plot-button');
+            const explorerOutput = document.getElementById('explorer-output');
+            const termList = document.getElementById('term-list');
+            const sequenceFormulaDisplay = document.getElementById('sequence-formula-display');
+            const errorMessage = document.getElementById('error-message');
+            const exampleSelector = document.getElementById('example-selector');
+            const problemSelector = document.getElementById('problem-selector');
+            const problemDisplay = document.getElementById('problem-display');
+            const problemStatement = document.getElementById('problem-statement');
+            const showAnswerButton = document.getElementById('show-answer-button');
+            const answerDisplay = document.getElementById('answer-display');
+            const answerContent = document.getElementById('answer-content');
+            const showStepsButton = document.getElementById('show-steps-button');
+            const stepsDisplay = document.getElementById('steps-display');
+            const stepsContent = document.getElementById('steps-content');
+
+            let sequenceChart;
+
+            function renderMath() {
+                if (window.renderMathInElement) {
+                    renderMathInElement(document.body, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false},
+                        ]
+                    });
+                }
+            }
+
+            function populateSelectors() {
+                problems.forEach(p => {
+                    if(p.type === 'formula') {
+                       const option = document.createElement('option');
+                       option.value = p.formula;
+                       option.textContent = `Contoh Soal ${p.id}`;
+                       exampleSelector.appendChild(option);
+                    }
+                    const probOption = document.createElement('option');
+                    probOption.value = p.id;
+                    probOption.textContent = `Soal ${p.id}`;
+                    problemSelector.appendChild(probOption);
+                });
+            }
+
+            function calculateAndPlot() {
+                const formula = formulaInput.value;
+                if (!formula) return;
+
+                explorerOutput.classList.remove('hidden');
+                errorMessage.classList.add('hidden');
+                
+                try {
+                    const func = new Function('n', `return ${formula.replace(/(\d+)\^n/g, 'Math.pow($1, n)').replace(/\^/g, '**')}`);
+                    const labels = [];
+                    const data = [];
+                    let termsHtml = '';
+
+                    for (let n = 1; n <= 40; n++) {
+                        const value = func(n);
+                        if (typeof value !== 'number' || !isFinite(value)) {
+                            termsHtml += `<li class="p-2 bg-white rounded-md text-sm">a(${n}) = ${value}</li>`;
+                            continue;
+                        }
+                        labels.push(n);
+                        data.push(value);
+                        termsHtml += `<li class="p-2 bg-white rounded-md text-sm">a(${n}) = ${value.toFixed(4)}</li>`;
+                    }
+                    
+                    termList.innerHTML = termsHtml;
+                    sequenceFormulaDisplay.textContent = `a(n) = ${formula}`;
+                    
+                    if (sequenceChart) {
+                        sequenceChart.destroy();
+                    }
+
+                    sequenceChart = new Chart(document.getElementById('sequenceChart'), {
+                        type: 'scatter',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: `Barisan a(n) = ${formula}`,
+                                data: data,
+                                backgroundColor: 'rgb(79, 70, 229)',
+                                borderColor: 'rgb(79, 70, 229)',
+                                showLine: false,
+                                pointRadius: 3,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { x: { title: { display: true, text: 'n (Suku ke-)' }, grid: { color: '#e2e8f0' } }, y: { title: { display: true, text: 'Nilai Suku' }, grid: { color: '#e2e8f0' } } },
+                            plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return `(n=${context.label}, nilai=${context.raw.toFixed(4)})`; } } } }
+                        }
+                    });
+
+                } catch (e) {
+                    explorerOutput.classList.add('hidden');
+                    errorMessage.classList.remove('hidden');
+                    errorMessage.textContent = 'Error: Formula tidak valid. Gunakan "n" sebagai variabel dan operator matematika standar (contoh: 1/n**2).';
+                    console.error(e);
+                }
+            }
+            
+            plotButton.addEventListener('click', calculateAndPlot);
+            formulaInput.addEventListener('keyup', (event) => { if(event.key === 'Enter') calculateAndPlot(); });
+            exampleSelector.addEventListener('change', (e) => { formulaInput.value = e.target.value; if(e.target.value) { calculateAndPlot(); } });
+
+            problemSelector.addEventListener('change', (e) => {
+                const problemId = e.target.value;
+                if (!problemId) {
+                    problemDisplay.classList.add('hidden');
+                    return;
+                }
+                const problem = problems.find(p => p.id == problemId);
+                problemDisplay.classList.remove('hidden');
+                answerDisplay.classList.add('hidden');
+                stepsDisplay.classList.add('hidden');
+                
+                problemStatement.innerHTML = problem.question;
+                stepsContent.innerHTML = problem.steps;
+                answerContent.innerHTML = problem.solution;
+                renderMath();
+            });
+            
+            showAnswerButton.addEventListener('click', () => { answerDisplay.classList.toggle('hidden'); });
+            showStepsButton.addEventListener('click', () => { stepsDisplay.classList.toggle('hidden'); });
+
+            populateSelectors();
+            renderMath();
+        });
+    </script>
+
+</body>
+</html>
