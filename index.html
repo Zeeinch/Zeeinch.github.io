@@ -1,636 +1,167 @@
 <!DOCTYPE html>
-<html lang="id" class="scroll-smooth">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suite Desain & Edukasi Gerbang Logika</title>
+    <title>Hub Halaman Proyek</title>
+    <!-- Memuat Tailwind CSS untuk styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Google Fonts (Inter) untuk tipografi yang modern -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Menggunakan font Inter sebagai default untuk seluruh halaman */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f9ff;
-            color: #1e293b;
         }
-        .font-mono {
-            font-family: 'Roboto Mono', monospace;
+        /* Style kustom untuk kartu proyek agar sesuai dengan desain */
+        .hub-card {
+            background-color: #4FD1C5; /* Warna teal/cyan yang mirip dengan desain Anda */
+            border-radius: 1.5rem; /* Rounded corner yang lebih besar untuk tampilan yang lebih lembut */
+            width: 340px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .truth-table-highlight {
-            background-color: #dbeafe;
+        /* Efek hover untuk membuat kartu terasa lebih interaktif */
+        .hub-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        .circuit-dot {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background-color: #334155;
-            border-radius: 9999px;
-            transform: translate(-50%, -50%);
+        /* Kontainer untuk thumbnail (kotak putih di dalam) */
+        .thumbnail-container {
+            background-color: white;
+            height: 190px;
+            margin: 1rem;
+            border-radius: 1rem; /* Rounded corner untuk thumbnail */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            overflow: hidden;
         }
-        .circuit-wire {
-             background-color: #94a3b8;
-             position: absolute;
-             transition: background-color 0.2s ease;
+        /* SVG yang digunakan sebagai thumbnail agar skalabel dan ringan */
+        .thumbnail-svg {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
-        .circuit-wire.active {
-             background-color: #22c55e;
-             box-shadow: 0 0 6px #22c55e;
+        /* Kontainer untuk bagian informasi (judul dan tombol) */
+        .info-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.25rem 1.25rem 1.25rem;
+            gap: 1rem;
         }
-        .circuit-label {
-            position: absolute;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 12px;
-            padding: 1px 4px;
-            border-radius: 4px;
-            background-color: rgba(240, 249, 255, 0.8);
-            backdrop-filter: blur(2px);
-            color: #1e293b;
+        /* Style untuk judul proyek */
+        .title {
+            font-weight: 600;
+            color: #2D3748; /* Warna teks gelap agar kontras dengan latar belakang kartu */
+            flex-grow: 1;
         }
-        .circuit-gate {
-            position: absolute;
-            border-width: 2px;
-            border-color: #64748b;
-            background-color: #f8fafc;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        /* Style untuk tombol "Mulai" */
+        .start-button {
+            background-color: white;
+            border-radius: 9999px; /* Membuat tombol menjadi lingkaran sempurna */
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.2s ease-in-out;
         }
-        .circuit-gate.active {
-            border-color: #22c55e;
+        /* Efek hover untuk tombol "Mulai" */
+        .start-button:hover {
+            transform: scale(1.1);
         }
-        .circuit-container {
-            background-image: linear-gradient(rgba(203, 213, 225, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(203, 213, 225, 0.5) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        .output-led {
-            width: 24px;
-            height: 24px;
-            border-radius: 9999px;
-            background-color: #475569;
-            border: 2px solid #1e293b;
-            transition: background-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .output-led.active {
-            background-color: #22c55e;
-            box-shadow: 0 0 10px #22c55e, inset 0 0 5px rgba(255,255,255,0.5);
-        }
-        .content-fade {
-            transition: opacity 0.3s ease-in-out;
-        }
-        .tab-btn.active {
-            border-color: #3b82f6;
-            background-color: #eff6ff;
-            color: #1e3a8a;
-        }
-        .keyboard-btn {
-            @apply bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2 px-2 rounded-md transition-all duration-150 shadow active:shadow-inner active:translate-y-px;
-        }
-        .keyboard-btn.op {
-            @apply bg-sky-200 hover:bg-sky-300 text-sky-800;
-        }
-        .keyboard-btn.ctrl {
-            @apply bg-slate-300 hover:bg-slate-400 text-slate-800;
+        .start-button svg {
+            width: 20px;
+            height: 20px;
+            color: #2D3748;
         }
     </style>
 </head>
-<body class="antialiased">
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
+    <div class="container mx-auto">
+         <h1 class="text-4xl sm:text-5xl font-bold text-white text-center mb-12">Pilih Proyek</h1>
+        <div class="flex flex-wrap justify-center items-center gap-8 md:gap-12">
 
-    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
-        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-3">
-                    <div class="text-2xl">💡</div>
-                    <h1 class="text-xl font-bold text-slate-800">Suite Gerbang Logika</h1>
+            <!-- Kartu 1: Portfolio -->
+            <div class="hub-card">
+                <div class="thumbnail-container">
+                    <!-- Thumbnail untuk Portfolio: Menggambarkan halaman profil sederhana -->
+                    <svg class="thumbnail-svg" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="60" fill="#f3f4f6"/>
+                        <circle cx="50" cy="22" r="8" fill="#4a5568"/>
+                        <path d="M35 50 C 35 35, 65 35, 65 50 Z" fill="#4a5568"/>
+                        <rect x="20" y="45" width="60" height="5" rx="2" fill="#a0aec0"/>
+                    </svg>
+                </div>
+                <div class="info-container">
+                    <span class="title">Portfolio | Muh Kholaf Asmaul Ikhsan</span>
+                    <a href="Sub/PORT.html" class="start-button" aria-label="Mulai Portfolio">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
                 </div>
             </div>
-        </nav>
-    </header>
 
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Tab Navigation -->
-        <div class="mb-8 border-b border-slate-300">
-            <nav class="flex -mb-px" aria-label="Tabs">
-                <button id="tab-belajar" class="tab-btn active w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm text-slate-500 hover:text-blue-600 hover:border-blue-300 transition-colors">
-                    📖 Mode Belajar (Explorer & Latihan)
-                </button>
-                <button id="tab-perancang" class="tab-btn w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm text-slate-500 hover:text-blue-600 hover:border-blue-300 transition-colors">
-                    🛠️ Mode Perancang (Kalkulator Kustom)
-                </button>
-            </nav>
+            <!-- Kartu 2: Suite Gerbang Logika -->
+            <div class="hub-card">
+                <div class="thumbnail-container">
+                    <!-- Thumbnail untuk Gerbang Logika: Menggambarkan gerbang logika AND -->
+                    <svg class="thumbnail-svg" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                      <text x="10" y="15" font-family="monospace" font-size="8" fill="#4a5568">A --</text>
+                      <text x="10" y="48" font-family="monospace" font-size="8" fill="#4a5568">B --</text>
+                      <path d="M30 10 H 50 C 65 10, 65 50, 50 50 H 30 Z" stroke="#3b82f6" stroke-width="2" fill="#eff6ff"/>
+                      <line x1="70" y1="30" x2="90" y2="30" stroke="#3b82f6" stroke-width="2"/>
+                      <text x="75" y="25" font-family="monospace" font-size="8" fill="#4a5568">Y</text>
+                    </svg>
+                </div>
+                <div class="info-container">
+                    <span class="title">Suite Desain & Edukasi Gerbang Logika</span>
+                    <a href="Sub/SDEGL.html" class="start-button" aria-label="Mulai Suite Gerbang Logika">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Kartu 3: Penjelajah Barisan Tak Hingga -->
+            <div class="hub-card">
+                <div class="thumbnail-container">
+                    <!-- Thumbnail untuk Barisan Tak Hingga: Menggambarkan grafik barisan yang konvergen -->
+                     <svg class="thumbnail-svg" viewBox="0 0 100 60" xmlns="http://www.w3.org/2000/svg">
+                        <line x1="10" y1="50" x2="90" y2="50" stroke="#a0aec0" stroke-width="1"/>
+                        <line x1="10" y1="10" x2="10" y2="50" stroke="#a0aec0" stroke-width="1"/>
+                        <circle cx="20" cy="20" r="2" fill="#4f46e5"/>
+                        <circle cx="30" cy="30" r="2" fill="#4f46e5"/>
+                        <circle cx="40" cy="35" r="2" fill="#4f46e5"/>
+                        <circle cx="50" cy="38" r="2" fill="#4f46e5"/>
+                        <circle cx="60" cy="40" r="2" fill="#4f46e5"/>
+                        <circle cx="70" cy="41" r="2" fill="#4f46e5"/>
+                        <line x1="10" y1="42" x2="90" y2="42" stroke="#ef4444" stroke-width="1" stroke-dasharray="2,2"/>
+                        <text x="92" y="43" font-family="monospace" font-size="6" fill="#ef4444">L</text>
+                    </svg>
+                </div>
+                <div class="info-container">
+                    <span class="title">Penjelajah Barisan Tak Hingga</span>
+                    <a href="Sub/LIMIT.html" class="start-button" aria-label="Mulai Penjelajah Barisan">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
         </div>
-
-        <!-- Tab Content -->
-        <div>
-            <!-- Mode Belajar Panel -->
-            <div id="panel-belajar">
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-200 space-y-12">
-                    <section id="explorer">
-                        <div class="text-center mb-10">
-                            <h2 class="text-3xl font-bold text-slate-800">Explorer Gerbang Logika</h2>
-                            <p class="text-slate-600 mt-2">Pilih gerbang untuk melihat deskripsi, simulator interaktif, dan tabel kebenarannya.</p>
-                        </div>
-                        <div class="mb-6">
-                            <div id="gate-selector" class="flex flex-wrap justify-center gap-2 sm:gap-4"></div>
-                        </div>
-                        <div id="explorer-content" class="content-fade">
-                            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-                                <div class="lg:col-span-3">
-                                    <h3 id="gate-name" class="text-2xl font-bold text-blue-700"></h3>
-                                    <p id="gate-equation" class="font-mono text-blue-900 bg-blue-100 rounded px-2 py-1 inline-block mb-4"></p>
-                                    <p id="gate-description" class="text-slate-600 leading-relaxed mb-6"></p>
-                                    <h4 class="font-semibold text-lg mb-3 text-slate-700">Simulator Interaktif</h4>
-                                    <div id="interactive-simulator" class="bg-slate-100 p-6 rounded-lg border border-slate-200 min-h-[250px] flex flex-col justify-center">
-                                        <div class="flex items-center justify-around">
-                                            <div id="simulator-inputs" class="flex flex-col gap-8"></div>
-                                            <div id="simulator-symbol" class="w-48 h-24 relative"></div>
-                                            <div id="simulator-output"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="lg:col-span-2">
-                                    <h4 class="font-semibold text-lg mb-3 text-slate-700">Tabel Kebenaran</h4>
-                                    <div class="overflow-x-auto">
-                                       <table class="min-w-full border-collapse">
-                                            <thead id="truth-table-head"></thead>
-                                            <tbody id="truth-table-body" class="font-mono"></tbody>
-                                       </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <hr class="border-slate-200">
-
-                    <section id="analisis">
-                        <div class="text-center mb-10">
-                            <h2 class="text-3xl font-bold text-slate-800">Analisis Rangkaian Interaktif</h2>
-                            <p class="text-slate-600 mt-2">Ubah nilai input untuk melihat aliran sinyal logika dan hasil akhirnya.</p>
-                        </div>
-                        <div class="space-y-12">
-                            <!-- Latihan 1 -->
-                            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                                <div>
-                                    <h3 class="text-2xl font-bold text-slate-800 mb-1">Latihan 1</h3>
-                                    <p class="text-slate-600 mb-4">Persamaan: $F = \overline{A} \cdot B \cdot \overline{C}$</p>
-                                    <div id="circuit-1-inputs" class="flex flex-wrap gap-4 mb-4"></div>
-                                    <div id="circuit-1-container" class="circuit-container bg-slate-100 p-4 rounded-lg border border-slate-200 h-[250px] relative"></div>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold text-lg mb-3 text-slate-700">Tabel Kebenaran</h4>
-                                    <div class="overflow-x-auto max-h-[320px]">
-                                        <table class="min-w-full border-collapse">
-                                            <thead class="bg-slate-200 sticky top-0"><tr><th class="border p-2">A</th><th class="border p-2">B</th><th class="border p-2">C</th><th class="border p-2 font-bold text-blue-800">F</th></tr></thead>
-                                            <tbody id="truth-table-1" class="font-mono text-center"></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Latihan 2 -->
-                             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                                <div>
-                                    <h3 class="text-2xl font-bold text-slate-800 mb-1">Latihan 2</h3>
-                                    <p class="text-slate-600 mb-4">Persamaan: $F = \overline{A} \cdot \overline{B}$</p>
-                                    <div id="circuit-2-inputs" class="flex flex-wrap gap-4 mb-4"></div>
-                                    <div id="circuit-2-container" class="circuit-container bg-slate-100 p-4 rounded-lg border border-slate-200 h-[250px] relative"></div>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold text-lg mb-3 text-slate-700">Tabel Kebenaran</h4>
-                                    <div class="overflow-x-auto max-h-[320px]">
-                                        <table class="min-w-full border-collapse">
-                                            <thead class="bg-slate-200 sticky top-0"><tr><th class="border p-2">A</th><th class="border p-2">B</th><th class="border p-2 font-bold text-blue-800">F</th></tr></thead>
-                                            <tbody id="truth-table-2" class="font-mono text-center"></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Latihan 3 -->
-                             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                                <div>
-                                    <h3 class="text-2xl font-bold text-slate-800 mb-1">Latihan 3</h3>
-                                    <p class="text-slate-600 mb-4">Persamaan: $y = AC + B\overline{C} + \overline{A}BC$</p>
-                                    <div id="circuit-3-inputs" class="flex flex-wrap gap-4 mb-4"></div>
-                                    <div id="circuit-3-container" class="circuit-container bg-slate-100 p-4 rounded-lg border border-slate-200 h-[250px] relative"></div>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold text-lg mb-3 text-slate-700">Tabel Kebenaran</h4>
-                                    <div class="overflow-x-auto max-h-[320px]">
-                                        <table class="min-w-full border-collapse">
-                                            <thead class="bg-slate-200 sticky top-0"><tr><th class="border p-2">A</th><th class="border p-2">B</th><th class="border p-2">C</th><th class="border p-2 font-bold text-blue-800">y</th></tr></thead>
-                                            <tbody id="truth-table-3" class="font-mono text-center"></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-            </div>
-
-            <!-- Mode Perancang Panel -->
-            <div id="panel-perancang" class="hidden">
-                <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-200">
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Masukkan Persamaan Logika</h2>
-                        <p class="text-slate-600 mb-4">Gunakan keyboard di bawah atau ketik langsung. Operator yang didukung: <code class="font-mono bg-slate-200 text-sm px-1 rounded">AND</code>, <code class="font-mono bg-slate-200 text-sm px-1 rounded">OR</code>, <code class="font-mono bg-slate-200 text-sm px-1 rounded">NOT</code>, <code class="font-mono bg-slate-200 text-sm px-1 rounded">XOR</code>, <code class="font-mono bg-slate-200 text-sm px-1 rounded">NAND</code>, <code class="font-mono bg-slate-200 text-sm px-1 rounded">NOR</code>, <code class="font-mono bg-slate-200 text-sm px-1 rounded">XNOR</code>, dan kurung <code class="font-mono bg-slate-200 text-sm px-1 rounded">()</code>.</p>
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <input type="text" id="expression-input" class="font-mono flex-grow w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="(A AND B) OR NOT C">
-                            <button id="generate-btn" class="bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg hover:bg-blue-700 transition shadow">Buat Rangkaian</button>
-                        </div>
-                        <div id="custom-keyboard" class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 gap-2 mt-4"></div>
-                        <div id="error-message" class="mt-2 text-red-600 font-medium"></div>
-                    </div>
-                    <div id="output-section" class="hidden">
-                         <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-800 mb-4">Diagram Rangkaian</h3>
-                                <div id="custom-circuit-container" class="circuit-container bg-slate-100 p-4 rounded-lg border border-slate-200 h-[400px] relative overflow-auto"></div>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-slate-800 mb-4">Tabel Kebenaran</h3>
-                                <div id="truth-table-container" class="overflow-x-auto max-h-[400px]"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script>
-    const App = (() => {
-        // --- UTILITIES ---
-        const utils = {
-            createToggleButton: (label, cssClass, dataAttrs) => {
-                return `<div class="flex items-center gap-3"><span class="font-mono text-lg">${label}:</span><span class="font-mono text-slate-500">0</span><label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" value="1" class="sr-only peer ${cssClass}" ${dataAttrs}><div class="w-11 h-6 bg-slate-300 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div></label><span class="font-mono text-slate-500">1</span></div>`;
-            }
-        };
-
-        // --- APP 1: EXPLORER LOGIC ---
-        const explorer = (() => {
-            const gatesData = {
-                AND: { name: 'AND', description: 'Menghasilkan 1 jika SEMUA masukan 1.', equation: 'Y = A ⋅ B', inputs: 2, func: (a, b) => a & b, truthTable: [ { A: 0, B: 0, Y: 0 }, { A: 0, B: 1, Y: 0 }, { A: 1, B: 0, Y: 0 }, { A: 1, B: 1, Y: 1 } ], drawSymbol: (c, a, b) => { const o=a&b; c.innerHTML = `<div class="gate-symbol-shape w-20 h-24 bg-white rounded-r-full"></div><div class="gate-line h-1 top-1/2 -translate-y-1/2 right-0 w-8 ${o?'active':''}"></div><div class="gate-line h-1 top-8 left-[-32px] w-8 ${a?'active':''}"></div><div class="gate-line h-1 bottom-8 left-[-32px] w-8 ${b?'active':''}"></div><div class="circuit-label left-[-24px] top-8 -translate-y-1/2">${a}</div><div class="circuit-label left-[-24px] bottom-8 -translate-y-1/2">${b}</div><div class="circuit-label right-2 top-1/2 -translate-y-1/2">${o}</div>`; } },
-                OR: { name: 'OR', description: 'Menghasilkan 1 jika SALAH SATU masukan 1.', equation: 'Y = A + B', inputs: 2, func: (a, b) => a | b, truthTable: [ { A: 0, B: 0, Y: 0 }, { A: 0, B: 1, Y: 1 }, { A: 1, B: 0, Y: 1 }, { A: 1, B: 1, Y: 1 } ], drawSymbol: (c, a, b) => { const o=a|b; c.innerHTML = `<div class="gate-symbol-shape w-24 h-24 bg-white" style="clip-path: path('M 0 0 Q 60 50 0 100 C 40 100 96 75 96 50 C 96 25 40 0 0 0 Z');"></div><div class="gate-line h-1 top-1/2 -translate-y-1/2 right-[-8px] w-8 ${o?'active':''}"></div><div class="gate-line h-1 top-8 left-[-32px] w-8 ${a?'active':''}"></div><div class="gate-line h-1 bottom-8 left-[-32px] w-8 ${b?'active':''}"></div><div class="circuit-label left-[-24px] top-8 -translate-y-1/2">${a}</div><div class="circuit-label left-[-24px] bottom-8 -translate-y-1/2">${b}</div><div class="circuit-label right-4 top-1/2 -translate-y-1/2">${o}</div>`; } },
-                NOT: { name: 'NOT', description: 'Membalik nilai masukan.', equation: 'Y = Ā', inputs: 1, func: (a) => a ? 0 : 1, truthTable: [ { A: 0, Y: 1 }, { A: 1, Y: 0 } ], drawSymbol: (c, a) => { const o=a?0:1; c.innerHTML = `<div class="gate-symbol-shape w-0 h-0 border-t-[48px] border-t-transparent border-l-[72px] border-l-blue-600 border-b-[48px] border-b-transparent"></div><div class="gate-symbol-shape absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-blue-600"></div><div class="gate-line h-1 top-1/2 -translate-y-1/2 right-[-32px] w-8 ${o?'active':''}"></div><div class="gate-line h-1 top-1/2 -translate-y-1/2 left-[-32px] w-8 ${a?'active':''}"></div><div class="circuit-label left-[-24px] top-1/2 -translate-y-1/2">${a}</div><div class="circuit-label right-[-24px] top-1/2 -translate-y-1/2">${o}</div>`; } },
-                NAND: { name: 'NAND', description: 'Ingkaran dari AND. Menghasilkan 0 hanya jika semua masukan 1.', equation: "Y = (A ⋅ B)'", inputs: 2, func: (a, b) => (a & b) ? 0 : 1, truthTable: [ { A: 0, B: 0, Y: 1 }, { A: 0, B: 1, Y: 1 }, { A: 1, B: 0, Y: 1 }, { A: 1, B: 1, Y: 0 } ], drawSymbol: (c, a, b) => { const o=(a&b)?0:1; c.innerHTML = `<div class="gate-symbol-shape w-20 h-24 bg-white rounded-r-full"></div><div class="gate-symbol-shape absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-blue-600"></div><div class="gate-line h-1 top-1/2 -translate-y-1/2 right-[-32px] w-8 ${o?'active':''}"></div><div class="gate-line h-1 top-8 left-[-32px] w-8 ${a?'active':''}"></div><div class="gate-line h-1 bottom-8 left-[-32px] w-8 ${b?'active':''}"></div><div class="circuit-label left-[-24px] top-8 -translate-y-1/2">${a}</div><div class="circuit-label left-[-24px] bottom-8 -translate-y-1/2">${b}</div><div class="circuit-label right-[-24px] top-1/2 -translate-y-1/2">${o}</div>`; } },
-                NOR: { name: 'NOR', description: 'Ingkaran dari OR. Menghasilkan 1 hanya jika semua masukan 0.', equation: "Y = (A + B)'", inputs: 2, func: (a, b) => (a | b) ? 0 : 1, truthTable: [ { A: 0, B: 0, Y: 1 }, { A: 0, B: 1, Y: 0 }, { A: 1, B: 0, Y: 0 }, { A: 1, B: 1, Y: 0 } ], drawSymbol: (c, a, b) => { const o=(a|b)?0:1; c.innerHTML = `<div class="gate-symbol-shape w-24 h-24 bg-white" style="clip-path: path('M 0 0 Q 60 50 0 100 C 40 100 96 75 96 50 C 96 25 40 0 0 0 Z');"></div><div class="gate-symbol-shape absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-blue-600"></div><div class="gate-line h-1 top-1/2 -translate-y-1/2 right-[-32px] w-8 ${o?'active':''}"></div><div class="gate-line h-1 top-8 left-[-32px] w-8 ${a?'active':''}"></div><div class="gate-line h-1 bottom-8 left-[-32px] w-8 ${b?'active':''}"></div><div class="circuit-label left-[-24px] top-8 -translate-y-1/2">${a}</div><div class="circuit-label left-[-24px] bottom-8 -translate-y-1/2">${b}</div><div class="circuit-label right-[-24px] top-1/2 -translate-y-1/2">${o}</div>`; } },
-                XOR: { name: 'XOR', description: 'Menghasilkan 1 jika masukan-masukannya berbeda.', equation: 'Y = A ⊕ B', inputs: 2, func: (a, b) => a ^ b, truthTable: [ { A: 0, B: 0, Y: 0 }, { A: 0, B: 1, Y: 1 }, { A: 1, B: 0, Y: 1 }, { A: 1, B: 1, Y: 0 } ], drawSymbol: (c, a, b) => { const o=a^b; c.innerHTML = `<div class="absolute w-24 h-24" style="clip-path: path('M -10 0 Q 50 50 -10 100'); border-left: 3px solid #3b82f6;"></div><div class="gate-symbol-shape w-24 h-24 bg-white" style="clip-path: path('M 0 0 Q 60 50 0 100 C 40 100 96 75 96 50 C 96 25 40 0 0 0 Z');"></div><div class="gate-line h-1 top-1/2 -translate-y-1/2 right-[-8px] w-8 ${o?'active':''}"></div><div class="gate-line h-1 top-8 left-[-32px] w-8 ${a?'active':''}"></div><div class="gate-line h-1 bottom-8 left-[-32px] w-8 ${b?'active':''}"></div><div class="circuit-label left-[-24px] top-8 -translate-y-1/2">${a}</div><div class="circuit-label left-[-24px] bottom-8 -translate-y-1/2">${b}</div><div class="circuit-label right-4 top-1/2 -translate-y-1/2">${o}</div>`; } },
-                XNOR: { name: 'XNOR', description: 'Ingkaran dari XOR. Menghasilkan 1 jika masukan-masukannya sama.', equation: "Y = (A ⊕ B)'", inputs: 2, func: (a, b) => (a ^ b) ? 0 : 1, truthTable: [ { A: 0, B: 0, Y: 1 }, { A: 0, B: 1, Y: 0 }, { A: 1, B: 0, Y: 0 }, { A: 1, B: 1, Y: 1 } ], drawSymbol: (c, a, b) => { const o=(a^b)?0:1; c.innerHTML = `<div class="absolute w-24 h-24" style="clip-path: path('M -10 0 Q 50 50 -10 100'); border-left: 3px solid #3b82f6;"></div><div class="gate-symbol-shape w-24 h-24 bg-white" style="clip-path: path('M 0 0 Q 60 50 0 100 C 40 100 96 75 96 50 C 96 25 40 0 0 0 Z');"></div><div class="gate-symbol-shape absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-blue-600"></div><div class="gate-line h-1 top-1/2 -translate-y-1/2 right-[-32px] w-8 ${o?'active':''}"></div><div class="gate-line h-1 top-8 left-[-32px] w-8 ${a?'active':''}"></div><div class="gate-line h-1 bottom-8 left-[-32px] w-8 ${b?'active':''}"></div><div class="circuit-label left-[-24px] top-8 -translate-y-1/2">${a}</div><div class="circuit-label left-[-24px] bottom-8 -translate-y-1/2">${b}</div><div class="circuit-label right-[-24px] top-1/2 -translate-y-1/2">${o}</div>`; } },
-            };
-            let activeGate = 'AND';
-            let inputValues = { A: 0, B: 0 };
-            const dom = {};
-            function render() {
-                dom.content.style.opacity = 0;
-                setTimeout(() => {
-                    const gate = gatesData[activeGate];
-                    dom.name.textContent = gate.name;
-                    dom.equation.innerHTML = gate.equation;
-                    dom.description.textContent = gate.description;
-                    dom.inputs.innerHTML = '';
-                    if (gate.inputs >= 1) dom.inputs.innerHTML += utils.createToggleButton('A', 'explorer-input', `data-input="A" ${inputValues.A ? 'checked' : ''}`);
-                    if (gate.inputs >= 2) dom.inputs.innerHTML += utils.createToggleButton('B', 'explorer-input', `data-input="B" ${inputValues.B ? 'checked' : ''}`);
-                    attachInputListeners();
-                    update();
-                    dom.content.style.opacity = 1;
-                }, 200);
-            }
-            function update() {
-                const gate = gatesData[activeGate];
-                const result = gate.func(inputValues.A, inputValues.B);
-                gate.drawSymbol(dom.symbol, inputValues.A, inputValues.B);
-                dom.output.innerHTML = `<div class="text-center"><div class="font-mono text-slate-500 mb-1">Y</div><div class="w-16 h-16 flex items-center justify-center text-4xl font-bold rounded-full transition-colors ${result ? 'bg-pink-500 text-white' : 'bg-slate-300 text-slate-700'}">${result}</div></div>`;
-                updateTruthTable(gate);
-            }
-            function updateTruthTable(gate) {
-                let headers = gate.inputs === 1 ? ['A', 'Y'] : ['A', 'B', 'Y'];
-                dom.truthTableHead.innerHTML = `<tr>${headers.map(h => `<th class="p-3 text-sm font-semibold tracking-wide text-left bg-slate-100 border-b-2 border-slate-200">${h}</th>`).join('')}</tr>`;
-                dom.truthTableBody.innerHTML = gate.truthTable.map(row => {
-                    let isHighlighted = (gate.inputs === 1) ? (row.A === inputValues.A) : (row.A === inputValues.A && row.B === inputValues.B);
-                    return `<tr class="${isHighlighted ? 'truth-table-highlight' : ''}">${headers.map(h => `<td class="p-3 text-sm text-slate-700 border-b border-slate-200">${row[h]}</td>`).join('')}</tr>`;
-                }).join('');
-            }
-            function attachInputListeners() {
-                dom.inputs.querySelectorAll('.explorer-input').forEach(input => {
-                    input.addEventListener('change', (e) => {
-                        inputValues[e.target.dataset.input] = e.target.checked ? 1 : 0;
-                        update();
-                    });
-                });
-            }
-            return {
-                init: () => {
-                    Object.assign(dom, {
-                        selector: document.getElementById('gate-selector'), name: document.getElementById('gate-name'),
-                        equation: document.getElementById('gate-equation'), description: document.getElementById('gate-description'),
-                        inputs: document.getElementById('simulator-inputs'), symbol: document.getElementById('simulator-symbol'),
-                        output: document.getElementById('simulator-output'), truthTableHead: document.getElementById('truth-table-head'),
-                        truthTableBody: document.getElementById('truth-table-body'), content: document.getElementById('explorer-content')
-                    });
-                    dom.selector.innerHTML = Object.keys(gatesData).map(key => `<button data-gate="${key}" class="gate-btn px-4 py-2 text-sm font-semibold rounded-full transition-colors ${activeGate === key ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">${key}</button>`).join('');
-                    dom.selector.addEventListener('click', e => {
-                        if (e.target.matches('.gate-btn')) {
-                            activeGate = e.target.dataset.gate;
-                            inputValues = { A: 0, B: 0 };
-                            document.querySelectorAll('.gate-btn').forEach(b => { b.classList.remove('bg-blue-600', 'text-white'); b.classList.add('bg-slate-200', 'text-slate-700'); });
-                            e.target.classList.add('bg-blue-600', 'text-white');
-                            e.target.classList.remove('bg-slate-200', 'text-slate-700');
-                            render();
-                        }
-                    });
-                    render();
-                }
-            };
-        })();
-
-        // --- APP 2: ANALYSIS LOGIC ---
-        const analysis = (() => {
-            const analysisCircuits = {
-                'circuit-1': {
-                    inputs: ['A', 'B', 'C'],
-                    logic: (A, B, C) => { const notA = A?0:1; const notC = C?0:1; const final = notA & B & notC; return { notA, notC, final }; },
-                    updateUI: (c, v) => { const {A,B,C}=v.inputs; const {notA,notC,final}=v.outputs; c.innerHTML = `<div class="absolute left-1 top-[15%] -translate-y-1/2 text-sm font-mono">A</div><div class="absolute left-1 top-1/2 -translate-y-1/2 text-sm font-mono">B</div><div class="absolute left-1 top-[85%] -translate-y-1/2 text-sm font-mono">C</div><div class="circuit-wire w-px h-full top-0 left-[10%]" style="height:calc(100% - 20px);top:10px;background-color:#cbd5e1;width:2px"></div><div class="circuit-wire w-px h-full top-0 left-[15%]" style="height:calc(100% - 20px);top:10px;background-color:#cbd5e1;width:2px"></div><div class="circuit-wire h-px w-[5%] top-[15%] left-[5%] ${A?'active':''}"></div><div class="circuit-wire h-px w-[10%] top-1/2 left-[5%] ${B?'active':''}"></div><div class="circuit-wire h-px w-[5%] top-[85%] left-[5%] ${C?'active':''}"></div><div class="circuit-dot" style="left:10%;top:15%"></div><div class="circuit-wire h-px w-[10%] top-[15%] left-[10%] ${A?'active':''}"></div><div class="absolute left-[20%] top-[15%] -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-slate-500 border-b-8 border-b-transparent circuit-gate ${notA?'active':''}"></div><div class="circuit-wire h-px w-[15%] top-[15%] left-[25%] ${notA?'active':''}"></div><div class="circuit-label left-[27%] top-[15%] -translate-y-[110%]">Ā=${notA}</div><div class="circuit-dot" style="left:15%;top:50%"></div><div class="circuit-wire h-px w-[25%] top-1/2 left-[15%] ${B?'active':''}"></div><div class="circuit-dot" style="left:10%;top:85%"></div><div class="circuit-wire h-px w-[10%] top-[85%] left-[10%] ${C?'active':''}"></div><div class="absolute left-[20%] top-[85%] -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-slate-500 border-b-8 border-b-transparent circuit-gate ${notC?'active':''}"></div><div class="circuit-wire h-px w-[15%] top-[85%] left-[25%] ${notC?'active':''}"></div><div class="circuit-label left-[27%] top-[85%] translate-y-1">C̄=${notC}</div><div class="absolute left-[45%] top-1/2 -translate-y-1/2 w-20 h-24 rounded-r-full circuit-gate ${final?'active':''}"></div><div class="circuit-wire w-px h-[35%] top-[15%] left-[40%] ${notA?'active':''}"></div><div class="circuit-wire w-px h-[35%] bottom-[15%] left-[40%] ${notC?'active':''}"></div><div class="circuit-wire h-px w-[15%] top-1/2 left-[65%] ${final?'active':''}"></div><div class="absolute left-[80%] top-1/2 -translate-y-1/2 flex items-center gap-2"><div class="output-led ${final?'active':''}"></div><span class="text-lg font-mono font-bold">F = ${final}</span></div>`; }
-                },
-                'circuit-2': {
-                    inputs: ['A', 'B'],
-                    logic: (A, B) => { const notA = A?0:1; const notB = B?0:1; const final = notA & notB; return { notA, notB, final }; },
-                    updateUI: (c, v) => { const {A,B}=v.inputs; const {notA,notB,final}=v.outputs; c.innerHTML = `<div class="absolute left-1 top-[25%] -translate-y-1/2 text-sm font-mono">A</div><div class="absolute left-1 top-[75%] -translate-y-1/2 text-sm font-mono">B</div><div class="circuit-wire h-px w-[15%] top-[25%] left-[5%] ${A?'active':''}"></div><div class="circuit-wire h-px w-[15%] top-[75%] left-[5%] ${B?'active':''}"></div><div class="absolute left-[15%] top-[25%] -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-slate-500 border-b-8 border-b-transparent circuit-gate ${notA?'active':''}"></div><div class="circuit-wire h-px w-[15%] top-[25%] left-[20%] ${notA?'active':''}"></div><div class="circuit-label left-[22%] top-[25%] -translate-y-[110%]">Ā=${notA}</div><div class="absolute left-[15%] top-[75%] -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-slate-500 border-b-8 border-b-transparent circuit-gate ${notB?'active':''}"></div><div class="circuit-wire h-px w-[15%] top-[75%] left-[20%] ${notB?'active':''}"></div><div class="circuit-label left-[22%] top-[75%] translate-y-1">B̄=${notB}</div><div class="absolute left-[40%] top-1/2 -translate-y-1/2 w-20 h-24 rounded-r-full circuit-gate ${final?'active':''}"></div><div class="circuit-wire w-px h-[25%] top-[25%] left-[35%] ${notA?'active':''}"></div><div class="circuit-wire w-px h-[25%] bottom-[25%] left-[35%] ${notB?'active':''}"></div><div class="circuit-wire h-px w-[15%] top-1/2 left-[60%] ${final?'active':''}"></div><div class="absolute left-[75%] top-1/2 -translate-y-1/2 flex items-center gap-2"><div class="output-led ${final?'active':''}"></div><span class="text-lg font-mono font-bold">F = ${final}</span></div>`; }
-                },
-                'circuit-3': {
-                    inputs: ['A', 'B', 'C'],
-                    logic: (A, B, C) => { const notA=A?0:1; const notC=C?0:1; const term1=A&C; const term2=B&notC; const term3=notA&B&C; const final=term1|term2|term3; return {notA,notC,term1,term2,term3,final}; },
-                    updateUI: (c, v) => { const {A,B,C}=v.inputs; const {notA,notC,term1,term2,term3,final}=v.outputs; c.innerHTML = `<div class="absolute left-0 top-[15%] -translate-y-1/2 text-sm font-mono">A</div><div class="absolute left-0 top-1/2 -translate-y-1/2 text-sm font-mono">B</div><div class="absolute left-0 top-[85%] -translate-y-1/2 text-sm font-mono">C</div><div class="circuit-wire w-px h-full top-0 left-[10%]" style="height:calc(100% - 20px);top:10px;background-color:#cbd5e1;width:2px"></div><div class="circuit-wire w-px h-full top-0 left-[15%]" style="height:calc(100% - 20px);top:10px;background-color:#cbd5e1;width:2px"></div><div class="circuit-wire w-px h-full top-0 left-[20%]" style="height:calc(100% - 20px);top:10px;background-color:#cbd5e1;width:2px"></div><div class="circuit-dot" style="left:10%;top:15%"></div><div class="circuit-dot" style="left:15%;top:50%"></div><div class="circuit-dot" style="left:20%;top:85%"></div><div class="absolute left-[35%] top-[15%] -translate-y-1/2 w-12 h-12 rounded-r-full circuit-gate ${term1?'active':''}"></div><div class="circuit-wire h-px w-[25%] top-[15%] left-[10%] ${A?'active':''}"></div><div class="circuit-wire w-px h-[70%] top-[15%] left-[20%] ${C?'active':''}"></div><div class="circuit-wire h-px w-[15%] top-[85%] left-[20%] ${C?'active':''}"></div><div class="circuit-wire h-px w-[10%] top-[15%] left-[44%] ${term1?'active':''}"></div><div class="circuit-label left-[45%] top-[15%] -translate-y-[110%]">AC=${term1}</div><div class="absolute left-[35%] top-1/2 -translate-y-1/2 w-12 h-12 rounded-r-full circuit-gate ${term2?'active':''}"></div><div class="circuit-wire h-px w-[20%] top-1/2 left-[15%] ${B?'active':''}"></div><div class="absolute left-[25%] top-[85%] -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-l-6 border-l-slate-500 border-b-4 border-b-transparent circuit-gate ${notC?'active':''}"></div><div class="circuit-wire h-px w-[5%] top-[85%] left-[28%] ${notC?'active':''}"></div><div class="circuit-wire w-px h-[35%] top-1/2 left-[33%] ${notC?'active':''}"></div><div class="circuit-wire h-px w-[10%] top-1/2 left-[44%] ${term2?'active':''}"></div><div class="circuit-label left-[45%] top-1/2 -translate-y-[110%]">BC'=${term2}</div><div class="absolute left-[35%] top-[85%] -translate-y-1/2 w-12 h-12 rounded-r-full circuit-gate ${term3?'active':''}"></div><div class="absolute left-[25%] top-[15%] -translate-y-1/2 w-0 h-0 border-t-4 border-t-transparent border-l-6 border-l-slate-500 border-b-4 border-b-transparent circuit-gate ${notA?'active':''}"></div><div class="circuit-wire h-px w-[5%] top-[15%] left-[28%] ${notA?'active':''}"></div><div class="circuit-wire w-px h-[70%] top-[15%] left-[33%] ${notA?'active':''}"></div><div class="circuit-wire h-px w-[10%] top-[85%] left-[44%] ${term3?'active':''}"></div><div class="circuit-label left-[45%] top-[85%] -translate-y-[110%]">A'BC=${term3}</div><div class="absolute left-[70%] top-1/2 -translate-y-1/2 w-20 h-24 border-2 border-amber-500 circuit-gate ${final?'active':''}" style="clip-path:path('M 0 0 Q 60 50 0 100 C 40 100 96 75 96 50 C 96 25 40 0 0 0 Z')"></div><div class="circuit-wire h-px w-[15%] top-1/2 left-[85%] ${final?'active':''}"></div><div class="absolute left-[90%] top-1/2 -translate-y-1/2 flex items-center gap-2"><div class="output-led ${final?'active':''}"></div><span class="text-lg font-mono font-bold">y = ${final}</span></div>`; }
-                }
-            };
-            function initializeAnalysisCircuits() {
-                Object.keys(analysisCircuits).forEach(id => {
-                    const circuit = analysisCircuits[id];
-                    const inputsContainer = document.getElementById(`${id}-inputs`);
-                    inputsContainer.innerHTML = circuit.inputs.map(name => utils.createToggleButton(name, 'analysis-input', `data-circuit="${id}" data-input-name="${name}"`)).join('');
-                    const tableBody = document.getElementById(`truth-table-${id.split('-')[1]}`);
-                    const numInputs = circuit.inputs.length;
-                    const numRows = Math.pow(2, numInputs);
-                    for (let i = 0; i < numRows; i++) {
-                        const inputs = {};
-                        let inputBinary = i.toString(2).padStart(numInputs, '0');
-                        circuit.inputs.forEach((name, index) => { inputs[name] = parseInt(inputBinary[index], 10); });
-                        const outputs = circuit.logic(...Object.values(inputs));
-                        const finalOutput = outputs.final;
-                        const row = document.createElement('tr');
-                        row.dataset.binary = inputBinary;
-                        let rowHTML = '';
-                        Object.values(inputs).forEach(val => rowHTML += `<td class="border p-2">${val}</td>`);
-                        rowHTML += `<td class="border p-2 font-bold text-blue-800">${finalOutput}</td>`;
-                        row.innerHTML = rowHTML;
-                        tableBody.appendChild(row);
-                    }
-                    inputsContainer.querySelectorAll('.analysis-input').forEach(toggle => {
-                        toggle.addEventListener('change', () => updateAnalysisCircuit(id));
-                    });
-                    updateAnalysisCircuit(id);
-                });
-            }
-            function updateAnalysisCircuit(id) {
-                const circuit = analysisCircuits[id];
-                const inputsContainer = document.getElementById(`${id}-inputs`);
-                const diagramContainer = document.getElementById(`${id}-container`);
-                const tableBody = document.getElementById(`truth-table-${id.split('-')[1]}`);
-                const currentInputs = {};
-                let currentBinary = '';
-                inputsContainer.querySelectorAll('.analysis-input').forEach(toggle => {
-                    const name = toggle.dataset.inputName;
-                    const value = toggle.checked ? 1 : 0;
-                    currentInputs[name] = value;
-                    currentBinary += value;
-                });
-                const outputs = circuit.logic(...Object.values(currentInputs));
-                circuit.updateUI(diagramContainer, { inputs: currentInputs, outputs });
-                tableBody.querySelectorAll('tr').forEach(row => { row.classList.remove('truth-table-highlight'); });
-                const activeRow = tableBody.querySelector(`tr[data-binary="${currentBinary}"]`);
-                if (activeRow) activeRow.classList.add('truth-table-highlight');
-            }
-            return { init: initializeAnalysisCircuits };
-        })();
-
-        // --- APP 3: CUSTOM BUILDER LOGIC ---
-        const builder = (() => {
-            const precedence = { 'NOT': 4, 'AND': 3, 'NAND': 3, 'XOR': 2, 'XNOR': 2, 'OR': 1, 'NOR': 1 };
-            const operators = Object.keys(precedence);
-            const dom = {};
-            function tokenize(expr) { const cleanedExpr = expr.toUpperCase().replace(/\s+/g, ''); const regex = new RegExp(`(${operators.join('|')}|[A-Z]|\(|\))`, 'g'); return cleanedExpr.match(regex) || []; }
-            function shuntingYard(tokens) {
-                const outputQueue = []; const operatorStack = []; const inputs = new Set();
-                for (const token of tokens) {
-                    if (/[A-Z]/.test(token)) { outputQueue.push(token); inputs.add(token); } 
-                    else if (operators.includes(token)) {
-                        while (operatorStack.length > 0 && precedence[operatorStack[operatorStack.length - 1]] >= precedence[token]) { outputQueue.push(operatorStack.pop()); }
-                        operatorStack.push(token);
-                    } else if (token === '(') { operatorStack.push(token); } 
-                    else if (token === ')') {
-                        while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(') { outputQueue.push(operatorStack.pop()); }
-                        if (operatorStack[operatorStack.length - 1] === '(') { operatorStack.pop(); } else { throw new Error("Kurung tidak cocok"); }
-                    }
-                }
-                while (operatorStack.length > 0) { const op = operatorStack.pop(); if (op === '(') throw new Error("Kurung tidak cocok"); outputQueue.push(op); }
-                return { rpn: outputQueue, inputs: Array.from(inputs).sort() };
-            }
-            function evaluateRPN(rpn, inputValues) {
-                const stack = [];
-                for (const token of rpn) {
-                    if (/[A-Z]/.test(token)) { stack.push(inputValues[token]); } 
-                    else if (operators.includes(token)) {
-                        if (token === 'NOT') { if (stack.length < 1) throw new Error("Ekspresi tidak valid"); stack.push(stack.pop() ? 0 : 1); } 
-                        else {
-                            if (stack.length < 2) throw new Error("Ekspresi tidak valid");
-                            const b = stack.pop(); const a = stack.pop();
-                            switch (token) {
-                                case 'AND': stack.push(a & b); break; case 'OR': stack.push(a | b); break;
-                                case 'NAND': stack.push((a & b) ? 0 : 1); break; case 'NOR': stack.push((a | b) ? 0 : 1); break;
-                                case 'XOR': stack.push(a ^ b); break; case 'XNOR': stack.push((a ^ b) ? 0 : 1); break;
-                            }
-                        }
-                    }
-                }
-                if (stack.length !== 1) throw new Error("Ekspresi tidak valid");
-                return stack[0];
-            }
-            function generateTruthTable(rpn, inputs) {
-                const numRows = Math.pow(2, inputs.length); const table = document.createElement('table'); table.className = 'min-w-full border-collapse';
-                let headerHTML = '<thead><tr class="bg-slate-200 sticky top-0">';
-                inputs.forEach(input => headerHTML += `<th class="border p-2">${input}</th>`);
-                headerHTML += `<th class="border p-2 font-bold text-blue-800">Output</th></tr></thead>`; table.innerHTML = headerHTML;
-                let bodyHTML = '<tbody class="font-mono text-center">';
-                for (let i = 0; i < numRows; i++) {
-                    const inputValues = {}; const binary = i.toString(2).padStart(inputs.length, '0');
-                    inputs.forEach((input, index) => { inputValues[input] = parseInt(binary[index]); });
-                    const output = evaluateRPN(rpn, inputValues);
-                    bodyHTML += '<tr>';
-                    inputs.forEach((input, index) => bodyHTML += `<td class="border p-2">${binary[index]}</td>`);
-                    bodyHTML += `<td class="border p-2 font-bold">${output}</td></tr>`;
-                }
-                bodyHTML += '</tbody>'; table.innerHTML += bodyHTML; return table;
-            }
-            function rpnToAST(rpn) {
-                const stack = []; let idCounter = 0;
-                for (const token of rpn) {
-                    const node = { id: `node-${idCounter++}`, value: token, children: [] };
-                    if (operators.includes(token)) {
-                        if (token === 'NOT') { node.children.push(stack.pop()); } 
-                        else { const right = stack.pop(); const left = stack.pop(); node.children.push(left, right); }
-                    }
-                    stack.push(node);
-                }
-                return stack[0];
-            }
-            function renderCircuit(ast, container) {
-                container.innerHTML = ''; const inputs = new Set();
-                function findInputs(node) { if (!node) return; if (/[A-Z]/.test(node.value)) inputs.add(node.value); if (node.children) node.children.forEach(findInputs); }
-                findInputs(ast); const sortedInputs = Array.from(inputs).sort();
-                const positions = {}; const canvasWidth = container.clientWidth > 600 ? container.clientWidth : 600; const canvasHeight = container.clientHeight;
-                function getDepth(node) { if (!node || node.children.length === 0) return 1; return 1 + Math.max(...node.children.map(getDepth)); }
-                const totalDepth = getDepth(ast); const levelWidth = canvasWidth / (totalDepth + 1.5);
-                function setPositions(node, level, yOffset, yTotal) {
-                    if (!node) return;
-                    const x = canvasWidth - (level * levelWidth); const y = yOffset + yTotal / 2; positions[node.id] = { x, y };
-                    let childYOffset = yOffset;
-                    node.children.reverse().forEach(child => {
-                        const childYTotal = yTotal / node.children.length;
-                        setPositions(child, level + 1, childYOffset, childYTotal);
-                        childYOffset += childYTotal;
-                    });
-                }
-                setPositions(ast, 1, 0, canvasHeight);
-                let html = '';
-                sortedInputs.forEach((input, index) => {
-                    const y = (canvasHeight / (sortedInputs.length + 1)) * (index + 1);
-                    html += `<div class="absolute left-1 top-[${y}px] -translate-y-1/2 text-sm font-mono">${input}</div>`;
-                    html += `<div class="circuit-wire h-px w-[10%] top-[${y}px] left-[5%]"></div>`;
-                    html += `<div class="circuit-wire w-px h-full top-0 left-[10%]" style="height: calc(100% - 20px); top: 10px; background-color: #cbd5e1; width: 2px;"></div>`;
-                });
-                function drawNode(node) {
-                    if (!node) return ''; let nodeHtml = ''; const { x, y } = positions[node.id];
-                    if (operators.includes(node.value)) {
-                        let gateSymbol = ''; let gateWidth = 60; let gateHeight = 40;
-                        if (node.value === 'NOT') { gateSymbol = `<div class="absolute w-0 h-0 border-t-8 border-t-transparent border-l-12 border-l-slate-500 border-b-8 border-b-transparent"></div><div class="absolute right-[-4px] top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-slate-500 bg-white"></div>`; gateWidth = 20; gateHeight = 16; } 
-                        else if (['OR', 'NOR'].includes(node.value)) { gateSymbol = `<div class="absolute w-full h-full" style="clip-path: path('M 0 0 Q 22.5 20 0 40 C 15 40 36 30 36 20 C 36 10 15 0 0 0 Z'); border: 2px solid #64748b; background-color: #f8fafc;"></div>`; gateWidth=36; } 
-                        else if (['XOR', 'XNOR'].includes(node.value)) { gateSymbol = `<div class="absolute w-full h-full" style="clip-path: path('M -4 0 Q 18.5 20 -4 40'); border-left: 2px solid #64748b;"></div><div class="absolute w-full h-full" style="clip-path: path('M 0 0 Q 22.5 20 0 40 C 15 40 36 30 36 20 C 36 10 15 0 0 0 Z'); border: 2px solid #64748b; background-color: #f8fafc;"></div>`; gateWidth=36; } 
-                        else { gateSymbol = `<div class="absolute w-full h-full rounded-r-full border-2 border-slate-500 bg-slate-50"></div>`; }
-                        if (['NAND', 'NOR', 'XNOR'].includes(node.value)) { gateSymbol += `<div class="absolute right-[-4px] top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-slate-500 bg-white"></div>`; }
-                        
-                        nodeHtml += `<div class="circuit-gate absolute flex items-center justify-center" style="left: ${x-gateWidth/2}px; top: ${y-gateHeight/2}px; width: ${gateWidth}px; height: ${gateHeight}px;">${gateSymbol}</div>`;
-                        nodeHtml += `<div class="circuit-wire h-px" style="left: ${x+gateWidth/2}px; top: ${y}px; width: 20px;"></div>`;
-                        node.children.forEach((child, index) => {
-                            const childPos = positions[child.id];
-                            const inputY = y + (node.children.length > 1 ? (index === 0 ? -10 : 10) : 0);
-                            nodeHtml += `<div class="circuit-wire h-px" style="left: ${childPos.x}px; top: ${childPos.y}px; width: ${x - gateWidth/2 - childPos.x}px;"></div>`;
-                            nodeHtml += `<div class="circuit-wire w-px" style="left: ${childPos.x}px; top: ${Math.min(childPos.y, inputY)}px; height: ${Math.abs(childPos.y - inputY)}px;"></div>`;
-                            nodeHtml += `<div class="circuit-wire h-px" style="left: ${childPos.x}px; top: ${inputY}px; width: ${x - gateWidth/2 - childPos.x}px;"></div>`;
-                        });
-                    } else {
-                         const inputIndex = sortedInputs.indexOf(node.value);
-                         const inputY = (canvasHeight / (sortedInputs.length + 1)) * (inputIndex + 1);
-                         positions[node.id] = { x: 0.1 * canvasWidth, y: inputY };
-                    }
-                    node.children.forEach(child => nodeHtml += drawNode(child));
-                    return nodeHtml;
-                }
-                html += drawNode(ast);
-                container.innerHTML = html;
-            }
-            function handleGenerate() {
-                try {
-                    dom.errorMessage.textContent = ''; dom.outputSection.classList.remove('hidden');
-                    const expr = dom.expressionInput.value; if (!expr) throw new Error("Mohon masukkan persamaan.");
-                    const tokens = tokenize(expr); const { rpn, inputs } = shuntingYard(tokens);
-                    if (inputs.length === 0) throw new Error("Tidak ada input yang valid (A, B, C, ...)");
-                    if (inputs.length > 4) throw new Error("Maksimal 4 input (A-D) untuk menjaga kejelasan diagram.");
-                    const table = generateTruthTable(rpn, inputs);
-                    dom.truthTableContainer.innerHTML = ''; dom.truthTableContainer.appendChild(table);
-                    const ast = rpnToAST(rpn);
-                    renderCircuit(ast, dom.circuitContainer);
-                } catch (e) { dom.errorMessage.textContent = `Error: ${e.message}`; dom.outputSection.classList.add('hidden'); }
-            }
-            function insertAtCursor(text) {
-                const start = dom.expressionInput.selectionStart;
-                const end = dom.expressionInput.selectionEnd;
-                const current = dom.expressionInput.value;
-                const before = current.substring(0, start);
-                const after = current.substring(end, current.length);
-                dom.expressionInput.value = before + text + after;
-                dom.expressionInput.focus();
-                dom.expressionInput.selectionStart = dom.expressionInput.selectionEnd = start + text.length;
-            }
-            function initializeKeyboard() {
-                const keys = [ 'A', 'B', 'C', 'D', '(', ')', 'NOT', 'AND', 'OR', 'NAND', 'NOR', 'XOR', 'XNOR', '⌫' ];
-                dom.keyboardContainer.innerHTML = keys.map(key => {
-                    let classes = 'keyboard-btn'; let action = `insert:' ${key} '`;
-                    if (['A','B','C','D','(',' )'].includes(key)) action = `insert:'${key}'`;
-                    if (operators.includes(key)) classes += ' op';
-                    if (key === '⌫') { classes += ' ctrl'; action = 'backspace'; }
-                    return `<button data-action="${action}" class="${classes}">${key}</button>`;
-                }).join('');
-                dom.keyboardContainer.addEventListener('click', e => {
-                    const target = e.target.closest('button'); if (!target) return;
-                    const action = target.dataset.action;
-                    if (action.startsWith('insert:')) { insertAtCursor(action.replace('insert:', '').replace(/'/g, '')); } 
-                    else if (action === 'backspace') {
-                        const start = dom.expressionInput.selectionStart; const end = dom.expressionInput.selectionEnd;
-                        if (start === end && start > 0) {
-                            dom.expressionInput.value = dom.expressionInput.value.substring(0, start - 1) + dom.expressionInput.value.substring(end);
-                            dom.expressionInput.focus(); dom.expressionInput.selectionStart = dom.expressionInput.selectionEnd = start - 1;
-                        } else {
-                            dom.expressionInput.value = dom.expressionInput.value.substring(0, start) + dom.expressionInput.value.substring(end);
-                            dom.expressionInput.focus(); dom.expressionInput.selectionStart = dom.expressionInput.selectionEnd = start;
-                        }
-                    }
-                });
-            }
-            return {
-                init: () => {
-                    Object.assign(dom, {
-                        generateBtn: document.getElementById('generate-btn'), expressionInput: document.getElementById('expression-input'),
-                        errorMessage: document.getElementById('error-message'), outputSection: document.getElementById('output-section'),
-                        truthTableContainer: document.getElementById('truth-table-container'), circuitContainer: document.getElementById('custom-circuit-container'),
-                        keyboardContainer: document.getElementById('custom-keyboard')
-                    });
-                    dom.generateBtn.addEventListener('click', handleGenerate);
-                    dom.expressionInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleGenerate(); });
-                    initializeKeyboard();
-                    dom.expressionInput.value = '(A AND B) OR (NOT C)';
-                    handleGenerate();
-                }
-            };
-        })();
-
-        // --- MAIN APP & TAB LOGIC ---
-        function init() {
-            const tabBelajar = document.getElementById('tab-belajar');
-            const tabPerancang = document.getElementById('tab-perancang');
-            const panelBelajar = document.getElementById('panel-belajar');
-            const panelPerancang = document.getElementById('panel-perancang');
-
-            explorer.init();
-            analysis.init();
-            builder.init();
-
-            tabBelajar.addEventListener('click', () => {
-                tabBelajar.classList.add('active');
-                tabPerancang.classList.remove('active');
-                panelBelajar.classList.remove('hidden');
-                panelPerancang.classList.add('hidden');
-            });
-
-            tabPerancang.addEventListener('click', () => {
-                tabPerancang.classList.add('active');
-                tabBelajar.classList.remove('active');
-                panelPerancang.classList.remove('hidden');
-                panelBelajar.classList.add('hidden');
-            });
-        }
-        
-        return { init };
-    })();
-
-    document.addEventListener('DOMContentLoaded', App.init);
-    </script>
+    </div>
 </body>
 </html>
