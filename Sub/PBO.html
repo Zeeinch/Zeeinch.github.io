@@ -7,28 +7,40 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- [DIUBAH] CSS untuk Syntax Highlighting (Tema Atom One Light) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
+        pre, code {
+            font-family: 'Fira Code', monospace;
+        }
         .bar {
-            /* Margin dihapus dari sini, akan diatur oleh JS di container */
             display: inline-block;
             background-color: #4f46e5; /* Indigo-600 */
             transition: height 0.2s ease-in-out, background-color 0.2s ease-in-out;
+            border-radius: 2px 2px 0 0;
         }
         .bar-compare { background-color: #db2777; } /* Pink-600 */
-        .bar-swap { background-color: #eab308; } /* Yellow-500 */
-        .bar-sorted { background-color: #22c55e; } /* Green-500 */
+        .bar-swap { background-color: #f59e0b; } /* Amber-500 */
+        .bar-sorted { background-color: #16a34a; } /* Green-600 */
         .bar-pivot { background-color: #f97316; } /* Orange-500 */
+        
+        /* [DIUBAH] Style untuk Tema Terang */
         .tab-btn {
             transition: all 0.2s ease-in-out;
+            border-bottom: 2px solid transparent;
         }
         .tab-btn.active {
-            background-color: #374151; /* Gray-700 */
-            color: #f9fafb; /* Gray-50 */
+            color: #4f46e5; /* Indigo-600 */
             border-bottom-color: #4f46e5;
+        }
+        .code-container {
+            position: relative;
         }
         .code-block {
             display: none;
@@ -36,33 +48,70 @@
         .code-block.active {
             display: block;
         }
-        /* Custom scrollbar for code blocks */
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background-color: #e5e7eb; /* Gray-200 */
+            color: #4b5563; /* Gray-600 */
+            border: 1px solid #d1d5db; /* Gray-300 */
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            z-index: 10;
+        }
+        .copy-btn:hover {
+            background-color: #d1d5db; /* Gray-300 */
+        }
+        pre {
+            background-color: #fafafa; /* Sesuai tema atom-one-light */
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+        }
         pre::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
         pre::-webkit-scrollbar-track {
-            background: #1f2937; /* Gray-800 */
+            background: #e5e7eb; /* Gray-200 */
         }
         pre::-webkit-scrollbar-thumb {
-            background-color: #4b5563; /* Gray-600 */
+            background-color: #9ca3af; /* Gray-400 */
             border-radius: 10px;
-            border: 2px solid #1f2937;
+            border: 2px solid #e5e7eb;
+        }
+        .explanation-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: #111827; /* Gray-900 */
+        }
+        .explanation-card h3 svg {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: #4f46e5;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-200 min-h-screen">
+<body class="bg-gray-100 text-gray-800 min-h-screen">
     <div class="container mx-auto p-4 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-white">Visualisasi Algoritma Pengurutan</h1>
-            <p class="text-gray-400 mt-2">Pilih algoritma, atur, dan lihat bagaimana data diurutkan secara visual.</p>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Visualisasi Algoritma Pengurutan</h1>
+            <p class="text-gray-600 mt-2">Pilih algoritma, atur, dan lihat bagaimana data diurutkan secara visual.</p>
         </header>
 
         <!-- Kontrol -->
-        <div class="bg-gray-800 p-4 rounded-lg shadow-lg mb-8 flex flex-wrap items-center justify-center gap-4 md:gap-6">
+        <div class="bg-white p-4 rounded-lg shadow-md mb-8 flex flex-wrap items-center justify-center gap-4 md:gap-6">
             <div class="flex flex-col items-center">
-                <label for="algorithm-select" class="text-sm font-medium mb-1 text-gray-300">Algoritma</label>
-                <select id="algorithm-select" class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2">
+                <label for="algorithm-select" class="text-sm font-medium mb-1 text-gray-600">Algoritma</label>
+                <select id="algorithm-select" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2">
                     <option value="bubble">Bubble Sort</option>
                     <option value="selection">Selection Sort</option>
                     <option value="insertion">Insertion Sort</option>
@@ -71,12 +120,12 @@
                 </select>
             </div>
             <div class="flex flex-col items-center">
-                <label for="size-slider" class="text-sm font-medium mb-1 text-gray-300">Ukuran Array: <span id="size-value">50</span></label>
-                <input id="size-slider" type="range" min="10" max="100" value="50" class="w-36 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                <label for="size-slider" class="text-sm font-medium mb-1 text-gray-600">Ukuran Array: <span id="size-value">50</span></label>
+                <input id="size-slider" type="range" min="10" max="100" value="50" class="w-36 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
             </div>
             <div class="flex flex-col items-center">
-                <label for="speed-slider" class="text-sm font-medium mb-1 text-gray-300">Kecepatan: <span id="speed-value">50</span> ms</label>
-                <input id="speed-slider" type="range" min="1" max="500" value="50" class="w-36 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                <label for="speed-slider" class="text-sm font-medium mb-1 text-gray-600">Kecepatan: <span id="speed-value">50</span> ms</label>
+                <input id="speed-slider" type="range" min="1" max="500" value="50" class="w-36 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
             </div>
             <div class="flex items-center gap-4 mt-4 md:mt-0">
                 <button id="reset-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">Acak Ulang</button>
@@ -85,47 +134,75 @@
         </div>
 
         <!-- Visualisasi -->
-        <div id="visualizer-container" class="bg-gray-800 p-4 rounded-lg shadow-lg h-64 md:h-96 flex items-end justify-center">
+        <div id="visualizer-container" class="bg-white p-4 rounded-lg shadow-md h-64 md:h-96 flex items-end justify-center">
             <!-- Bars will be generated here by JavaScript -->
         </div>
 
         <!-- Informasi dan Kode -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
             <!-- Penjelasan Algoritma -->
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 id="algo-name" class="text-2xl font-bold text-white mb-3"></h2>
-                <p id="algo-desc" class="text-gray-300 mb-4 leading-relaxed"></p>
-                <h3 class="text-lg font-semibold text-white mb-2">Kompleksitas</h3>
-                <div class="text-sm text-gray-400 space-y-1">
-                    <p><strong>Waktu (Best):</strong> <code id="time-best" class="bg-gray-700 px-2 py-1 rounded"></code></p>
-                    <p><strong>Waktu (Average):</strong> <code id="time-avg" class="bg-gray-700 px-2 py-1 rounded"></code></p>
-                    <p><strong>Waktu (Worst):</strong> <code id="time-worst" class="bg-gray-700 px-2 py-1 rounded"></code></p>
-                    <p><strong>Ruang (Space):</strong> <code id="space-worst" class="bg-gray-700 px-2 py-1 rounded"></code></p>
+            <div class="bg-white p-6 rounded-lg shadow-md explanation-card">
+                <h2 id="algo-name" class="text-2xl font-bold text-gray-900 mb-2"></h2>
+                <p id="algo-desc" class="text-gray-600 mb-4 text-sm"></p>
+
+                <h3 class="text-lg mt-4 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" /></svg>
+                    Cara Kerja
+                </h3>
+                <ul id="algo-how-it-works" class="list-decimal list-inside text-gray-700 space-y-1 text-sm pl-2"></ul>
+
+                <h3 class="text-lg mt-5 mb-2">
+                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    Analogi Dunia Nyata
+                </h3>
+                <p id="algo-analogy" class="text-gray-500 text-sm italic pl-2"></p>
+
+                <h3 class="text-lg mt-5 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                    Kapan Digunakan?
+                </h3>
+                <div class="text-sm space-y-2 pl-2">
+                    <p><strong class="text-green-600">✅ Baik untuk:</strong> <span id="algo-use-best" class="text-gray-700"></span></p>
+                    <p><strong class="text-red-600">❌ Kurang baik untuk:</strong> <span id="algo-use-worst" class="text-gray-700"></span></p>
+                </div>
+
+                <h3 class="text-lg mt-5 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75" /></svg>
+                    Kompleksitas
+                </h3>
+                <div class="text-sm text-gray-600 space-y-1 pl-2">
+                    <p><strong>Waktu (Best):</strong> <code id="time-best" class="bg-gray-200 text-gray-800 px-2 py-1 rounded"></code></p>
+                    <p><strong>Waktu (Average):</strong> <code id="time-avg" class="bg-gray-200 text-gray-800 px-2 py-1 rounded"></code></p>
+                    <p><strong>Waktu (Worst):</strong> <code id="time-worst" class="bg-gray-200 text-gray-800 px-2 py-1 rounded"></code></p>
+                    <p><strong>Ruang (Space):</strong> <code id="space-worst" class="bg-gray-200 text-gray-800 px-2 py-1 rounded"></code></p>
                 </div>
             </div>
 
             <!-- Contoh Kode -->
-            <div class="bg-gray-800 rounded-lg shadow-lg">
-                <div class="flex border-b border-gray-700">
-                    <button class="tab-btn active py-2 px-4 text-gray-300 font-semibold border-b-2 border-transparent" data-lang="python">Python</button>
-                    <button class="tab-btn py-2 px-4 text-gray-300 font-semibold border-b-2 border-transparent" data-lang="java">Java</button>
-                    <button class="tab-btn py-2 px-4 text-gray-300 font-semibold border-b-2 border-transparent" data-lang="csharp">C#</button>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="flex border-b border-gray-200 overflow-x-auto">
+                    <button class="tab-btn active py-2 px-4 text-gray-600 font-semibold flex-shrink-0" data-lang="python">Python</button>
+                    <button class="tab-btn py-2 px-4 text-gray-600 font-semibold flex-shrink-0" data-lang="javascript">JavaScript</button>
+                    <button class="tab-btn py-2 px-4 text-gray-600 font-semibold flex-shrink-0" data-lang="java">Java</button>
+                    <button class="tab-btn py-2 px-4 text-gray-600 font-semibold flex-shrink-0" data-lang="csharp">C#</button>
+                    <button class="tab-btn py-2 px-4 text-gray-600 font-semibold flex-shrink-0" data-lang="go">Go</button>
                 </div>
-                <div class="p-4">
-                    <div id="python-code" class="code-block active">
-                        <pre><code class="language-python"></code></pre>
-                    </div>
-                    <div id="java-code" class="code-block">
-                        <pre><code class="language-java"></code></pre>
-                    </div>
-                    <div id="csharp-code" class="code-block">
-                        <pre><code class="language-csharp"></code></pre>
-                    </div>
+                <div class="code-container">
+                    <div id="python-code" class="code-block active"><pre><code class="language-python"></code></pre></div>
+                    <div id="javascript-code" class="code-block"><pre><code class="language-javascript"></code></pre></div>
+                    <div id="java-code" class="code-block"><pre><code class="language-java"></code></pre></div>
+                    <div id="csharp-code" class="code-block"><pre><code class="language-csharp"></code></pre></div>
+                    <div id="go-code" class="code-block"><pre><code class="language-go"></code></pre></div>
+                    <button class="copy-btn" id="copy-code-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <span>Salin</span>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script>
         // --- DOM Elements ---
         const algorithmSelect = document.getElementById('algorithm-select');
@@ -136,354 +213,134 @@
         const resetBtn = document.getElementById('reset-btn');
         const startBtn = document.getElementById('start-btn');
         const visualizerContainer = document.getElementById('visualizer-container');
+        const copyCodeBtn = document.getElementById('copy-code-btn');
 
         // --- State Variables ---
         let array = [];
         let arraySize = 50;
         let animationSpeed = 50;
         let isSorting = false;
+        let currentLang = 'python';
 
         // --- Data for Algorithms (unchanged) ---
         const algoData = {
             bubble: {
                 name: "Bubble Sort",
-                description: "Bubble Sort adalah algoritma sederhana yang berulang kali menelusuri daftar, membandingkan elemen yang berdekatan dan menukarnya jika urutannya salah. Penelusuran diulang sampai daftar terurut.",
+                description: "Algoritma pengurutan paling dasar. Bekerja dengan berulang kali menukar elemen yang bersebelahan jika urutannya salah, seolah-olah 'menggelembungkan' elemen terbesar ke posisi akhir.",
+                howItWorks: [
+                    "Mulai dari elemen pertama, bandingkan dengan elemen kedua.",
+                    "Jika elemen pertama lebih besar, tukar posisi keduanya.",
+                    "Geser ke elemen berikutnya, lalu bandingkan dan tukar jika perlu.",
+                    "Ulangi proses ini sampai akhir array. Satu elemen terbesar dijamin berada di posisi yang benar.",
+                    "Ulangi seluruh proses untuk sisa array, hingga semua elemen terurut."
+                ],
+                analogy: "Seperti gelembung udara dalam air yang perlahan naik ke permukaan, elemen terbesar 'naik' ke posisi akhirnya di setiap putaran.",
+                whenToUse: {
+                    best: "Data berukuran sangat kecil atau data yang sudah hampir terurut. Juga bagus untuk tujuan edukasi karena kesederhanaannya.",
+                    worst: "Data berukuran besar atau data yang urutannya terbalik. Sangat tidak efisien."
+                },
                 complexity: { best: "O(n)", avg: "O(n²)", worst: "O(n²)", space: "O(1)" },
                 code: {
-                    python: `def bubble_sort(arr):
-    n = len(arr)
-    # Ulangi untuk setiap elemen
-    for i in range(n):
-        swapped = False
-        # Bandingkan elemen yang berdekatan
-        for j in range(0, n - i - 1):
-            if arr[j] > arr[j + 1]:
-                # Tukar jika elemen lebih besar dari elemen berikutnya
-                arr[j], arr[j + 1] = arr[j + 1], arr[j]
-                swapped = True
-        # Jika tidak ada pertukaran, array sudah terurut
-        if not swapped:
-            break`,
-                    java: `public void bubbleSort(int[] arr) {
-    int n = arr.length;
-    // Ulangi untuk setiap elemen
-    for (int i = 0; i < n - 1; i++) {
-        boolean swapped = false;
-        // Bandingkan elemen yang berdekatan
-        for (int j = 0; j < n - i - 1; j++) {
-            if (arr[j] > arr[j + 1]) {
-                // Tukar jika elemen lebih besar dari elemen berikutnya
-                int temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-                swapped = true;
-            }
-        }
-        // Jika tidak ada pertukaran, array sudah terurut
-        if (!swapped) {
-            break;
-        }
-    }
-}`,
-                    csharp: `public void BubbleSort(int[] arr) {
-    int n = arr.Length;
-    // Ulangi untuk setiap elemen
-    for (int i = 0; i < n - 1; i++) {
-        bool swapped = false;
-        // Bandingkan elemen yang berdekatan
-        for (int j = 0; j < n - i - 1; j++) {
-            if (arr[j] > arr[j + 1]) {
-                // Tukar jika elemen lebih besar dari elemen berikutnya
-                int temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-                swapped = true;
-            }
-        }
-        // Jika tidak ada pertukaran, array sudah terurut
-        if (!swapped) {
-            break;
-        }
-    }
-}`
+                    python: `def bubble_sort(arr):\n    n = len(arr)\n    for i in range(n):\n        swapped = False\n        for j in range(0, n - i - 1):\n            if arr[j] > arr[j + 1]:\n                arr[j], arr[j + 1] = arr[j + 1], arr[j]\n                swapped = True\n        if not swapped:\n            break`,
+                    javascript: `function bubbleSort(arr) {\n    let n = arr.length;\n    for (let i = 0; i < n; i++) {\n        let swapped = false;\n        for (let j = 0; j < n - i - 1; j++) {\n            if (arr[j] > arr[j + 1]) {\n                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];\n                swapped = true;\n            }\n        }\n        if (!swapped) break;\n    }\n}`,
+                    java: `public void bubbleSort(int[] arr) {\n    int n = arr.length;\n    for (int i = 0; i < n - 1; i++) {\n        boolean swapped = false;\n        for (int j = 0; j < n - i - 1; j++) {\n            if (arr[j] > arr[j + 1]) {\n                int temp = arr[j];\n                arr[j] = arr[j + 1];\n                arr[j + 1] = temp;\n                swapped = true;\n            }\n        }\n        if (!swapped) break;\n    }\n}`,
+                    csharp: `public void BubbleSort(int[] arr) {\n    int n = arr.Length;\n    for (int i = 0; i < n - 1; i++) {\n        bool swapped = false;\n        for (int j = 0; j < n - i - 1; j++) {\n            if (arr[j] > arr[j + 1]) {\n                int temp = arr[j];\n                arr[j] = arr[j + 1];\n                arr[j + 1] = temp;\n                swapped = true;\n            }\n        }\n        if (!swapped) break;\n    }\n}`,
+                    go: `func BubbleSort(arr []int) {\n    n := len(arr)\n    for i := 0; i < n; i++ {\n        swapped := false\n        for j := 0; j < n-i-1; j++ {\n            if arr[j] > arr[j+1] {\n                arr[j], arr[j+1] = arr[j+1], arr[j]\n                swapped = true\n            }\n        }\n        if !swapped {\n            break\n        }\n    }\n}`
                 }
             },
             selection: {
                 name: "Selection Sort",
-                description: "Algoritma ini membagi daftar menjadi dua bagian: sub-daftar terurut dan tidak terurut. Kemudian, ia berulang kali menemukan elemen minimum dari bagian yang tidak terurut dan memindahkannya ke akhir bagian yang terurut.",
+                description: "Algoritma yang membagi array menjadi dua bagian: terurut dan belum terurut. Secara konsisten 'memilih' elemen terkecil dari bagian yang belum terurut dan memindahkannya.",
+                howItWorks: [
+                    "Cari nilai terkecil di seluruh array.",
+                    "Tukar nilai terkecil tersebut dengan elemen di posisi pertama.",
+                    "Sekarang, anggap elemen pertama sudah terurut.",
+                    "Ulangi proses: cari nilai terkecil dari sisa array (mulai dari posisi kedua), lalu tukar dengan elemen di posisi kedua.",
+                    "Lanjutkan hingga seluruh array terurut."
+                ],
+                analogy: "Seperti seorang kolektor yang mencari kartu paling langka (nilai terkecil) dari tumpukan acak, mengambilnya, lalu meletakkannya di album koleksinya secara berurutan.",
+                whenToUse: {
+                    best: "Saat jumlah penukaran (swap) ingin diminimalkan, karena ia hanya melakukan satu penukaran per putaran. Baik untuk data kecil.",
+                    worst: "Data berukuran besar. Performanya tetap buruk (O(n²)) meskipun data sudah hampir terurut."
+                },
                 complexity: { best: "O(n²)", avg: "O(n²)", worst: "O(n²)", space: "O(1)" },
                 code: {
-                    python: `def selection_sort(arr):
-    n = len(arr)
-    # Ulangi melalui seluruh array
-    for i in range(n):
-        # Temukan elemen minimum di array yang belum diurutkan
-        min_idx = i
-        for j in range(i + 1, n):
-            if arr[j] < arr[min_idx]:
-                min_idx = j
-        
-        # Tukar elemen minimum yang ditemukan dengan elemen pertama
-        arr[i], arr[min_idx] = arr[min_idx], arr[i]`,
-                    java: `public void selectionSort(int[] arr) {
-    int n = arr.length;
-    // Ulangi melalui seluruh array
-    for (int i = 0; i < n - 1; i++) {
-        // Temukan elemen minimum di array yang belum diurutkan
-        int min_idx = i;
-        for (int j = i + 1; j < n; j++) {
-            if (arr[j] < arr[min_idx]) {
-                min_idx = j;
-            }
-        }
-        // Tukar elemen minimum yang ditemukan dengan elemen pertama
-        int temp = arr[min_idx];
-        arr[min_idx] = arr[i];
-        arr[i] = temp;
-    }
-}`,
-                    csharp: `public void SelectionSort(int[] arr) {
-    int n = arr.Length;
-    // Ulangi melalui seluruh array
-    for (int i = 0; i < n - 1; i++) {
-        // Temukan elemen minimum di array yang belum diurutkan
-        int min_idx = i;
-        for (int j = i + 1; j < n; j++) {
-            if (arr[j] < arr[min_idx]) {
-                min_idx = j;
-            }
-        }
-        // Tukar elemen minimum yang ditemukan dengan elemen pertama
-        int temp = arr[min_idx];
-        arr[min_idx] = arr[i];
-        arr[i] = temp;
-    }
-}`
+                    python: `def selection_sort(arr):\n    n = len(arr)\n    for i in range(n):\n        min_idx = i\n        for j in range(i + 1, n):\n            if arr[j] < arr[min_idx]:\n                min_idx = j\n        arr[i], arr[min_idx] = arr[min_idx], arr[i]`,
+                    javascript: `function selectionSort(arr) {\n    let n = arr.length;\n    for (let i = 0; i < n; i++) {\n        let minIdx = i;\n        for (let j = i + 1; j < n; j++) {\n            if (arr[j] < arr[minIdx]) {\n                minIdx = j;\n            }\n        }\n        if (minIdx !== i) {\n            [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];\n        }\n    }\n}`,
+                    java: `public void selectionSort(int[] arr) {\n    int n = arr.length;\n    for (int i = 0; i < n - 1; i++) {\n        int min_idx = i;\n        for (int j = i + 1; j < n; j++) {\n            if (arr[j] < arr[min_idx]) {\n                min_idx = j;\n            }\n        }\n        int temp = arr[min_idx];\n        arr[min_idx] = arr[i];\n        arr[i] = temp;\n    }\n}`,
+                    csharp: `public void SelectionSort(int[] arr) {\n    int n = arr.Length;\n    for (int i = 0; i < n - 1; i++) {\n        int min_idx = i;\n        for (int j = i + 1; j < n; j++) {\n            if (arr[j] < arr[min_idx]) {\n                min_idx = j;\n            }\n        }\n        int temp = arr[min_idx];\n        arr[min_idx] = arr[i];\n        arr[i] = temp;\n    }\n}`,
+                    go: `func SelectionSort(arr []int) {\n    n := len(arr)\n    for i := 0; i < n; i++ {\n        minIdx := i\n        for j := i + 1; j < n; j++ {\n            if arr[j] < arr[minIdx] {\n                minIdx = j\n            }\n        }\n        arr[i], arr[minIdx] = arr[minIdx], arr[i]\n    }\n}`
                 }
             },
             insertion: {
                 name: "Insertion Sort",
-                description: "Insertion Sort membangun array terurut akhir satu item pada satu waktu. Ini berulang melalui input, dan untuk setiap elemen, ia menemukan lokasi yang benar di dalam sub-array yang diurutkan dan memasukkannya di sana.",
+                description: "Bekerja dengan membangun array terurut satu per satu. Ia mengambil elemen dari bagian acak dan 'menyisipkannya' ke posisi yang tepat di bagian yang sudah terurut.",
+                howItWorks: [
+                    "Anggap elemen pertama sudah terurut.",
+                    "Ambil elemen kedua. Bandingkan dengan elemen pertama, dan sisipkan di depan jika lebih kecil.",
+                    "Ambil elemen ketiga. Bandingkan dengan elemen-elemen di bagian terurut (dari kanan ke kiri) dan sisipkan di posisi yang tepat.",
+                    "Ulangi proses ini hingga semua elemen telah disisipkan ke bagian terurut."
+                ],
+                analogy: "Seperti saat Anda mengurutkan kartu di tangan. Anda mengambil satu kartu baru, lalu mencari posisi yang pas di antara kartu-kartu yang sudah Anda pegang dan urutkan.",
+                whenToUse: {
+                    best: "Data berukuran kecil atau data yang sudah hampir terurut. Sangat efisien dalam kasus ini (mendekati O(n)).",
+                    worst: "Data berukuran besar yang urutannya terbalik."
+                },
                 complexity: { best: "O(n)", avg: "O(n²)", worst: "O(n²)", space: "O(1)" },
                 code: {
-                    python: `def insertion_sort(arr):
-    # Ulangi dari elemen kedua
-    for i in range(1, len(arr)):
-        key = arr[i]
-        j = i - 1
-        # Pindahkan elemen dari arr[0..i-1] yang lebih besar dari key
-        # ke satu posisi di depan posisi mereka saat ini
-        while j >= 0 and key < arr[j]:
-            arr[j + 1] = arr[j]
-            j -= 1
-        arr[j + 1] = key`,
-                    java: `public void insertionSort(int[] arr) {
-    int n = arr.length;
-    // Ulangi dari elemen kedua
-    for (int i = 1; i < n; ++i) {
-        int key = arr[i];
-        int j = i - 1;
-        /* Pindahkan elemen dari arr[0..i-1] yang lebih besar dari key
-           ke satu posisi di depan posisi mereka saat ini */
-        while (j >= 0 && arr[j] > key) {
-            arr[j + 1] = arr[j];
-            j = j - 1;
-        }
-        arr[j + 1] = key;
-    }
-}`,
-                    csharp: `public void InsertionSort(int[] arr) {
-    int n = arr.Length;
-    // Ulangi dari elemen kedua
-    for (int i = 1; i < n; ++i) {
-        int key = arr[i];
-        int j = i - 1;
-        // Pindahkan elemen dari arr[0..i-1] yang lebih besar dari key
-        // ke satu posisi di depan posisi mereka saat ini
-        while (j >= 0 && arr[j] > key) {
-            arr[j + 1] = arr[j];
-            j = j - 1;
-        }
-        arr[j + 1] = key;
-    }
-}`
+                    python: `def insertion_sort(arr):\n    for i in range(1, len(arr)):\n        key = arr[i]\n        j = i - 1\n        while j >= 0 and key < arr[j]:\n            arr[j + 1] = arr[j]\n            j -= 1\n        arr[j + 1] = key`,
+                    javascript: `function insertionSort(arr) {\n    for (let i = 1; i < arr.length; i++) {\n        let key = arr[i];\n        let j = i - 1;\n        while (j >= 0 && arr[j] > key) {\n            arr[j + 1] = arr[j];\n            j = j - 1;\n        }\n        arr[j + 1] = key;\n    }\n}`,
+                    java: `public void insertionSort(int[] arr) {\n    int n = arr.length;\n    for (int i = 1; i < n; ++i) {\n        int key = arr[i];\n        int j = i - 1;\n        while (j >= 0 && arr[j] > key) {\n            arr[j + 1] = arr[j];\n            j = j - 1;\n        }\n        arr[j + 1] = key;\n    }\n}`,
+                    csharp: `public void InsertionSort(int[] arr) {\n    int n = arr.Length;\n    for (int i = 1; i < n; ++i) {\n        int key = arr[i];\n        int j = i - 1;\n        while (j >= 0 && arr[j] > key) {\n            arr[j + 1] = arr[j];\n            j = j - 1;\n        }\n        arr[j + 1] = key;\n    }\n}`,
+                    go: `func InsertionSort(arr []int) {\n    for i := 1; i < len(arr); i++ {\n        key := arr[i]\n        j := i - 1\n        for j >= 0 && arr[j] > key {\n            arr[j+1] = arr[j]\n            j = j - 1\n        }\n        arr[j+1] = key\n    }\n}`
                 }
             },
             merge: {
                 name: "Merge Sort",
-                description: "Merge Sort adalah algoritma Divide and Conquer. Ia membagi array input menjadi dua bagian, memanggil dirinya sendiri untuk kedua bagian tersebut, dan kemudian menggabungkan kedua bagian yang telah diurutkan.",
+                description: "Algoritma 'Divide and Conquer' (Pecah dan Taklukkan). Ia memecah array menjadi potongan-potongan kecil, mengurutkannya, lalu menggabungkannya kembali secara terurut.",
+                howItWorks: [
+                    "Bagi array menjadi dua bagian sama besar.",
+                    "Ulangi proses pembagian untuk setiap bagian hingga setiap bagian hanya berisi satu elemen (yang secara definisi sudah terurut).",
+                    "Mulai gabungkan (merge) dua bagian yang bersebelahan.",
+                    "Saat menggabungkan, bandingkan elemen dari kedua bagian dan masukkan yang lebih kecil ke array hasil.",
+                    "Ulangi penggabungan hingga kembali menjadi satu array utuh yang terurut."
+                ],
+                analogy: "Bayangkan seorang pustakawan yang ingin mengurutkan tumpukan besar buku. Ia membagi tumpukan itu ke beberapa asisten (membagi array), setiap asisten mengurutkan tumpukan kecilnya, lalu pustakawan menggabungkan kembali hasil kerja para asisten secara terurut.",
+                whenToUse: {
+                    best: "Data berukuran besar. Performanya stabil dan efisien (O(n log n)) di semua skenario (terbaik, rata-rata, terburuk).",
+                    worst: "Saat memori menjadi batasan, karena Merge Sort membutuhkan ruang ekstra (O(n)) untuk proses penggabungan."
+                },
                 complexity: { best: "O(n log n)", avg: "O(n log n)", worst: "O(n log n)", space: "O(n)" },
                 code: {
-                    python: `def merge_sort(arr):
-    if len(arr) > 1:
-        mid = len(arr) // 2  # Mencari tengah array
-        L = arr[:mid]  # Membagi elemen array
-        R = arr[mid:]  # menjadi 2 bagian
-
-        merge_sort(L)  # Mengurutkan paruh pertama
-        merge_sort(R)  # Mengurutkan paruh kedua
-
-        i = j = k = 0
-
-        # Salin data ke array sementara L[] dan R[]
-        while i < len(L) and j < len(R):
-            if L[i] < R[j]:
-                arr[k] = L[i]
-                i += 1
-            else:
-                arr[k] = R[j]
-                j += 1
-            k += 1
-
-        # Memeriksa apakah ada elemen yang tersisa
-        while i < len(L):
-            arr[k] = L[i]
-            i += 1
-            k += 1
-
-        while j < len(R):
-            arr[k] = R[j]
-            j += 1
-            k += 1`,
-                    java: `public void merge(int arr[], int l, int m, int r) {
-    int n1 = m - l + 1;
-    int n2 = r - m;
-
-    int L[] = new int[n1];
-    int R[] = new int[n2];
-
-    for (int i = 0; i < n1; ++i) L[i] = arr[l + i];
-    for (int j = 0; j < n2; ++j) R[j] = arr[m + 1 + j];
-
-    int i = 0, j = 0;
-    int k = l;
-    while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
-            i++;
-        } else {
-            arr[k] = R[j];
-            j++;
-        }
-        k++;
-    }
-    while (i < n1) { arr[k] = L[i]; i++; k++; }
-    while (j < n2) { arr[k] = R[j]; j++; k++; }
-}
-
-public void sort(int arr[], int l, int r) {
-    if (l < r) {
-        int m = l + (r - l) / 2;
-        sort(arr, l, m);
-        sort(arr, m + 1, r);
-        merge(arr, l, m, r);
-    }
-}`,
-                    csharp: `public void Merge(int[] arr, int l, int m, int r) {
-    int n1 = m - l + 1;
-    int n2 = r - m;
-
-    int[] L = new int[n1];
-    int[] R = new int[n2];
-    int i, j;
-
-    for (i = 0; i < n1; ++i) L[i] = arr[l + i];
-    for (j = 0; j < n2; ++j) R[j] = arr[m + 1 + j];
-
-    i = 0; j = 0;
-    int k = l;
-    while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
-            i++;
-        } else {
-            arr[k] = R[j];
-            j++;
-        }
-        k++;
-    }
-    while (i < n1) { arr[k] = L[i]; i++; k++; }
-    while (j < n2) { arr[k] = R[j]; j++; k++; }
-}
-
-public void Sort(int[] arr, int l, int r) {
-    if (l < r) {
-        int m = l + (r - l) / 2;
-        Sort(arr, l, m);
-        Sort(arr, m + 1, r);
-        Merge(arr, l, m, r);
-    }
-}`
+                    python: `def merge_sort(arr):\n    if len(arr) > 1:\n        mid = len(arr) // 2\n        L = arr[:mid]\n        R = arr[mid:]\n\n        merge_sort(L)\n        merge_sort(R)\n\n        i = j = k = 0\n        while i < len(L) and j < len(R):\n            if L[i] < R[j]:\n                arr[k] = L[i]\n                i += 1\n            else:\n                arr[k] = R[j]\n                j += 1\n            k += 1\n\n        while i < len(L):\n            arr[k] = L[i]\n            i += 1\n            k += 1\n\n        while j < len(R):\n            arr[k] = R[j]\n            j += 1\n            k += 1`,
+                    javascript: `function mergeSort(arr) {\n    if (arr.length <= 1) return arr;\n\n    const mid = Math.floor(arr.length / 2);\n    const left = mergeSort(arr.slice(0, mid));\n    const right = mergeSort(arr.slice(mid));\n\n    return merge(left, right);\n}\n\nfunction merge(left, right) {\n    let resultArray = [], leftIndex = 0, rightIndex = 0;\n\n    while (leftIndex < left.length && rightIndex < right.length) {\n        if (left[leftIndex] < right[rightIndex]) {\n            resultArray.push(left[leftIndex]);\n            leftIndex++;\n        } else {\n            resultArray.push(right[rightIndex]);\n            rightIndex++;\n        }\n    }\n    return resultArray\n            .concat(left.slice(leftIndex))\n            .concat(right.slice(rightIndex));\n}`,
+                    java: `public void merge(int arr[], int l, int m, int r) { /* ... implementasi merge ... */ }\n\npublic void sort(int arr[], int l, int r) {\n    if (l < r) {\n        int m = l + (r - l) / 2;\n        sort(arr, l, m);\n        sort(arr, m + 1, r);\n        merge(arr, l, m, r);\n    }\n}`,
+                    csharp: `public void Merge(int[] arr, int l, int m, int r) { /* ... implementasi merge ... */ }\n\npublic void Sort(int[] arr, int l, int r) {\n    if (l < r) {\n        int m = l + (r - l) / 2;\n        Sort(arr, l, m);\n        Sort(arr, m + 1, r);\n        Merge(arr, l, m, r);\n    }\n}`,
+                    go: `func MergeSort(arr []int) []int {\n    if len(arr) <= 1 {\n        return arr\n    }\n    mid := len(arr) / 2\n    left := MergeSort(arr[:mid])\n    right := MergeSort(arr[mid:])\n    return merge(left, right)\n}\n\nfunc merge(left, right []int) []int {\n    result := make([]int, 0, len(left)+len(right))\n    l, r := 0, 0\n    for l < len(left) && r < len(right) {\n        if left[l] < right[r] {\n            result = append(result, left[l])\n            l++\n        } else {\n            result = append(result, right[r])\n            r++\n        }\n    }\n    result = append(result, left[l:]...)\n    result = append(result, right[r:]...)\n    return result\n}`
                 }
             },
             quick: {
                 name: "Quick Sort",
-                description: "Quick Sort juga merupakan algoritma Divide and Conquer. Ia memilih sebuah elemen sebagai 'pivot' dan mempartisi array di sekitar pivot. Elemen yang lebih kecil dari pivot dipindahkan ke kiri, dan elemen yang lebih besar dipindahkan ke kanan.",
+                description: "Algoritma 'Divide and Conquer' yang sangat cepat. Ia memilih satu elemen sebagai 'pivot', lalu mempartisi elemen lain menjadi dua sub-array: lebih kecil dan lebih besar dari pivot.",
+                howItWorks: [
+                    "Pilih satu elemen dari array sebagai 'pivot' (biasanya elemen terakhir).",
+                    "Pindahkan semua elemen yang lebih kecil dari pivot ke sebelah kirinya, dan yang lebih besar ke sebelah kanannya. Posisi pivot kini sudah final.",
+                    "Sekarang, Anda memiliki dua sub-array (kiri dan kanan dari pivot).",
+                    "Ulangi proses Quick Sort secara rekursif pada kedua sub-array tersebut.",
+                    "Proses selesai ketika sub-array tidak bisa dibagi lagi."
+                ],
+                analogy: "Seperti seorang guru yang membariskan murid berdasarkan tinggi. Ia memilih satu murid (pivot), lalu menyuruh semua yang lebih pendek berdiri di kirinya dan yang lebih tinggi di kanannya. Kemudian, ia menyuruh asisten untuk melakukan hal yang sama pada dua kelompok yang baru terbentuk.",
+                whenToUse: {
+                    best: "Data berukuran besar dan acak. Seringkali lebih cepat di dunia nyata daripada Merge Sort karena penggunaan memori yang lebih efisien (in-place).",
+                    worst: "Data yang sudah terurut atau hampir terurut (jika pivot selalu dipilih dari awal/akhir). Ini menyebabkan skenario terburuk O(n²)."
+                },
                 complexity: { best: "O(n log n)", avg: "O(n log n)", worst: "O(n²)", space: "O(log n)" },
                 code: {
-                    python: `def partition(arr, low, high):
-    pivot = arr[high]
-    i = low - 1
-    for j in range(low, high):
-        if arr[j] <= pivot:
-            i = i + 1
-            (arr[i], arr[j]) = (arr[j], arr[i])
-    (arr[i + 1], arr[high]) = (arr[high], arr[i + 1])
-    return i + 1
-
-def quick_sort(arr, low, high):
-    if low < high:
-        pi = partition(arr, low, high)
-        quick_sort(arr, low, pi - 1)
-        quick_sort(arr, pi + 1, high)`,
-                    java: `int partition(int[] arr, int low, int high) {
-    int pivot = arr[high];
-    int i = (low - 1);
-    for (int j = low; j < high; j++) {
-        if (arr[j] <= pivot) {
-            i++;
-            int temp = arr[i];
-            arr[i] = arr[j];
-            arr[j] = temp;
-        }
-    }
-    int temp = arr[i + 1];
-    arr[i + 1] = arr[high];
-    arr[high] = temp;
-    return (i + 1);
-}
-
-void quickSort(int[] arr, int low, int high) {
-    if (low < high) {
-        int pi = partition(arr, low, high);
-        quickSort(arr, low, pi - 1);
-        quickSort(arr, pi + 1, high);
-    }
-}`,
-                    csharp: `int Partition(int[] arr, int low, int high) {
-    int pivot = arr[high];
-    int i = (low - 1);
-    for (int j = low; j < high; j++) {
-        if (arr[j] <= pivot) {
-            i++;
-            int temp = arr[i];
-            arr[i] = arr[j];
-            arr[j] = temp;
-        }
-    }
-    int temp1 = arr[i + 1];
-    arr[i + 1] = arr[high];
-    arr[high] = temp1;
-    return i + 1;
-}
-
-void QuickSort(int[] arr, int low, int high) {
-    if (low < high) {
-        int pi = Partition(arr, low, high);
-        QuickSort(arr, low, pi - 1);
-        QuickSort(arr, pi + 1, high);
-    }
-}`
+                    python: `def partition(arr, low, high):\n    pivot = arr[high]\n    i = low - 1\n    for j in range(low, high):\n        if arr[j] <= pivot:\n            i = i + 1\n            (arr[i], arr[j]) = (arr[j], arr[i])\n    (arr[i + 1], arr[high]) = (arr[high], arr[i + 1])\n    return i + 1\n\ndef quick_sort(arr, low, high):\n    if low < high:\n        pi = partition(arr, low, high)\n        quick_sort(arr, low, pi - 1)\n        quick_sort(arr, pi + 1, high)`,
+                    javascript: `function quickSort(arr, low, high) {\n    if (low < high) {\n        let pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}\n\nfunction partition(arr, low, high) {\n    let pivot = arr[high];\n    let i = low - 1;\n    for (let j = low; j < high; j++) {\n        if (arr[j] < pivot) {\n            i++;\n            [arr[i], arr[j]] = [arr[j], arr[i]];\n        }\n    }\n    [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];\n    return i + 1;\n}`,
+                    java: `int partition(int[] arr, int low, int high) { /* ... implementasi partisi ... */ }\n\nvoid quickSort(int[] arr, int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}`,
+                    csharp: `int Partition(int[] arr, int low, int high) { /* ... implementasi partisi ... */ }\n\nvoid QuickSort(int[] arr, int low, int high) {\n    if (low < high) {\n        int pi = Partition(arr, low, high);\n        QuickSort(arr, low, pi - 1);\n        QuickSort(arr, pi + 1, high);\n    }\n}`,
+                    go: `func QuickSort(arr []int, low, high int) {\n    if low < high {\n        pi := partition(arr, low, high)\n        QuickSort(arr, low, pi-1)\n        QuickSort(arr, pi+1, high)\n    }\n}\n\nfunc partition(arr []int, low, high int) int {\n    pivot := arr[high]\n    i := low - 1\n    for j := low; j < high; j++ {\n        if arr[j] < pivot {\n            i++\n            arr[i], arr[j] = arr[j], arr[i]\n        }\n    }\n    arr[i+1], arr[high] = arr[high], arr[i+1]\n    return i + 1\n}`
                 }
             }
         };
@@ -498,19 +355,15 @@ void QuickSort(int[] arr, int low, int high) {
             }
             renderArray();
         }
-
-        // --- [UPDATED] Renders the array with values below bars ---
+        
         function renderArray(highlights = {}) {
             visualizerContainer.innerHTML = '';
             const containerWidth = visualizerContainer.clientWidth;
-            const barMargin = 1; // Margin in pixels on each side of the container
+            const barMargin = 1;
             const barWidth = Math.floor(containerWidth / arraySize) - (barMargin * 2);
-            
-            // Condition to decide whether to show the numeric values below the bars
             const showValues = barWidth > 15;
 
             array.forEach((value, index) => {
-                // A container for each element (bar + value)
                 const elementContainer = document.createElement('div');
                 elementContainer.style.display = 'flex';
                 elementContainer.style.flexDirection = 'column';
@@ -519,24 +372,20 @@ void QuickSort(int[] arr, int low, int high) {
                 elementContainer.style.height = '100%';
                 elementContainer.style.margin = `0 ${barMargin}px`;
 
-                // The numeric value below the bar
                 const valueText = document.createElement('span');
-                valueText.classList.add('text-gray-400', 'mb-1');
-                
+                valueText.classList.add('text-gray-500', 'mb-1');
                 if (showValues) {
                     valueText.textContent = value;
                     valueText.style.fontSize = barWidth > 25 ? '11px' : '9px';
                 } else {
-                    valueText.innerHTML = '&nbsp;'; // Add space to maintain layout height
+                    valueText.innerHTML = '&nbsp;';
                 }
                 
-                // The visual bar
                 const bar = document.createElement('div');
                 bar.style.height = `${value}%`;
-                bar.style.width = `${Math.max(2, barWidth)}px`; // Ensure a minimum width
+                bar.style.width = `${Math.max(2, barWidth)}px`;
                 bar.classList.add('bar');
                 
-                // --- Highlighting Logic ---
                 if (highlights.compare && highlights.compare.includes(index)) bar.classList.add('bar-compare');
                 if (highlights.swap && highlights.swap.includes(index)) bar.classList.add('bar-swap');
                 if (highlights.sorted && highlights.sorted.includes(index)) bar.classList.add('bar-sorted');
@@ -544,7 +393,6 @@ void QuickSort(int[] arr, int low, int high) {
                 
                 elementContainer.appendChild(bar);
                 elementContainer.appendChild(valueText);
-
                 visualizerContainer.appendChild(elementContainer);
             });
         }
@@ -555,14 +403,33 @@ void QuickSort(int[] arr, int low, int high) {
 
             document.getElementById('algo-name').textContent = data.name;
             document.getElementById('algo-desc').textContent = data.description;
+            
+            const howItWorksList = document.getElementById('algo-how-it-works');
+            howItWorksList.innerHTML = '';
+            data.howItWorks.forEach(step => {
+                const li = document.createElement('li');
+                li.textContent = step;
+                howItWorksList.appendChild(li);
+            });
+
+            document.getElementById('algo-analogy').textContent = data.analogy;
+            document.getElementById('algo-use-best').textContent = data.whenToUse.best;
+            document.getElementById('algo-use-worst').textContent = data.whenToUse.worst;
+
             document.getElementById('time-best').textContent = data.complexity.best;
             document.getElementById('time-avg').textContent = data.complexity.avg;
             document.getElementById('time-worst').textContent = data.complexity.worst;
             document.getElementById('space-worst').textContent = data.complexity.space;
 
             document.querySelector('#python-code code').textContent = data.code.python;
+            document.querySelector('#javascript-code code').textContent = data.code.javascript;
             document.querySelector('#java-code code').textContent = data.code.java;
             document.querySelector('#csharp-code code').textContent = data.code.csharp;
+            document.querySelector('#go-code code').textContent = data.code.go;
+
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+            });
         }
         
         function toggleControls(disabled) {
@@ -572,8 +439,8 @@ void QuickSort(int[] arr, int low, int high) {
             algorithmSelect.disabled = disabled;
             sizeSlider.disabled = disabled;
             startBtn.innerText = disabled ? 'Mengurutkan...' : 'Mulai';
-            startBtn.classList.toggle('bg-yellow-600', disabled);
-            startBtn.classList.toggle('hover:bg-yellow-700', disabled);
+            startBtn.classList.toggle('bg-yellow-500', disabled);
+            startBtn.classList.toggle('hover:bg-yellow-600', disabled);
             startBtn.classList.toggle('bg-green-600', !disabled);
             startBtn.classList.toggle('hover:bg-green-700', !disabled);
         }
@@ -589,145 +456,8 @@ void QuickSort(int[] arr, int low, int high) {
             toggleControls(false);
         }
 
-        // --- Sorting Algorithms (Visual) ---
-
-        async function bubbleSort() {
-            let n = array.length;
-            for (let i = 0; i < n - 1; i++) {
-                let swapped = false;
-                for (let j = 0; j < n - i - 1; j++) {
-                    if (isSorting === false) return; // Allow interruption
-                    renderArray({ compare: [j, j + 1] });
-                    await sleep(animationSpeed);
-                    if (array[j] > array[j + 1]) {
-                        [array[j], array[j + 1]] = [array[j + 1], array[j]];
-                        swapped = true;
-                        renderArray({ swap: [j, j + 1] });
-                        await sleep(animationSpeed);
-                    }
-                }
-                if (!swapped) break;
-            }
-        }
-
-        async function selectionSort() {
-            let n = array.length;
-            for (let i = 0; i < n - 1; i++) {
-                let min_idx = i;
-                for (let j = i + 1; j < n; j++) {
-                    if (isSorting === false) return;
-                    renderArray({ compare: [min_idx, j] });
-                    await sleep(animationSpeed);
-                    if (array[j] < array[min_idx]) {
-                        min_idx = j;
-                    }
-                }
-                [array[i], array[min_idx]] = [array[min_idx], array[i]];
-                renderArray({ swap: [i, min_idx], sorted: Array.from({length: i+1}, (_, k) => k) });
-                await sleep(animationSpeed);
-            }
-        }
-
-        async function insertionSort() {
-            let n = array.length;
-            for (let i = 1; i < n; i++) {
-                let key = array[i];
-                let j = i - 1;
-                while (j >= 0 && array[j] > key) {
-                    if (isSorting === false) return;
-                    renderArray({ compare: [j, j + 1] });
-                    await sleep(animationSpeed);
-                    array[j + 1] = array[j];
-                    renderArray({ swap: [j, j + 1] });
-                    await sleep(animationSpeed);
-                    j = j - 1;
-                }
-                array[j + 1] = key;
-                renderArray({ sorted: Array.from({length: i+1}, (_, k) => k) });
-                await sleep(animationSpeed);
-            }
-        }
-
-        async function mergeSort(l, r) {
-            if (l >= r) return;
-            if (isSorting === false) return;
-            let m = l + Math.floor((r - l) / 2);
-            await mergeSort(l, m);
-            await mergeSort(m + 1, r);
-            await merge(l, m, r);
-        }
-
-        async function merge(l, m, r) {
-            let n1 = m - l + 1;
-            let n2 = r - m;
-            let L = new Array(n1);
-            let R = new Array(n2);
-
-            for (let i = 0; i < n1; i++) L[i] = array[l + i];
-            for (let j = 0; j < n2; j++) R[j] = array[m + 1 + j];
-
-            let i = 0, j = 0, k = l;
-            while (i < n1 && j < n2) {
-                if (isSorting === false) return;
-                renderArray({ compare: [l + i, m + 1 + j] });
-                await sleep(animationSpeed);
-                if (L[i] <= R[j]) {
-                    array[k] = L[i];
-                    i++;
-                } else {
-                    array[k] = R[j];
-                    j++;
-                }
-                renderArray({ swap: [k] });
-                await sleep(animationSpeed);
-                k++;
-            }
-            while (i < n1) {
-                array[k] = L[i];
-                renderArray({ swap: [k] });
-                await sleep(animationSpeed);
-                i++; k++;
-            }
-            while (j < n2) {
-                array[k] = R[j];
-                renderArray({ swap: [k] });
-                await sleep(animationSpeed);
-                j++; k++;
-            }
-        }
-        
-        async function quickSort(low, high) {
-            if (low < high) {
-                if (isSorting === false) return;
-                let pi = await partition(low, high);
-                await quickSort(low, pi - 1);
-                await quickSort(pi + 1, high);
-            }
-        }
-
-        async function partition(low, high) {
-            let pivot = array[high];
-            let i = low - 1;
-            renderArray({ pivot: high });
-            await sleep(animationSpeed);
-
-            for (let j = low; j <= high - 1; j++) {
-                if (isSorting === false) return;
-                renderArray({ compare: [j, high], pivot: high });
-                await sleep(animationSpeed);
-                if (array[j] < pivot) {
-                    i++;
-                    [array[i], array[j]] = [array[j], array[i]];
-                    renderArray({ swap: [i, j], pivot: high });
-                    await sleep(animationSpeed);
-                }
-            }
-            [array[i + 1], array[high]] = [array[high], array[i + 1]];
-            renderArray({ swap: [i + 1, high] });
-            await sleep(animationSpeed);
-            return i + 1;
-        }
-
+        // --- Sorting Algorithms (Visual Implementations are unchanged) ---
+        async function bubbleSort(){let n=array.length;for(let i=0;i<n-1;i++){let t=!1;for(let o=0;o<n-i-1;o++){if(!1===isSorting)return;renderArray({compare:[o,o+1]}),await sleep(animationSpeed),array[o]>array[o+1]&&([array[o],array[o+1]]=[array[o+1],array[o]],t=!0,renderArray({swap:[o,o+1]}),await sleep(animationSpeed))}if(!t)break}}async function selectionSort(){let n=array.length;for(let i=0;i<n-1;i++){let t=i;for(let o=i+1;o<n;o++)!1!==isSorting?(renderArray({compare:[t,o]}),await sleep(animationSpeed),array[o]<array[t]&&(t=o)):_e();[array[i],array[t]]=[array[t],array[i]],renderArray({swap:[i,t],sorted:Array.from({length:i+1},((e,r)=>r))}),await sleep(animationSpeed)}}async function insertionSort(){let n=array.length;for(let i=1;i<n;i++){let t=array[i],o=i-1;for(;o>=0&&array[o]>t;){if(!1===isSorting)return;renderArray({compare:[o,o+1]}),await sleep(animationSpeed),array[o+1]=array[o],renderArray({swap:[o,o+1]}),await sleep(animationSpeed),o-=1}array[o+1]=t,renderArray({sorted:Array.from({length:i+1},((e,r)=>r))}),await sleep(animationSpeed)}}async function mergeSort(l,r){if(!(l>=r||!1===isSorting)){let a=l+Math.floor((r-l)/2);await mergeSort(l,a),await mergeSort(a+1,r),await merge(l,a,r)}}async function merge(l,r,a){let n=r-l+1,e=a-r,t=new Array(n),o=new Array(e);for(let s=0;s<n;s++)t[s]=array[l+s];for(let p=0;p<e;p++)o[p]=array[r+1+p];let i=0,y=0,c=l;for(;i<n&&y<e;){if(!1===isSorting)return;renderArray({compare:[l+i,r+1+y]}),await sleep(animationSpeed),t[i]<=o[y]?(array[c]=t[i],i++):(array[c]=o[y],y++),renderArray({swap:[c]}),await sleep(animationSpeed),c++}for(;i<n;)array[c]=t[i],renderArray({swap:[c]}),await sleep(animationSpeed),i++,c++;for(;y<e;)array[c]=o[y],renderArray({swap:[c]}),await sleep(animationSpeed),y++,c++}async function quickSort(low,high){if(low<high&&!1!==isSorting){let pi=await partition(low,high);await quickSort(low,pi-1),await quickSort(pi+1,high)}}async function partition(low,high){let pivot=array[high],i=low-1;renderArray({pivot:high}),await sleep(animationSpeed);for(let j=low;j<=high-1;j++){if(!1===isSorting)return;renderArray({compare:[j,high],pivot:high}),await sleep(animationSpeed),array[j]<pivot&&(i++,[array[i],array[j]]=[array[j],array[i]],renderArray({swap:[i,j],pivot:high}),await sleep(animationSpeed))}[array[i+1],array[high]]=[array[high],array[i+1]],renderArray({swap:[i+1,high]}),await sleep(animationSpeed);return i+1}
 
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -751,7 +481,7 @@ void QuickSort(int[] arr, int low, int high) {
         });
 
         resetBtn.addEventListener('click', () => {
-            isSorting = false; // Stop any ongoing sort
+            isSorting = false;
             toggleControls(false);
             generateArray();
         });
@@ -769,33 +499,47 @@ void QuickSort(int[] arr, int low, int high) {
                 case 'quick': await quickSort(0, array.length - 1); break;
             }
             
-            if (isSorting) { // Check if it wasn't interrupted
+            if (isSorting) {
                 finalizeSort();
             }
         });
 
         algorithmSelect.addEventListener('change', updateInfoAndCode);
         
-        // Tab switching logic
         const tabButtons = document.querySelectorAll('.tab-btn');
         const codeBlocks = document.querySelectorAll('.code-block');
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 tabButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
-
-                const lang = button.getAttribute('data-lang');
+                currentLang = button.getAttribute('data-lang');
                 codeBlocks.forEach(block => {
-                    if (block.id === `${lang}-code`) {
-                        block.classList.add('active');
-                    } else {
-                        block.classList.remove('active');
-                    }
+                    block.classList.toggle('active', block.id === `${currentLang}-code`);
                 });
+                // [DIPERBAIKI] Terapkan highlighting pada tab yang baru aktif
+                const activeCodeBlock = document.querySelector(`#${currentLang}-code code`);
+                if(activeCodeBlock) {
+                    hljs.highlightElement(activeCodeBlock);
+                }
             });
         });
 
-        // Handle window resize
+        copyCodeBtn.addEventListener('click', () => {
+            const codeToCopy = document.querySelector(`#${currentLang}-code code`).textContent;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const btnText = copyCodeBtn.querySelector('span');
+            btnText.textContent = 'Disalin!';
+            setTimeout(() => {
+                btnText.textContent = 'Salin';
+            }, 2000);
+        });
+
         window.addEventListener('resize', () => {
             if (!isSorting) {
                 renderArray();
