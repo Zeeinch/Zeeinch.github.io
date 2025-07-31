@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Tech Glossary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A two-panel, master-detail layout. The left panel serves as a sticky navigation list of all terms. Clicking a term dynamically updates the right content panel with that term's detailed definition. This structure was chosen for its high usability, allowing users to quickly jump between definitions without scrolling, which is far more efficient for a glossary or reference-style content than a linear document. -->
+    <!-- Visualization & Content Choices: The report content is purely textual definitions. Goal: Inform. Presentation: A styled list for navigation (HTML/Tailwind) and structured text blocks for content (HTML/Tailwind). Interaction: JavaScript onClick events on the navigation list to control the visibility of content panels. A new "Download PDF" button uses jsPDF to generate a document from the source data. This is a classic, intuitive pattern for this type of data, superior to any chart or complex visualization. Library/Method: Vanilla JS, jsPDF. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .content-panel {
+            display: none;
+        }
+        .content-panel.active {
+            display: block;
+        }
+        .nav-link.active {
+            background-color: #e7e5e4; /* stone-200 */
+            color: #1c1917; /* stone-900 */
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <div class="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
+        
+        <header class="text-center mb-8">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <h1 class="text-3xl sm:text-4xl font-bold text-stone-900">Interactive Technology Glossary</h1>
+                <button id="downloadPdfBtn" class="bg-teal-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-teal-700 transition-colors duration-200 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Unduh PDF
+                </button>
+            </div>
+            <p class="mt-2 text-base sm:text-lg text-stone-600">A simple guide to key computer and technology terms. Click a term on the left to learn more.</p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            
+            <aside id="navigation-panel" class="w-full md:w-1/4 lg:w-1/5">
+                <nav class="sticky top-8">
+                    <h2 class="text-lg font-semibold text-stone-900 mb-3 px-3">Glossary Terms</h2>
+                    <ul id="navList" class="space-y-1">
+                    </ul>
+                </nav>
+            </aside>
+
+            <main id="content-area" class="w-full md:w-3/4 lg:w-4/5 bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-stone-200 min-h-[60vh]">
+                <div id="initial-message" class="flex items-center justify-center h-full">
+                    <p class="text-stone-500 text-lg text-center">Please select a term from the list to see its definition.</p>
+                </div>
+                <div id="definitionsContainer">
+                </div>
+            </main>
+        </div>
+
+        <footer class="text-center mt-12 text-stone-500 text-sm">
+            <p>Glossary created for educational purposes.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const { jsPDF } = window.jspdf;
+
+            const glossaryData = [
+                {
+                    id: 'midi',
+                    term: 'MIDI',
+                    question: 'What is MIDI?',
+                    source: 'According to Hosa',
+                    link: 'https://hosatech.com/press-release/history-of-midi/',
+                    explanation: 'Musical Instrument Digital Interface (MIDI) is a communication standard that allows digital musical instruments, computers, and other related devices to connect and communicate. It does not transmit an audio signal, but rather sends event messages, such as the pitch and intensity of a musical note, or control signals for parameters like volume and vibrato. This protocol enables a single person to build a complex studio setup or for different instruments to be layered together seamlessly.'
+                },
+                {
+                    id: 'mp3',
+                    term: 'MP3',
+                    question: 'What is MP3?',
+                    source: 'Taken from Testbook',
+                    link: 'https://testbook.com/full-form/mp3-full-form',
+                    explanation: 'MP3 stands for MPEG Audio Layer 3. It is a digital audio encoding format that utilizes a form of lossy data compression. This compression algorithm significantly reduces the size of audio files while aiming to maintain a sound quality that is close to the original uncompressed audio. Its efficiency in file size made it a revolutionary format for the storage, distribution, and playback of digital music, fundamentally changing the music industry.'
+                },
+                {
+                    id: 'dvd',
+                    term: 'DVD',
+                    question: 'What is DVD?',
+                    source: 'According to Wikipedia',
+                    link: 'https://en.wikipedia.org/wiki/DVD',
+                    explanation: 'DVD stands for Digital Versatile Disc or Digital Video Disc. It is an optical disc data storage format that was invented and developed in 1995. DVDs offer a significantly higher storage capacity than compact discs (CDs) of the same physical dimensions, making them ideal for storing video programs, software, and other large computer files. The format was widely adopted for consumer video distribution, replacing the VHS tape.'
+                },
+                {
+                    id: 'mpeg',
+                    term: 'MPEG',
+                    question: 'What is MPEG?',
+                    source: 'Taken from Gartner',
+                    link: 'https://www.gartner.com/en/information-technology/glossary/mpeg-moving-picture-experts-group',
+                    explanation: 'MPEG stands for the Moving Picture Experts Group, which is the name of a committee that develops standards for digital video and audio compression. The term also refers to the family of digital media standards they have created. These standards, such as MPEG-2 and MPEG-4, make it possible to compress large video and audio files into smaller sizes, which is crucial for broadcasting, streaming over the internet, and storage on devices like DVDs.'
+                },
+                {
+                    id: 'irc',
+                    term: 'IRC',
+                    question: 'What is IRC?',
+                    source: 'According to Wikipedia',
+                    link: 'https://en.wikipedia.org/wiki/Internet_Relay_Chat',
+                    explanation: 'Internet Relay Chat (IRC) is an application layer protocol that facilitates communication in the form of text. The chat process works on a client/server networking model. IRC clients are computer programs that a user can install on their system, which are connected to a network of IRC servers. These servers pass messages from one client to another, enabling real-time group conversations in topic-based channels.'
+                },
+                {
+                    id: 'moo',
+                    term: 'MOOs',
+                    question: 'What are MOOs?',
+                    source: 'According to Wikipedia',
+                    link: 'https://en.wikipedia.org/wiki/MOO',
+                    explanation: 'MOO stands for MUD, Object-Oriented. It is a text-based, online virtual reality system to which multiple users are connected at the same time. MOOs are used for a variety of purposes, including education, social gatherings, and collaborative work. Users can interact with the environment and other users by typing commands, and they can also create their own objects and rooms within the virtual world.'
+                },
+                {
+                    id: 'ipc',
+                    term: 'IPC',
+                    question: 'What is IPC?',
+                    source: 'According to Lenovo',
+                    link: 'https://www.lenovo.com/us/en/glossary/ipc/',
+                    explanation: 'IPC stands for Inter-Process Communication. It refers to the set of mechanisms provided by an operating system that allow different processes to communicate and share data with each other. This is essential in modern computing where multiple applications or different parts of a single application run as separate processes. IPC enables these processes to coordinate their activities and work together to accomplish a specific task.'
+                },
+                {
+                    id: 'mods',
+                    term: 'MODS',
+                    question: 'What is MODS?',
+                    source: 'According to Wikipedia',
+                    link: 'https://en.wikipedia.org/wiki/Modding',
+                    explanation: '"Mods" is the shortened term for modifications. In the context of technology and computers, it refers to the act of altering hardware, software, or anything else to perform a function not originally intended by the designer or to achieve a custom appearance. This is particularly prevalent in the video game community, where users create new content or alter gameplay, but it also applies to hardware alterations like custom-building PCs or modifying consoles.'
+                },
+                {
+                    id: 'email',
+                    term: 'Email',
+                    question: 'What is Email?',
+                    source: 'Taken from Vedantu',
+                    link: 'https://www.vedantu.com/full-form/email-full-form',
+                    explanation: 'Email stands for Electronic Mail. It is a service that allows users to send and receive messages electronically over a computer network, primarily the internet. An email message can contain text, files, images, or other attachments. It has become one of the most widely used and essential forms of communication for personal, academic, and professional purposes around the world.'
+                },
+                {
+                    id: 'ftp',
+                    term: 'FTP',
+                    question: 'What is FTP?',
+                    source: 'According to Box',
+                    link: 'https://www.box.com/resources/what-is-ftp',
+                    explanation: 'FTP stands for File Transfer Protocol. It is a standard network protocol used to transfer computer files from one host to another over a TCP-based network, such as the internet. FTP is built on a client-server architecture, where a user can use an FTP client to connect to an FTP server to upload or download files. While older and less secure than modern alternatives, it was a foundational protocol for the internet.'
+                },
+                {
+                    id: 'www',
+                    term: 'WWW',
+                    question: 'What is WWW?',
+                    source: 'Taken from Vedantu',
+                    link: 'https://www.vedantu.com/full-form/www-full-form',
+                    explanation: 'WWW stands for the World Wide Web, often simply called "the Web." It is an information system of interlinked hypertext documents that are accessed via the Internet. With a web browser, one can view web pages that may contain text, images, videos, and other multimedia, and navigate between them using hyperlinks. The Web has transformed how the world accesses and shares information.'
+                },
+                {
+                    id: 'telnet',
+                    term: 'Telnet',
+                    question: 'What is Telnet?',
+                    source: 'According to NinjaOne',
+                    link: 'https://www.ninjaone.com/it-hub/it-service-management/what-is-telnet/',
+                    explanation: 'Telnet stands for Teletype Network. It is a network protocol used on the Internet or local area networks to provide a bidirectional interactive text-oriented communication facility. Its primary purpose is to allow a user to establish a command-line session on a remote server, enabling remote administration of machines. Due to security concerns (as it transmits data in plaintext), it has largely been superseded by Secure Shell (SSH).'
+                },
+                {
+                    id: 'usenet',
+                    term: 'Usenet',
+                    question: 'What is Usenet?',
+                    source: 'According to Wikipedia',
+                    link: 'https://en.wikipedia.org/wiki/Usenet',
+                    explanation: "Usenet, a portmanteau of User's Network, is a worldwide distributed discussion system available on computers. It was developed in 1979, predating the World Wide Web, and was one of the earliest computer network communication systems. It consists of a set of \"newsgroups,\" organized by subject, where users can post messages (called articles) for others to read and respond to, similar to modern internet forums."
+                },
+                {
+                    id: 'former-students',
+                    term: 'Former Students',
+                    question: 'What are Former Students?',
+                    source: 'According to Law Insider',
+                    link: 'https://www.lawinsider.com/dictionary/former-student',
+                    explanation: 'The term "former students" refers to individuals who were previously enrolled at an educational institution like a school, college, or university. They are more formally known as alumni (plural) or an alumnus/alumna (singular). This status applies to anyone who has attended the institution, regardless of whether they completed their studies and graduated. Alumni networks are often valuable resources for professional and social connections.'
+                },
+                {
+                    id: 'computer-user',
+                    term: 'Computer User',
+                    question: 'What is a Computer User?',
+                    source: 'According to Lenovo',
+                    link: 'https://www.lenovo.com/us/en/glossary/what-is-a-user/',
+                    explanation: 'A computer user is any individual who interacts with and utilizes a computer or network service. In the field of technology, the term "user" is central, as software and hardware are designed to meet their needs and provide a good user experience (UX). A user typically has an account with a username and password to authenticate themselves and access system resources, applications, and data.'
+                },
+                {
+                    id: 'peripheral',
+                    term: 'Peripheral',
+                    question: 'What is a Peripheral?',
+                    source: 'According to Lenovo',
+                    link: 'https://www.lenovo.com/us/en/glossary/computer-peripheral/',
+                    explanation: 'A computer peripheral, or peripheral device, is an external device that connects to a computer to expand its capabilities but is not part of the core computer architecture. Peripherals can be classified as input devices (like a keyboard or mouse), output devices (like a monitor or printer), or storage devices (like an external hard drive). They provide a way for users to interact with the computer and for the computer to deliver output.'
+                }
+            ];
+
+            const navList = document.getElementById('navList');
+            const definitionsContainer = document.getElementById('definitionsContainer');
+            const initialMessage = document.getElementById('initial-message');
+            const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+
+            glossaryData.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="#" data-id="${item.id}" class="nav-link block w-full text-left px-3 py-2 rounded-md text-stone-700 hover:bg-stone-200 transition-colors duration-150">${item.term}</a>`;
+                navList.appendChild(li);
+
+                const contentDiv = document.createElement('div');
+                contentDiv.id = `content-${item.id}`;
+                contentDiv.className = 'content-panel';
+                contentDiv.innerHTML = `
+                    <h3 class="text-2xl font-bold text-stone-900">${item.question}</h3>
+                    <p class="text-sm text-stone-500 mt-2 mb-4">
+                        ${item.source}, <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="text-teal-600 hover:text-teal-700 hover:underline break-all">${item.link}</a>
+                    </p>
+                    <div class="prose max-w-none text-stone-700 leading-relaxed">
+                        <p>${item.explanation}</p>
+                    </div>
+                `;
+                definitionsContainer.appendChild(contentDiv);
+            });
+
+            navList.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetLink = e.target.closest('.nav-link');
+
+                if (targetLink) {
+                    const termId = targetLink.getAttribute('data-id');
+                    
+                    initialMessage.style.display = 'none';
+
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                    targetLink.classList.add('active');
+
+                    document.querySelectorAll('.content-panel').forEach(panel => panel.classList.remove('active'));
+                    document.getElementById(`content-${termId}`).classList.add('active');
+                }
+            });
+
+            downloadPdfBtn.addEventListener('click', function() {
+                const doc = new jsPDF();
+                let y = 15;
+                const pageHeight = doc.internal.pageSize.height;
+                const margin = 15;
+                const maxWidth = doc.internal.pageSize.width - margin * 2;
+
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Technology and Computer Glossary', margin, y);
+                y += 10;
+
+                glossaryData.forEach(item => {
+                    if (y > pageHeight - 40) { // Check for page break
+                        doc.addPage();
+                        y = margin;
+                    }
+                    
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(item.question, margin, y);
+                    y += 7;
+
+                    doc.setFontSize(9);
+                    doc.setFont('helvetica', 'normal');
+                    doc.setTextColor(100);
+                    doc.text(`${item.source}, ${item.link}`, margin, y);
+                    y += 7;
+                    
+                    doc.setFontSize(11);
+                    doc.setTextColor(0);
+                    const explanationLines = doc.splitTextToSize(item.explanation, maxWidth);
+                    doc.text(explanationLines, margin, y);
+                    y += (explanationLines.length * 5) + 10; // Add padding after each entry
+                });
+
+                doc.save('tech_glossary.pdf');
+            });
+        });
+    </script>
+</body>
+</html>
