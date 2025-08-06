@@ -226,6 +226,7 @@
         let currentPlayerName = localStorage.getItem('playerName') || '';
         let unsubscribeGameListener = null;
         let selectedNumber = null;
+        let lastSeenRound = 0; // Variabel untuk melacak ronde
 
         // --- ELEMEN DOM ---
         const screens = {
@@ -407,6 +408,12 @@
         function updateUI(gameData) {
             if (!gameData || !currentUser) return;
 
+            // PERBAIKAN BUG: Reset state lokal HANYA jika ronde berganti.
+            if (gameData.currentRound > lastSeenRound) {
+                selectedNumber = null;
+                lastSeenRound = gameData.currentRound;
+            }
+
             if (gameData.status === 'in-progress' && currentUser.uid === gameData.hostId) {
                 const activePlayers = Object.values(gameData.players).filter(player => player.status === 'active');
                 if (activePlayers.length > 0) {
@@ -511,11 +518,20 @@
 
             if (myData && myData.status === 'active' && !myData.isReady) {
                 inputArea.classList.remove('hidden');
-                selectedNumber = null;
-                selectedNumberDisplay.textContent = '-';
-                submitNumberBtn.disabled = true;
-                const currentSelected = numberButtonsContainer.querySelector('.selected');
-                if (currentSelected) currentSelected.classList.remove('selected');
+                // PERBAIKAN BUG: Jangan reset state di sini, cukup perbarui UI
+                if (selectedNumber !== null) {
+                    selectedNumberDisplay.textContent = selectedNumber;
+                    submitNumberBtn.disabled = false;
+                    const currentSelectedBtn = numberButtonsContainer.querySelector('.selected');
+                    if (currentSelectedBtn) currentSelectedBtn.classList.remove('selected');
+                    const newSelectedBtn = numberButtonsContainer.querySelector(`[data-number="${selectedNumber}"]`);
+                    if (newSelectedBtn) newSelectedBtn.classList.add('selected');
+                } else {
+                    selectedNumberDisplay.textContent = '-';
+                    submitNumberBtn.disabled = true;
+                    const currentSelectedBtn = numberButtonsContainer.querySelector('.selected');
+                    if (currentSelectedBtn) currentSelectedBtn.classList.remove('selected');
+                }
             } else {
                 inputArea.classList.add('hidden');
             }
