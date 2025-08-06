@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King of Diamonds - Equilibrium</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Font Inter dari Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Ikon dari Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Menggunakan font Inter sebagai default */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* Latar belakang gelap */
+            color: #F9FAFB; /* Teks terang */
+        }
+        /* Style untuk input number agar tidak ada panah spinner */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        /* Animasi untuk fade-in */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        /* Style untuk kartu pemain */
+        .player-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .player-card.eliminated {
+            filter: grayscale(1) opacity(0.5);
+            transform: scale(0.9);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div id="app" class="w-full max-w-4xl mx-auto p-4">
+
+        <!-- Layar Utama / Lobi -->
+        <div id="home-screen" class="text-center space-y-6 fade-in">
+            <div class="flex justify-center items-center gap-3">
+                <i class="ph-bold ph-diamonds-four text-5xl text-red-500"></i>
+                <h1 class="text-4xl md:text-5xl font-bold tracking-tight">King of Diamonds</h1>
+            </div>
+            <p class="text-lg text-gray-400 max-w-2xl mx-auto">Selamat datang di game Equilibrium. Pilih angka antara 0 dan 100. Pemenang adalah yang angkanya paling mendekati 80% dari rata-rata semua angka yang dipilih. Yang paling jauh akan tereliminasi. Bertahanlah sampai akhir.</p>
+            
+            <div id="action-buttons-container" class="pt-4 space-y-4">
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="create-game-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>
+                        Buat Game Baru
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="join-game-input" placeholder="Masukkan Kode Game" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-center w-full sm:w-auto disabled:cursor-not-allowed" disabled>
+                        <button id="join-game-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>
+                            Gabung
+                        </button>
+                    </div>
+                </div>
+                <p id="loading-message" class="text-yellow-400 text-sm">Menghubungkan ke server...</p>
+            </div>
+
+             <div id="user-info" class="text-xs text-gray-500 pt-4"></div>
+        </div>
+
+        <!-- Layar Tunggu / Lobi Game -->
+        <div id="lobby-screen" class="hidden text-center space-y-6 fade-in">
+            <h2 class="text-3xl font-bold">Lobi Game</h2>
+            <p class="text-gray-400">Bagikan kode ini ke temanmu untuk bergabung.</p>
+            <div class="flex items-center justify-center gap-2 bg-gray-800 p-3 rounded-lg max-w-sm mx-auto">
+                <span id="game-code-display" class="text-2xl font-mono tracking-widest text-green-400"></span>
+                <button id="copy-code-btn" class="p-2 rounded-md hover:bg-gray-700">
+                    <i class="ph ph-copy text-xl"></i>
+                </button>
+            </div>
+            <div id="message-box" class="text-sm text-green-400 h-5"></div>
+            <h3 class="text-xl font-semibold pt-4">Pemain (<span id="player-count">1</span>/5)</h3>
+            <div id="player-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-2xl mx-auto">
+                <!-- Daftar pemain akan muncul di sini -->
+            </div>
+            <p id="waiting-for-host" class="text-gray-500 italic hidden">Menunggu host memulai permainan...</p>
+            <button id="start-game-btn" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 mt-6">
+                Mulai Permainan
+            </button>
+        </div>
+
+        <!-- Layar Permainan Utama -->
+        <div id="game-screen" class="hidden space-y-6 fade-in">
+            <div class="flex justify-between items-center">
+                <h2 class="text-3xl font-bold">Ronde <span id="round-number">1</span></h2>
+                <div class="text-right">
+                    <p class="font-semibold text-red-500">King of Diamonds</p>
+                    <p class="text-sm text-gray-400">Equilibrium</p>
+                </div>
+            </div>
+            
+            <!-- Daftar Pemain di Game -->
+            <div id="game-player-cards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <!-- Kartu pemain selama game -->
+            </div>
+
+            <!-- Input Area -->
+            <div id="input-area" class="mt-8 p-6 bg-gray-800 rounded-lg shadow-xl text-center">
+                <h3 id="input-title" class="text-2xl font-semibold mb-4">Pilih angkamu (0-100)</h3>
+                <p id="input-subtitle" class="text-gray-400 mb-6">Pikirkan strategi terbaikmu.</p>
+                <div class="flex justify-center items-center gap-4">
+                    <input type="number" id="number-input" min="0" max="100" class="w-32 text-center text-3xl font-bold bg-gray-700 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <button id="submit-number-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                        Kunci Jawaban
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Layar Hasil Ronde -->
+        <div id="round-result-screen" class="hidden text-center space-y-4 fade-in">
+            <h2 class="text-3xl font-bold">Hasil Ronde <span id="result-round-number">1</span></h2>
+            <div class="p-6 bg-gray-800 rounded-lg shadow-xl space-y-4">
+                <div class="flex justify-around items-center text-center">
+                    <div>
+                        <p class="text-gray-400 text-sm">Rata-rata</p>
+                        <p id="average-result" class="text-3xl font-bold text-blue-400">0</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-400 text-sm">Angka Kemenangan (Rata-rata x 0.8)</p>
+                        <p id="winning-number-result" class="text-4xl font-bold text-green-400">0</p>
+                    </div>
+                </div>
+            </div>
+            <h3 class="text-xl font-semibold pt-4">Pilihan Pemain</h3>
+            <div id="result-player-list" class="space-y-3 max-w-md mx-auto">
+                <!-- Hasil pilihan pemain -->
+            </div>
+            <div class="pt-4 space-y-2">
+                <p id="round-winner-text" class="text-lg text-yellow-400"></p>
+                <p id="round-loser-text" class="text-lg text-red-400"></p>
+            </div>
+            <button id="next-round-btn" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 mt-6">
+                Lanjut ke Ronde Berikutnya
+            </button>
+        </div>
+
+        <!-- Layar Pemenang Game -->
+        <div id="game-over-screen" class="hidden text-center space-y-6 fade-in">
+            <i class="ph-bold ph-crown text-8xl text-yellow-400"></i>
+            <h2 class="text-5xl font-bold">Permainan Selesai!</h2>
+            <p class="text-2xl">Pemenangnya adalah...</p>
+            <p id="final-winner-name" class="text-4xl font-bold text-green-400 bg-gray-800 p-4 rounded-lg inline-block"></p>
+            <button id="play-again-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 mt-6">
+                Main Lagi
+            </button>
+        </div>
+        
+        <!-- Modal untuk Nama Pemain -->
+        <div id="name-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center space-y-4 w-full max-w-sm">
+                <h2 class="text-2xl font-bold">Masukkan Namamu</h2>
+                <input type="text" id="player-name-input" placeholder="Contoh: Chishiya" maxlength="15" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-center">
+                <button id="submit-name-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg">Simpan Nama</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import fungsi yang diperlukan dari Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- KONFIGURASI FIREBASE ANDA ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyC4TLLsgsVjRbAOIxizgS-Mp5rAXfLe5gE",
+            authDomain: "king-of-diamonds-36bae.firebaseapp.com",
+            projectId: "king-of-diamonds-36bae",
+            storageBucket: "king-of-diamonds-36bae.appspot.com",
+            messagingSenderId: "644169659991",
+            appId: "1:644169659991:web:377b41583fcd31d0b41512"
+        };
+        
+        // Inisialisasi Firebase
+        let app, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (e) {
+            console.error("Gagal menginisialisasi Firebase:", e);
+            document.body.innerHTML = `<div class="text-red-500 text-center p-8">Error: Gagal menginisialisasi Firebase. Pastikan konfigurasi sudah benar.</div>`;
+        }
+
+        // --- STATE APLIKASI ---
+        let currentUser = null;
+        let currentGameId = null;
+        let currentPlayerName = localStorage.getItem('playerName') || '';
+        let unsubscribeGameListener = null; // Untuk menghentikan listener onSnapshot
+
+        // --- ELEMEN DOM ---
+        const screens = {
+            home: document.getElementById('home-screen'),
+            lobby: document.getElementById('lobby-screen'),
+            game: document.getElementById('game-screen'),
+            roundResult: document.getElementById('round-result-screen'),
+            gameOver: document.getElementById('game-over-screen'),
+        };
+        const nameModal = document.getElementById('name-modal');
+        const playerNameInput = document.getElementById('player-name-input');
+        const submitNameBtn = document.getElementById('submit-name-btn');
+        const createGameBtn = document.getElementById('create-game-btn');
+        const joinGameInput = document.getElementById('join-game-input');
+        const joinGameBtn = document.getElementById('join-game-btn');
+        const userInfo = document.getElementById('user-info');
+        const gameCodeDisplay = document.getElementById('game-code-display');
+        const copyCodeBtn = document.getElementById('copy-code-btn');
+        const messageBox = document.getElementById('message-box');
+        const playerList = document.getElementById('player-list');
+        const playerCount = document.getElementById('player-count');
+        const startGameBtn = document.getElementById('start-game-btn');
+        const waitingForHost = document.getElementById('waiting-for-host');
+        const roundNumber = document.getElementById('round-number');
+        const gamePlayerCards = document.getElementById('game-player-cards');
+        const inputArea = document.getElementById('input-area');
+        const numberInput = document.getElementById('number-input');
+        const submitNumberBtn = document.getElementById('submit-number-btn');
+        const resultRoundNumber = document.getElementById('result-round-number');
+        const averageResult = document.getElementById('average-result');
+        const winningNumberResult = document.getElementById('winning-number-result');
+        const resultPlayerList = document.getElementById('result-player-list');
+        const roundWinnertext = document.getElementById('round-winner-text');
+        const roundLoserText = document.getElementById('round-loser-text');
+        const nextRoundBtn = document.getElementById('next-round-btn');
+        const finalWinnerName = document.getElementById('final-winner-name');
+        const playAgainBtn = document.getElementById('play-again-btn');
+        const loadingMessage = document.getElementById('loading-message');
+
+        // --- FUNGSI UTAMA ---
+
+        // Fungsi untuk menampilkan layar tertentu dan menyembunyikan yang lain
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+            if (screens[screenName]) {
+                screens[screenName].classList.remove('hidden');
+            }
+        }
+
+        // Fungsi untuk menampilkan pesan sementara (misal: "Kode disalin!")
+        function showMessage(text) {
+            messageBox.textContent = text;
+            setTimeout(() => { messageBox.textContent = ''; }, 2000);
+        }
+        
+        // Fungsi untuk menangani otentikasi pengguna
+        async function handleAuth() {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    userInfo.textContent = `ID Pengguna: ${user.uid}`;
+                    
+                    loadingMessage.classList.add('hidden');
+                    createGameBtn.disabled = false;
+                    joinGameInput.disabled = false;
+                    joinGameBtn.disabled = false;
+
+                    if (!currentPlayerName) {
+                        nameModal.classList.remove('hidden');
+                    }
+                }
+            });
+
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Gagal login:", error);
+                loadingMessage.textContent = 'Gagal terhubung. Pastikan konfigurasi Firebase benar.';
+                alert("Gagal terhubung ke server. Silakan refresh halaman.");
+            }
+        }
+        
+        // Fungsi untuk mendapatkan path dokumen game di Firestore
+        function getGameDocRef(gameId) {
+            return doc(db, "games", gameId);
+        }
+
+        // Fungsi untuk membuat game baru
+        async function createGame() {
+            if (!currentUser) {
+                alert("Belum terhubung ke server. Mohon tunggu sebentar.");
+                return;
+            }
+            const gameId = Math.random().toString(36).substring(2, 7).toUpperCase();
+            currentGameId = gameId;
+
+            const gameData = {
+                gameId: gameId,
+                hostId: currentUser.uid,
+                status: 'waiting',
+                currentRound: 1,
+                players: {
+                    [currentUser.uid]: {
+                        name: currentPlayerName,
+                        status: 'active',
+                        currentChoice: null,
+                        isReady: false
+                    }
+                },
+                roundResults: {}
+            };
+
+            try {
+                await setDoc(getGameDocRef(gameId), gameData);
+                joinGameSession(gameId);
+            } catch (error) {
+                console.error("Gagal membuat game:", error);
+                alert("Gagal membuat game. Coba lagi.");
+            }
+        }
+
+        // Fungsi untuk bergabung ke game yang sudah ada
+        async function joinGame(gameId) {
+            if (!currentUser) {
+                alert("Belum terhubung ke server. Mohon tunggu sebentar.");
+                return;
+            }
+            
+            const gameRef = getGameDocRef(gameId);
+            try {
+                const gameSnap = await getDoc(gameRef);
+                if (!gameSnap.exists()) {
+                    alert("Game tidak ditemukan!");
+                    return;
+                }
+
+                const gameData = gameSnap.data();
+                if (Object.keys(gameData.players).length >= 5 && !gameData.players[currentUser.uid]) {
+                    alert("Maaf, lobi sudah penuh.");
+                    return;
+                }
+                
+                if (gameData.status !== 'waiting') {
+                    alert("Maaf, permainan sudah dimulai.");
+                    return;
+                }
+
+                const newPlayerData = {
+                    name: currentPlayerName,
+                    status: 'active',
+                    currentChoice: null,
+                    isReady: false
+                };
+                await updateDoc(gameRef, {
+                    [`players.${currentUser.uid}`]: newPlayerData
+                });
+                
+                currentGameId = gameId;
+                joinGameSession(gameId);
+
+            } catch (error) {
+                console.error("Gagal bergabung ke game:", error);
+                alert("Gagal bergabung ke game. Periksa kembali kode game.");
+            }
+        }
+        
+        // Fungsi untuk memulai sesi game dan mendengarkan perubahan
+        function joinGameSession(gameId) {
+            if (unsubscribeGameListener) {
+                unsubscribeGameListener();
+            }
+            unsubscribeGameListener = onSnapshot(getGameDocRef(gameId), (docSnap) => {
+                if (!docSnap.exists()) {
+                    alert("Game telah ditutup oleh host.");
+                    resetToHome();
+                    return;
+                }
+                const gameData = docSnap.data();
+                updateUI(gameData);
+            });
+        }
+
+        // Fungsi utama untuk memperbarui UI berdasarkan data game dari Firebase
+        function updateUI(gameData) {
+            if (!gameData || !currentUser) {
+                return;
+            }
+            
+            switch (gameData.status) {
+                case 'waiting':
+                    showScreen('lobby');
+                    updateLobbyUI(gameData);
+                    break;
+                case 'in-progress':
+                    showScreen('game');
+                    updateGameUI(gameData);
+                    break;
+                case 'round-result':
+                    showScreen('roundResult');
+                    updateRoundResultUI(gameData);
+                    break;
+                case 'finished':
+                    showScreen('gameOver');
+                    updateGameOverUI(gameData);
+                    break;
+            }
+        }
+
+        // Memperbarui UI Lobi
+        function updateLobbyUI(gameData) {
+            gameCodeDisplay.textContent = gameData.gameId;
+            const players = Object.values(gameData.players);
+            playerCount.textContent = players.length;
+            playerList.innerHTML = '';
+            players.forEach(player => {
+                const playerDiv = document.createElement('div');
+                playerDiv.className = 'bg-gray-700 p-4 rounded-lg shadow-md';
+                playerDiv.innerHTML = `<p class="font-semibold truncate">${player.name}</p>`;
+                playerList.appendChild(playerDiv);
+            });
+
+            if (currentUser.uid === gameData.hostId && players.length > 1) {
+                startGameBtn.classList.remove('hidden');
+                waitingForHost.classList.add('hidden');
+            } else {
+                startGameBtn.classList.add('hidden');
+                 if (currentUser.uid !== gameData.hostId) {
+                    waitingForHost.classList.remove('hidden');
+                }
+            }
+        }
+        
+        // Memperbarui UI Permainan
+        function updateGameUI(gameData) {
+            roundNumber.textContent = gameData.currentRound;
+            const players = gameData.players;
+            const myData = players[currentUser.uid];
+            
+            gamePlayerCards.innerHTML = '';
+            Object.entries(players).forEach(([uid, player]) => {
+                const card = document.createElement('div');
+                card.className = `player-card bg-gray-800 p-4 rounded-lg shadow-lg text-center ${player.status === 'eliminated' ? 'eliminated' : ''}`;
+                
+                let statusIcon = '';
+                if (player.status === 'eliminated') {
+                    statusIcon = `<i class="ph-bold ph-skull text-red-500 text-2xl"></i>`;
+                } else if (player.isReady) {
+                    statusIcon = `<i class="ph-bold ph-check-circle text-green-400 text-2xl"></i>`;
+                } else {
+                    statusIcon = `<i class="ph ph-clock text-yellow-400 text-2xl"></i>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-center mb-2">${statusIcon}</div>
+                    <p class="font-bold truncate">${player.name}</p>
+                    <p class="text-xs text-gray-400">${player.status === 'eliminated' ? 'Tereliminasi' : (player.isReady ? 'Terkunci' : 'Memilih...')}</p>
+                `;
+                if (uid === currentUser.uid) {
+                    card.classList.add('ring-2', 'ring-red-500');
+                }
+                gamePlayerCards.appendChild(card);
+            });
+
+            if (myData && myData.status === 'active' && !myData.isReady) {
+                inputArea.classList.remove('hidden');
+                numberInput.value = '';
+            } else {
+                inputArea.classList.add('hidden');
+            }
+        }
+
+        // Memperbarui UI Hasil Ronde
+        function updateRoundResultUI(gameData) {
+            const round = gameData.currentRound;
+            const results = gameData.roundResults[round];
+            if (!results) return;
+
+            resultRoundNumber.textContent = round;
+            averageResult.textContent = results.average.toFixed(2);
+            winningNumberResult.textContent = results.winningNumber.toFixed(2);
+            
+            resultPlayerList.innerHTML = '';
+            Object.entries(results.choices).forEach(([uid, choice]) => {
+                const player = gameData.players[uid];
+                const diff = Math.abs(choice - results.winningNumber);
+                
+                let highlightClass = '';
+                if (uid === results.winner) highlightClass = 'bg-green-900/50 ring-2 ring-green-500';
+                if (uid === results.eliminated) highlightClass = 'bg-red-900/50 ring-2 ring-red-500';
+
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `flex justify-between items-center p-3 rounded-lg bg-gray-700 ${highlightClass}`;
+                resultDiv.innerHTML = `
+                    <span class="font-semibold">${player.name}</span>
+                    <div class="text-right">
+                        <span class="text-xl font-bold">${choice}</span>
+                        <span class="text-xs text-gray-400 ml-2">(Jarak: ${diff.toFixed(2)})</span>
+                    </div>
+                `;
+                resultPlayerList.appendChild(resultDiv);
+            });
+
+            roundWinnertext.textContent = `Pemenang Ronde: ${gameData.players[results.winner].name}`;
+            if (results.eliminated) {
+                roundLoserText.textContent = `Tereliminasi: ${gameData.players[results.eliminated].name}`;
+            } else {
+                roundLoserText.textContent = 'Tidak ada yang tereliminasi ronde ini.';
+            }
+
+            if (currentUser.uid === gameData.hostId) {
+                nextRoundBtn.classList.remove('hidden');
+            } else {
+                nextRoundBtn.classList.add('hidden');
+            }
+        }
+        
+        // Memperbarui UI Game Selesai
+        function updateGameOverUI(gameData) {
+            if (gameData.winner && gameData.players[gameData.winner]) {
+                finalWinnerName.textContent = gameData.players[gameData.winner].name;
+            } else {
+                 finalWinnerName.textContent = "Tidak ada pemenang";
+            }
+        }
+
+        // Fungsi untuk memulai permainan (hanya host)
+        async function handleStartGame() {
+            if (!currentGameId) return;
+            await updateDoc(getGameDocRef(currentGameId), { status: 'in-progress' });
+        }
+
+        // Fungsi untuk mengirimkan pilihan angka
+        async function handleSubmitNumber() {
+            const value = parseInt(numberInput.value);
+            if (isNaN(value) || value < 0 || value > 100) {
+                alert("Masukkan angka yang valid antara 0 dan 100.");
+                return;
+            }
+
+            const gameRef = getGameDocRef(currentGameId);
+            await updateDoc(gameRef, {
+                [`players.${currentUser.uid}.currentChoice`]: value,
+                [`players.${currentUser.uid}.isReady`]: true
+            });
+
+            checkRoundCompletion();
+        }
+
+        // Cek apakah semua pemain aktif sudah siap, jika ya, kalkulasi hasil
+        async function checkRoundCompletion() {
+            const gameRef = getGameDocRef(currentGameId);
+            const gameSnap = await getDoc(gameRef);
+            if (!gameSnap.exists()) return;
+
+            const gameData = gameSnap.data();
+            const activePlayers = Object.entries(gameData.players).filter(([uid, player]) => player.status === 'active');
+            const allReady = activePlayers.every(([uid, player]) => player.isReady);
+            
+            if (allReady && gameData.hostId === currentUser.uid) {
+                calculateRoundResults(gameData);
+            }
+        }
+
+        // Kalkulasi hasil ronde (hanya host)
+        async function calculateRoundResults(gameData) {
+            const activePlayers = Object.entries(gameData.players).filter(([uid, player]) => player.status === 'active');
+            
+            const choices = {};
+            let sum = 0;
+            activePlayers.forEach(([uid, player]) => {
+                choices[uid] = player.currentChoice;
+                sum += player.currentChoice;
+            });
+
+            const average = activePlayers.length > 0 ? sum / activePlayers.length : 0;
+            const winningNumber = average * 0.8;
+
+            let winnerId = null;
+            let loserId = null;
+            let minDiff = Infinity;
+            let maxDiff = -1;
+
+            activePlayers.forEach(([uid, player]) => {
+                const diff = Math.abs(player.currentChoice - winningNumber);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    winnerId = uid;
+                }
+                if (diff > maxDiff) {
+                    maxDiff = diff;
+                    loserId = uid;
+                }
+            });
+            
+            const farthestPlayers = activePlayers.filter(([uid, p]) => Math.abs(p.currentChoice - winningNumber) === maxDiff);
+            if (farthestPlayers.length > 1) {
+                loserId = null; 
+            }
+
+            const roundResultData = {
+                choices,
+                average,
+                winningNumber,
+                winner: winnerId,
+                eliminated: loserId
+            };
+            
+            const updates = {
+                status: 'round-result',
+                [`roundResults.${gameData.currentRound}`]: roundResultData
+            };
+
+            if (loserId) {
+                updates[`players.${loserId}.status`] = 'eliminated';
+            }
+            
+            await updateDoc(getGameDocRef(currentGameId), updates);
+        }
+
+        // Memulai ronde berikutnya (hanya host)
+        async function handleNextRound() {
+            const gameRef = getGameDocRef(currentGameId);
+            const gameSnap = await getDoc(gameRef);
+            if (!gameSnap.exists()) return;
+            const gameData = gameSnap.data();
+
+            const activePlayers = Object.values(gameData.players).filter(p => p.status === 'active');
+
+            if (activePlayers.length <= 1) {
+                await updateDoc(gameRef, {
+                    status: 'finished',
+                    winner: activePlayers.length > 0 ? Object.keys(gameData.players).find(uid => gameData.players[uid].status === 'active') : null
+                });
+            } else {
+                const updates = {
+                    status: 'in-progress',
+                    currentRound: gameData.currentRound + 1
+                };
+                Object.keys(gameData.players).forEach(uid => {
+                    if (gameData.players[uid].status === 'active') {
+                        updates[`players.${uid}.currentChoice`] = null;
+                        updates[`players.${uid}.isReady`] = false;
+                    }
+                });
+                await updateDoc(gameRef, updates);
+            }
+        }
+
+        // Kembali ke layar utama
+        function resetToHome() {
+            if (unsubscribeGameListener) {
+                unsubscribeGameListener();
+                unsubscribeGameListener = null;
+            }
+            currentGameId = null;
+            joinGameInput.value = '';
+            showScreen('home');
+        }
+
+
+        // --- EVENT LISTENERS ---
+        window.addEventListener('load', () => {
+            if(auth) handleAuth();
+        });
+
+        submitNameBtn.addEventListener('click', () => {
+            const name = playerNameInput.value.trim();
+            if (name) {
+                currentPlayerName = name;
+                localStorage.setItem('playerName', name);
+                nameModal.classList.add('hidden');
+            } else {
+                alert("Nama tidak boleh kosong.");
+            }
+        });
+
+        createGameBtn.addEventListener('click', () => {
+             if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; }
+             createGame();
+        });
+
+        joinGameBtn.addEventListener('click', () => {
+            if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; }
+            const gameId = joinGameInput.value.trim().toUpperCase();
+            if (gameId) {
+                joinGame(gameId);
+            } else {
+                alert("Masukkan kode game.");
+            }
+        });
+        
+        copyCodeBtn.addEventListener('click', () => {
+            if (!currentGameId) return;
+            navigator.clipboard.writeText(currentGameId).then(() => {
+                showMessage('Kode berhasil disalin!');
+            }).catch(err => {
+                console.error('Gagal menyalin kode: ', err);
+                // Fallback for non-secure contexts
+                try {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = currentGameId;
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showMessage('Kode berhasil disalin!');
+                } catch (e) {
+                     showMessage('Gagal menyalin kode.');
+                }
+            });
+        });
+
+        startGameBtn.addEventListener('click', handleStartGame);
+        submitNumberBtn.addEventListener('click', handleSubmitNumber);
+        nextRoundBtn.addEventListener('click', handleNextRound);
+        playAgainBtn.addEventListener('click', resetToHome);
+
+    </script>
+</body>
+</html>
