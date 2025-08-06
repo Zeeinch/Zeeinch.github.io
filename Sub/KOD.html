@@ -117,6 +117,12 @@
                     <p class="text-sm text-gray-400">Equilibrium</p>
                 </div>
             </div>
+
+            <!-- Tampilan Aturan Baru -->
+            <div id="rule-display" class="p-4 bg-gray-800 rounded-lg shadow-lg text-center">
+                <h3 class="text-lg font-semibold text-yellow-400">Aturan Ronde Ini:</h3>
+                <p id="rule-text" class="text-gray-300 mt-1"></p>
+            </div>
             
             <!-- Daftar Pemain di Game -->
             <div id="game-player-cards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -140,7 +146,7 @@
         <!-- Layar Hasil Ronde -->
         <div id="round-result-screen" class="hidden text-center space-y-4 fade-in">
             <h2 class="text-3xl font-bold">Hasil Ronde <span id="result-round-number">1</span></h2>
-            <div class="p-6 bg-gray-800 rounded-lg shadow-xl space-y-4">
+            <div id="result-details" class="p-6 bg-gray-800 rounded-lg shadow-xl space-y-4">
                 <div class="flex justify-around items-center text-center">
                     <div>
                         <p class="text-gray-400 text-sm">Rata-rata</p>
@@ -244,12 +250,14 @@
         const startGameBtn = document.getElementById('start-game-btn');
         const waitingForHost = document.getElementById('waiting-for-host');
         const roundNumber = document.getElementById('round-number');
+        const ruleText = document.getElementById('rule-text');
         const gamePlayerCards = document.getElementById('game-player-cards');
         const inputArea = document.getElementById('input-area');
         const numberButtonsContainer = document.getElementById('number-buttons-container');
         const selectedNumberDisplay = document.getElementById('selected-number-display');
         const submitNumberBtn = document.getElementById('submit-number-btn');
         const resultRoundNumber = document.getElementById('result-round-number');
+        const resultDetails = document.getElementById('result-details');
         const averageResult = document.getElementById('average-result');
         const winningNumberResult = document.getElementById('winning-number-result');
         const resultPlayerList = document.getElementById('result-player-list');
@@ -319,7 +327,7 @@
                     [currentUser.uid]: {
                         name: currentPlayerName,
                         status: 'active',
-                        lives: 10, // Nyawa awal
+                        lives: 10,
                         currentChoice: null,
                         isReady: false
                     }
@@ -364,7 +372,7 @@
                 const newPlayerData = {
                     name: currentPlayerName,
                     status: 'active',
-                    lives: 10, // Nyawa awal untuk pemain baru
+                    lives: 10,
                     currentChoice: null,
                     isReady: false
                 };
@@ -396,27 +404,20 @@
             });
         }
 
-        // Fungsi utama untuk memperbarui UI berdasarkan data game dari Firebase
         function updateUI(gameData) {
             if (!gameData || !currentUser) return;
 
-            // PERBAIKAN BUG: Pengecekan penyelesaian ronde dipindahkan ke sini
-            // dan hanya dijalankan oleh host untuk mencegah race condition.
             if (gameData.status === 'in-progress' && currentUser.uid === gameData.hostId) {
                 const activePlayers = Object.values(gameData.players).filter(player => player.status === 'active');
-                // Pastikan ada pemain aktif sebelum mengecek
                 if (activePlayers.length > 0) {
                     const allReady = activePlayers.every(player => player.isReady);
                     if (allReady) {
-                        // Langsung kalkulasi. Perubahan status game ke 'round-result'
-                        // akan mencegah fungsi ini terpanggil berulang kali.
                         calculateRoundResults(gameData);
-                        return; // Hentikan eksekusi lebih lanjut agar UI tidak "berkedip"
+                        return;
                     }
                 }
             }
             
-            // Lanjutkan update UI seperti biasa
             switch (gameData.status) {
                 case 'waiting':
                     showScreen('lobby');
@@ -465,6 +466,24 @@
             const players = gameData.players;
             const myData = players[currentUser.uid];
             
+            const activePlayerCount = Object.values(players).filter(p => p.status === 'active').length;
+            let currentRule = '';
+            switch (activePlayerCount) {
+                case 4:
+                    currentRule = 'Jika ada 2+ pemain memilih angka yang sama, mereka kalah. Jika tidak, pemain dengan angka TERTINGGI yang kalah.';
+                    break;
+                case 3:
+                    currentRule = 'Jika ada yang menebak 80% rata-rata (dibulatkan), dia menang & lainnya -2 nyawa. Jika tidak, aturan normal berlaku.';
+                    break;
+                case 2:
+                    currentRule = 'Jika satu pemain memilih 0 & lainnya 100, yang memilih 100 menang. Jika tidak, aturan normal berlaku.';
+                    break;
+                default:
+                    currentRule = 'Pemain dengan angka TERJAUH dari 80% rata-rata akan kehilangan nyawa.';
+                    break;
+            }
+            ruleText.textContent = currentRule;
+
             gamePlayerCards.innerHTML = '';
             Object.entries(players).forEach(([uid, player]) => {
                 const card = document.createElement('div');
@@ -511,17 +530,29 @@
             if (!results) return;
 
             resultRoundNumber.textContent = round;
-            averageResult.textContent = results.average.toFixed(2);
-            winningNumberResult.textContent = results.winningNumber.toFixed(2);
+            
+            if (results.average !== undefined) {
+                resultDetails.classList.remove('hidden');
+                averageResult.textContent = results.average.toFixed(2);
+                winningNumberResult.textContent = results.winningNumber.toFixed(2);
+            } else {
+                resultDetails.classList.add('hidden');
+            }
             
             resultPlayerList.innerHTML = '';
             Object.entries(results.choices).forEach(([uid, choice]) => {
                 const player = gameData.players[uid];
-                const diff = Math.abs(choice - results.winningNumber);
-                
+                let diffText = '';
+                if (results.winningNumber !== undefined) {
+                    const diff = Math.abs(choice - results.winningNumber);
+                    diffText = `(Jarak: ${diff.toFixed(2)})`;
+                }
+
                 let highlightClass = '';
                 if (uid === results.winner) highlightClass = 'bg-green-900/50 ring-2 ring-green-500';
-                if (uid === results.loser) highlightClass = 'bg-red-900/50 ring-2 ring-red-500';
+                if (results.loserIds && results.loserIds.includes(uid)) {
+                    highlightClass = 'bg-red-900/50 ring-2 ring-red-500';
+                }
 
                 const resultDiv = document.createElement('div');
                 resultDiv.className = `flex justify-between items-center p-3 rounded-lg bg-gray-700 ${highlightClass}`;
@@ -529,23 +560,35 @@
                     <span class="font-semibold">${player.name}</span>
                     <div class="text-right">
                         <span class="text-xl font-bold">${choice}</span>
-                        <span class="text-xs text-gray-400 ml-2">(Jarak: ${diff.toFixed(2)})</span>
+                        <span class="text-xs text-gray-400 ml-2">${diffText}</span>
                     </div>
                 `;
                 resultPlayerList.appendChild(resultDiv);
             });
 
-            roundWinnertext.textContent = `Pemenang Ronde: ${gameData.players[results.winner].name}`;
-            if (results.loser) {
-                const loserPlayer = gameData.players[results.loser];
-                if (loserPlayer.status === 'eliminated') {
-                    roundLoserText.textContent = `${loserPlayer.name} kehilangan nyawa terakhir dan tereliminasi!`;
+            if (results.winner) {
+                roundWinnertext.textContent = `Pemenang Ronde: ${gameData.players[results.winner].name}`;
+            } else {
+                roundWinnertext.textContent = `Tidak ada pemenang ronde ini.`;
+            }
+
+            if (results.loserIds && results.loserIds.length > 0) {
+                const livesLost = results.livesLost || 1;
+                if (results.loserIds.length > 1) {
+                    const loserNames = results.loserIds.map(id => gameData.players[id].name).join(' & ');
+                    roundLoserText.textContent = `${loserNames} masing-masing kehilangan ${livesLost} nyawa.`;
                 } else {
-                    roundLoserText.textContent = `${loserPlayer.name} kehilangan 1 nyawa.`;
+                    const loserPlayer = gameData.players[results.loserIds[0]];
+                    if (loserPlayer.status === 'eliminated') {
+                        roundLoserText.textContent = `${loserPlayer.name} kehilangan nyawa terakhir dan tereliminasi!`;
+                    } else {
+                        roundLoserText.textContent = `${loserPlayer.name} kehilangan ${livesLost} nyawa.`;
+                    }
                 }
             } else {
-                roundLoserText.textContent = 'Tidak ada yang kehilangan nyawa ronde ini (seri).';
+                roundLoserText.textContent = 'Tidak ada yang kehilangan nyawa ronde ini.';
             }
+
 
             if (currentUser.uid === gameData.hostId) {
                 nextRoundBtn.classList.remove('hidden');
@@ -574,73 +617,127 @@
             }
 
             const gameRef = getGameDocRef(currentGameId);
-            // PERBAIKAN BUG: Fungsi ini sekarang hanya mengirim update,
-            // tidak lagi memanggil fungsi pengecekan.
             await updateDoc(gameRef, {
                 [`players.${currentUser.uid}.currentChoice`]: selectedNumber,
                 [`players.${currentUser.uid}.isReady`]: true
             });
         }
         
-        // PERBAIKAN BUG: Fungsi ini tidak lagi digunakan karena logikanya
-        // sudah dipindahkan ke dalam updateUI() yang dipicu oleh onSnapshot.
-        // async function checkRoundCompletion() { ... }
-
         async function calculateRoundResults(gameData) {
             const activePlayers = Object.entries(gameData.players).filter(([uid, player]) => player.status === 'active');
-            
+            const activePlayerCount = activePlayers.length;
+
+            const updates = {};
             const choices = {};
-            let sum = 0;
             activePlayers.forEach(([uid, player]) => {
                 choices[uid] = player.currentChoice;
-                sum += player.currentChoice;
             });
-
-            const average = activePlayers.length > 0 ? sum / activePlayers.length : 0;
-            const winningNumber = average * 0.8;
 
             let winnerId = null;
-            let loserId = null;
-            let minDiff = Infinity;
-            let maxDiff = -1;
+            let loserIds = [];
+            let livesToLose = 1;
+            let roundResultData = { choices };
 
-            activePlayers.forEach(([uid, player]) => {
-                const diff = Math.abs(player.currentChoice - winningNumber);
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    winnerId = uid;
+            const normalRule = () => {
+                let sum = 0;
+                activePlayers.forEach(([uid, player]) => { sum += player.currentChoice; });
+                const average = activePlayers.length > 0 ? sum / activePlayers.length : 0;
+                const winningNumber = average * 0.8;
+                roundResultData.average = average;
+                roundResultData.winningNumber = winningNumber;
+
+                let minDiff = Infinity;
+                let maxDiff = -1;
+                
+                activePlayers.forEach(([uid, player]) => {
+                    const diff = Math.abs(player.currentChoice - winningNumber);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        winnerId = uid;
+                    }
+                    if (diff > maxDiff) {
+                        maxDiff = diff;
+                    }
+                });
+                
+                const farthestPlayers = activePlayers.filter(([uid, p]) => Math.abs(p.currentChoice - winningNumber) === maxDiff);
+                if (farthestPlayers.length === 1) {
+                    loserIds.push(farthestPlayers[0][0]);
                 }
-                if (diff > maxDiff) {
-                    maxDiff = diff;
-                    loserId = uid;
+            };
+
+            switch (activePlayerCount) {
+                case 4: {
+                    const counts = {};
+                    activePlayers.forEach(([uid, player]) => {
+                        counts[player.currentChoice] = (counts[player.currentChoice] || 0) + 1;
+                    });
+                    const duplicates = Object.entries(counts).filter(([num, count]) => count > 1).map(([num, count]) => parseInt(num));
+
+                    if (duplicates.length > 0) {
+                        loserIds = activePlayers.filter(([uid, p]) => duplicates.includes(p.currentChoice)).map(([uid, p]) => uid);
+                        const winners = activePlayers.filter(([uid, p]) => !loserIds.includes(uid));
+                        if (winners.length > 0) winnerId = winners[0][0];
+                    } else {
+                        let maxChoice = -1;
+                        activePlayers.forEach(([uid, player]) => {
+                            if (player.currentChoice > maxChoice) maxChoice = player.currentChoice;
+                        });
+                        loserIds = activePlayers.filter(([uid, p]) => p.currentChoice === maxChoice).map(([uid, p]) => uid);
+                        if (loserIds.length === activePlayerCount) loserIds = [];
+                        else winnerId = activePlayers.find(([uid, p]) => !loserIds.includes(uid))?.[0];
+                    }
+                    break;
                 }
-            });
-            
-            const farthestPlayers = activePlayers.filter(([uid, p]) => Math.abs(p.currentChoice - winningNumber) === maxDiff);
-            if (farthestPlayers.length > 1) {
-                loserId = null; 
+                case 3: {
+                    let sum = 0;
+                    activePlayers.forEach(([uid, player]) => { sum += player.currentChoice; });
+                    const average = activePlayers.length > 0 ? sum / activePlayers.length : 0;
+                    const winningNumber = average * 0.8;
+                    const roundedWinningNumber = Math.round(winningNumber);
+                    roundResultData.average = average;
+                    roundResultData.winningNumber = winningNumber;
+
+                    const perfectGuessers = activePlayers.filter(([uid, p]) => p.currentChoice === roundedWinningNumber);
+
+                    if (perfectGuessers.length === 1) {
+                        winnerId = perfectGuessers[0][0];
+                        loserIds = activePlayers.filter(([uid, p]) => uid !== winnerId).map(([uid, p]) => uid);
+                        livesToLose = 2;
+                    } else {
+                        normalRule();
+                    }
+                    break;
+                }
+                case 2: {
+                    const choicesArray = activePlayers.map(([uid, p]) => p.currentChoice);
+                    if ((choicesArray.includes(0) && choicesArray.includes(100))) {
+                        winnerId = activePlayers.find(([uid, p]) => p.currentChoice === 100)[0];
+                        loserIds.push(activePlayers.find(([uid, p]) => p.currentChoice === 0)[0]);
+                    } else {
+                        normalRule();
+                    }
+                    break;
+                }
+                default: {
+                    normalRule();
+                    break;
+                }
             }
 
-            const roundResultData = {
-                choices,
-                average,
-                winningNumber,
-                winner: winnerId,
-                loser: loserId
-            };
-            
-            const updates = {
-                status: 'round-result',
-                [`roundResults.${gameData.currentRound}`]: roundResultData
-            };
+            roundResultData.winner = winnerId;
+            roundResultData.loserIds = loserIds;
+            roundResultData.livesLost = livesToLose;
+            updates.status = 'round-result';
+            updates[`roundResults.${gameData.currentRound}`] = roundResultData;
 
-            if (loserId) {
-                const newLives = gameData.players[loserId].lives - 1;
+            loserIds.forEach(loserId => {
+                const newLives = gameData.players[loserId].lives - livesToLose;
                 updates[`players.${loserId}.lives`] = newLives;
                 if (newLives <= 0) {
                     updates[`players.${loserId}.status`] = 'eliminated';
                 }
-            }
+            });
             
             await updateDoc(getGameDocRef(currentGameId), updates);
         }
