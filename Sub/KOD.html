@@ -396,9 +396,27 @@
             });
         }
 
+        // Fungsi utama untuk memperbarui UI berdasarkan data game dari Firebase
         function updateUI(gameData) {
             if (!gameData || !currentUser) return;
+
+            // PERBAIKAN BUG: Pengecekan penyelesaian ronde dipindahkan ke sini
+            // dan hanya dijalankan oleh host untuk mencegah race condition.
+            if (gameData.status === 'in-progress' && currentUser.uid === gameData.hostId) {
+                const activePlayers = Object.values(gameData.players).filter(player => player.status === 'active');
+                // Pastikan ada pemain aktif sebelum mengecek
+                if (activePlayers.length > 0) {
+                    const allReady = activePlayers.every(player => player.isReady);
+                    if (allReady) {
+                        // Langsung kalkulasi. Perubahan status game ke 'round-result'
+                        // akan mencegah fungsi ini terpanggil berulang kali.
+                        calculateRoundResults(gameData);
+                        return; // Hentikan eksekusi lebih lanjut agar UI tidak "berkedip"
+                    }
+                }
+            }
             
+            // Lanjutkan update UI seperti biasa
             switch (gameData.status) {
                 case 'waiting':
                     showScreen('lobby');
@@ -480,7 +498,6 @@
                 selectedNumber = null;
                 selectedNumberDisplay.textContent = '-';
                 submitNumberBtn.disabled = true;
-                // Reset visual tombol yang dipilih
                 const currentSelected = numberButtonsContainer.querySelector('.selected');
                 if (currentSelected) currentSelected.classList.remove('selected');
             } else {
@@ -557,27 +574,17 @@
             }
 
             const gameRef = getGameDocRef(currentGameId);
+            // PERBAIKAN BUG: Fungsi ini sekarang hanya mengirim update,
+            // tidak lagi memanggil fungsi pengecekan.
             await updateDoc(gameRef, {
                 [`players.${currentUser.uid}.currentChoice`]: selectedNumber,
                 [`players.${currentUser.uid}.isReady`]: true
             });
-
-            checkRoundCompletion();
         }
-
-        async function checkRoundCompletion() {
-            const gameRef = getGameDocRef(currentGameId);
-            const gameSnap = await getDoc(gameRef);
-            if (!gameSnap.exists()) return;
-
-            const gameData = gameSnap.data();
-            const activePlayers = Object.entries(gameData.players).filter(([uid, player]) => player.status === 'active');
-            const allReady = activePlayers.every(([uid, player]) => player.isReady);
-            
-            if (allReady && gameData.hostId === currentUser.uid) {
-                calculateRoundResults(gameData);
-            }
-        }
+        
+        // PERBAIKAN BUG: Fungsi ini tidak lagi digunakan karena logikanya
+        // sudah dipindahkan ke dalam updateUI() yang dipicu oleh onSnapshot.
+        // async function checkRoundCompletion() { ... }
 
         async function calculateRoundResults(gameData) {
             const activePlayers = Object.entries(gameData.players).filter(([uid, player]) => player.status === 'active');
@@ -619,7 +626,7 @@
                 average,
                 winningNumber,
                 winner: winnerId,
-                loser: loserId // Ganti 'eliminated' menjadi 'loser' untuk kejelasan
+                loser: loserId
             };
             
             const updates = {
@@ -734,7 +741,6 @@
                 selectedNumberDisplay.textContent = number;
                 submitNumberBtn.disabled = false;
 
-                // Update visual
                 const currentSelected = numberButtonsContainer.querySelector('.selected');
                 if (currentSelected) {
                     currentSelected.classList.remove('selected');
