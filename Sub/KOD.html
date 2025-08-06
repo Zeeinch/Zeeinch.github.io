@@ -119,9 +119,9 @@
             </div>
 
             <!-- Tampilan Aturan Baru -->
-            <div id="rule-display" class="p-4 bg-gray-800 rounded-lg shadow-lg text-center">
-                <h3 class="text-lg font-semibold text-yellow-400">Aturan Ronde Ini:</h3>
-                <p id="rule-text" class="text-gray-300 mt-1"></p>
+            <div id="rule-display" class="p-4 bg-gray-800 rounded-lg shadow-lg text-left text-sm">
+                <h3 class="text-lg font-semibold text-yellow-400 text-center mb-2">Aturan Ronde Ini:</h3>
+                <div id="rule-text"></div>
             </div>
             
             <!-- Daftar Pemain di Game -->
@@ -467,22 +467,19 @@
             const myData = players[currentUser.uid];
             
             const activePlayerCount = Object.values(players).filter(p => p.status === 'active').length;
-            let currentRule = '';
-            switch (activePlayerCount) {
-                case 4:
-                    currentRule = 'Jika ada 2+ pemain memilih angka yang sama, mereka kalah. Jika tidak, pemain dengan angka TERTINGGI yang kalah.';
-                    break;
-                case 3:
-                    currentRule = 'Jika ada yang menebak 80% rata-rata (dibulatkan), dia menang & lainnya -2 nyawa. Jika tidak, aturan normal berlaku.';
-                    break;
-                case 2:
-                    currentRule = 'Jika satu pemain memilih 0 & lainnya 100, yang memilih 100 menang. Jika tidak, aturan normal berlaku.';
-                    break;
-                default:
-                    currentRule = 'Pemain dengan angka TERJAUH dari 80% rata-rata akan kehilangan nyawa.';
-                    break;
+            
+            let ruleHtml = '';
+            if (activePlayerCount <= 4) {
+                ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 1 (≤4 Pemain):</strong> Jika ada 2+ pemain memilih angka yang sama, mereka kalah.</p>`;
             }
-            ruleText.textContent = currentRule;
+            if (activePlayerCount <= 3) {
+                ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 2 (≤3 Pemain):</strong> Jika ada 1 pemain menebak 80% rata-rata (dibulatkan), dia menang & lainnya -2 nyawa.</p>`;
+            }
+            if (activePlayerCount === 2) {
+                ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 3 (2 Pemain):</strong> Jika ada yang memilih 0 & 100, pemilik angka 100 menang.</p>`;
+            }
+            ruleHtml += `<p><strong class="text-yellow-500">Aturan Dasar:</strong> Jika tidak ada aturan di atas berlaku, pemain terjauh dari 80% rata-rata kalah.</p>`;
+            ruleText.innerHTML = ruleHtml;
 
             gamePlayerCards.innerHTML = '';
             Object.entries(players).forEach(([uid, player]) => {
@@ -637,6 +634,7 @@
             let loserIds = [];
             let livesToLose = 1;
             let roundResultData = { choices };
+            let ruleApplied = false;
 
             const normalRule = () => {
                 let sum = 0;
@@ -666,63 +664,55 @@
                 }
             };
 
-            switch (activePlayerCount) {
-                case 4: {
-                    const counts = {};
-                    activePlayers.forEach(([uid, player]) => {
-                        counts[player.currentChoice] = (counts[player.currentChoice] || 0) + 1;
-                    });
-                    const duplicates = Object.entries(counts).filter(([num, count]) => count > 1).map(([num, count]) => parseInt(num));
+            // Aturan Prioritas 1: Duplikat (<= 4 pemain)
+            if (activePlayerCount <= 4) {
+                const counts = {};
+                activePlayers.forEach(([uid, player]) => {
+                    counts[player.currentChoice] = (counts[player.currentChoice] || 0) + 1;
+                });
+                const duplicates = Object.entries(counts).filter(([num, count]) => count > 1).map(([num, count]) => parseInt(num));
 
-                    if (duplicates.length > 0) {
-                        loserIds = activePlayers.filter(([uid, p]) => duplicates.includes(p.currentChoice)).map(([uid, p]) => uid);
-                        const winners = activePlayers.filter(([uid, p]) => !loserIds.includes(uid));
-                        if (winners.length > 0) winnerId = winners[0][0];
-                    } else {
-                        let maxChoice = -1;
-                        activePlayers.forEach(([uid, player]) => {
-                            if (player.currentChoice > maxChoice) maxChoice = player.currentChoice;
-                        });
-                        loserIds = activePlayers.filter(([uid, p]) => p.currentChoice === maxChoice).map(([uid, p]) => uid);
-                        if (loserIds.length === activePlayerCount) loserIds = [];
-                        else winnerId = activePlayers.find(([uid, p]) => !loserIds.includes(uid))?.[0];
-                    }
-                    break;
+                if (duplicates.length > 0) {
+                    loserIds = activePlayers.filter(([uid, p]) => duplicates.includes(p.currentChoice)).map(([uid, p]) => uid);
+                    const winners = activePlayers.filter(([uid, p]) => !loserIds.includes(uid));
+                    if (winners.length > 0) winnerId = winners[0][0];
+                    ruleApplied = true;
                 }
-                case 3: {
-                    let sum = 0;
-                    activePlayers.forEach(([uid, player]) => { sum += player.currentChoice; });
-                    const average = activePlayers.length > 0 ? sum / activePlayers.length : 0;
-                    const winningNumber = average * 0.8;
-                    const roundedWinningNumber = Math.round(winningNumber);
-                    roundResultData.average = average;
-                    roundResultData.winningNumber = winningNumber;
+            }
 
-                    const perfectGuessers = activePlayers.filter(([uid, p]) => p.currentChoice === roundedWinningNumber);
+            // Aturan Prioritas 2: Tebakan Tepat (<= 3 pemain)
+            if (!ruleApplied && activePlayerCount <= 3) {
+                let sum = 0;
+                activePlayers.forEach(([uid, player]) => { sum += player.currentChoice; });
+                const average = activePlayers.length > 0 ? sum / activePlayers.length : 0;
+                const winningNumber = average * 0.8;
+                const roundedWinningNumber = Math.round(winningNumber);
+                roundResultData.average = average;
+                roundResultData.winningNumber = winningNumber;
 
-                    if (perfectGuessers.length === 1) {
-                        winnerId = perfectGuessers[0][0];
-                        loserIds = activePlayers.filter(([uid, p]) => uid !== winnerId).map(([uid, p]) => uid);
-                        livesToLose = 2;
-                    } else {
-                        normalRule();
-                    }
-                    break;
+                const perfectGuessers = activePlayers.filter(([uid, p]) => p.currentChoice === roundedWinningNumber);
+
+                if (perfectGuessers.length === 1) {
+                    winnerId = perfectGuessers[0][0];
+                    loserIds = activePlayers.filter(([uid, p]) => uid !== winnerId).map(([uid, p]) => uid);
+                    livesToLose = 2;
+                    ruleApplied = true;
                 }
-                case 2: {
-                    const choicesArray = activePlayers.map(([uid, p]) => p.currentChoice);
-                    if ((choicesArray.includes(0) && choicesArray.includes(100))) {
-                        winnerId = activePlayers.find(([uid, p]) => p.currentChoice === 100)[0];
-                        loserIds.push(activePlayers.find(([uid, p]) => p.currentChoice === 0)[0]);
-                    } else {
-                        normalRule();
-                    }
-                    break;
+            }
+
+            // Aturan Prioritas 3: 0 vs 100 (2 pemain)
+            if (!ruleApplied && activePlayerCount === 2) {
+                const choicesArray = activePlayers.map(([uid, p]) => p.currentChoice);
+                if ((choicesArray.includes(0) && choicesArray.includes(100))) {
+                    winnerId = activePlayers.find(([uid, p]) => p.currentChoice === 100)[0];
+                    loserIds.push(activePlayers.find(([uid, p]) => p.currentChoice === 0)[0]);
+                    ruleApplied = true;
                 }
-                default: {
-                    normalRule();
-                    break;
-                }
+            }
+
+            // Aturan Dasar (Fallback)
+            if (!ruleApplied) {
+                normalRule();
             }
 
             roundResultData.winner = winnerId;
