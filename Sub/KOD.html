@@ -12,8 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Ikon dari Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- Tone.js untuk efek suara -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
         /* Menggunakan font Inter sebagai default */
         body {
@@ -248,17 +246,6 @@
             document.body.innerHTML = `<div class="text-red-500 text-center p-8">Error: Gagal menginisialisasi Firebase. Pastikan konfigurasi sudah benar.</div>`;
         }
 
-        // --- Sound Manager ---
-        const sound = {
-            isMuted: false,
-            synth: new Tone.Synth().toDestination(),
-            polySynth: new Tone.PolySynth(Tone.Synth).toDestination(),
-            playClick: () => { if (!sound.isMuted) sound.synth.triggerAttackRelease("C4", "8n"); },
-            playLock: () => { if (!sound.isMuted) sound.synth.triggerAttackRelease("G4", "8n"); },
-            playLoseLife: () => { if (!sound.isMuted) sound.polySynth.triggerAttackRelease(["C3", "E3"], "8n"); },
-            playWin: () => { if (!sound.isMuted) sound.polySynth.triggerAttackRelease(["C5", "E5", "G5"], "4n"); }
-        };
-
         // --- STATE APLIKASI ---
         let currentUser = null;
         let currentGameId = null;
@@ -407,18 +394,7 @@
             if (activePlayerCount <= 3) ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 2:</strong> Jika 1 pemain menebak 80% rata-rata (dibulatkan), dia menang & lainnya -2 nyawa.</p>`;
             if (activePlayerCount === 2) ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 3:</strong> Jika ada yang memilih 0 & 100, pemilik angka 100 menang.</p>`;
             ruleHtml += `<p><strong class="text-yellow-500">Aturan Dasar:</strong> Jika tidak, pemain terjauh dari 80% rata-rata kalah.</p>`;
-            
-            // Efek mengetik
-            let i = 0;
-            ruleText.innerHTML = "";
-            function typeWriter() {
-                if (i < ruleHtml.length) {
-                    ruleText.innerHTML += ruleHtml.charAt(i);
-                    i++;
-                    setTimeout(typeWriter, 10);
-                }
-            }
-            typeWriter();
+            ruleText.innerHTML = ruleHtml;
 
             gamePlayerCards.innerHTML = '';
             Object.entries(players).forEach(([uid, player], index) => {
@@ -453,7 +429,6 @@
             const round = gameData.currentRound;
             const results = gameData.roundResults[round];
             if (!results) return;
-            sound.playWin();
 
             resultRoundNumber.textContent = round;
             
@@ -480,7 +455,6 @@
 
             roundWinnertext.textContent = results.winner ? `Pemenang Ronde: ${gameData.players[results.winner].name}` : `Tidak ada pemenang ronde ini.`;
             if (results.loserIds && results.loserIds.length > 0) {
-                sound.playLoseLife();
                 const livesLost = results.livesLost || 1;
                 const loserNames = results.loserIds.map(id => gameData.players[id].name).join(' & ');
                 roundLoserText.textContent = `${loserNames} kehilangan ${livesLost} nyawa.`;
@@ -494,13 +468,11 @@
         }
 
         async function handleStartGame() {
-            sound.playClick();
             if (!currentGameId) return;
             await updateDoc(getGameDocRef(currentGameId), { status: 'in-progress' });
         }
 
         async function handleSubmitNumber() {
-            sound.playLock();
             if (selectedNumber === null) return;
             await updateDoc(getGameDocRef(currentGameId), { [`players.${currentUser.uid}.currentChoice`]: selectedNumber, [`players.${currentUser.uid}.isReady`]: true });
         }
@@ -571,7 +543,6 @@
         }
 
         async function handleNextRound() {
-            sound.playClick();
             const gameRef = getGameDocRef(currentGameId);
             const gameSnap = await getDoc(gameRef);
             if (!gameSnap.exists()) return;
@@ -587,7 +558,6 @@
         }
 
         function resetToHome() {
-            sound.playClick();
             if (unsubscribeGameListener) { unsubscribeGameListener(); unsubscribeGameListener = null; }
             currentGameId = null; joinGameInput.value = ''; showScreen('home');
         }
@@ -606,7 +576,7 @@
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = (Math.floor(progress * (end - start) + start)).toFixed(2);
+                obj.innerHTML = (progress * (end - start) + start).toFixed(2);
                 if (progress < 1) window.requestAnimationFrame(step);
             };
             window.requestAnimationFrame(step);
@@ -615,26 +585,43 @@
         // --- Event Listeners ---
         window.addEventListener('load', () => { generateNumberButtons(); if(auth) handleAuth(); });
         submitNameBtn.addEventListener('click', () => {
-            sound.playClick();
             const name = playerNameInput.value.trim();
             if (name) { currentPlayerName = name; localStorage.setItem('playerName', name); nameModal.classList.add('hidden'); }
             else { alert("Nama tidak boleh kosong."); }
         });
-        createGameBtn.addEventListener('click', () => { sound.playClick(); if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; } createGame(); });
+        createGameBtn.addEventListener('click', () => { if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; } createGame(); });
         joinGameBtn.addEventListener('click', () => {
-            sound.playClick();
             if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; }
             const gameId = joinGameInput.value.trim().toUpperCase();
             if (gameId) joinGame(gameId); else alert("Masukkan kode game.");
         });
         copyCodeBtn.addEventListener('click', () => {
-            sound.playClick();
             if (!currentGameId) return;
-            navigator.clipboard.writeText(currentGameId).then(() => showMessage('Kode berhasil disalin!')).catch(err => console.error('Gagal menyalin kode: ', err));
+            navigator.clipboard.writeText(currentGameId).then(() => {
+                showMessage('Kode berhasil disalin!');
+            }).catch(err => {
+                console.error('Gagal menyalin kode (metode modern), mencoba fallback: ', err);
+                try {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = currentGameId;
+                    textArea.style.position = "fixed";
+                    textArea.style.top = "0";
+                    textArea.style.left = "0";
+                    textArea.style.opacity = "0";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showMessage('Kode berhasil disalin!');
+                } catch (e) {
+                    console.error('Gagal menyalin kode (metode fallback): ', e);
+                    showMessage('Gagal menyalin kode.');
+                }
+            });
         });
         numberButtonsContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('number-btn')) {
-                sound.playClick();
                 const number = e.target.dataset.number;
                 selectedNumber = parseInt(number);
                 selectedNumberDisplay.textContent = number;
