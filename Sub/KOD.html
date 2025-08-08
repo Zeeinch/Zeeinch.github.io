@@ -12,21 +12,57 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Ikon dari Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Tone.js untuk efek suara -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
         /* Menggunakan font Inter sebagai default */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #111827; /* Latar belakang gelap */
-            color: #F9FAFB; /* Teks terang */
+            background-color: #0c0a18; /* Latar belakang lebih gelap */
+            color: #F9FAFB;
+            overflow: hidden; /* Mencegah scroll karena canvas */
         }
-        /* Animasi untuk fade-in */
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        .interactive-btn {
+            background-image: linear-gradient(to right, #ef4444 0%, #dc2626 51%, #ef4444 100%);
+            transition: 0.5s;
+            background-size: 200% auto;
+            box-shadow: 0 0 20px #ef444444;
         }
+        .interactive-btn:hover {
+            background-position: right center;
+        }
+        .interactive-btn-gray {
+            background-image: linear-gradient(to right, #6b7280 0%, #4b5563 51%, #6b7280 100%);
+            transition: 0.5s;
+            background-size: 200% auto;
+            box-shadow: 0 0 20px #6b728044;
+        }
+        .interactive-btn-gray:hover {
+            background-position: right center;
+        }
+        /* Animasi */
+        @keyframes pop-in {
+            0% { opacity: 0; transform: scale(0.8); }
+            80% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .pop-in { animation: pop-in 0.5s ease-out forwards; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.3s ease-in-out; }
+        
         /* Style untuk kartu pemain */
         .player-card {
             transition: all 0.3s ease-in-out;
@@ -51,18 +87,21 @@
         }
         /* Style untuk tombol angka yang dipilih */
         .number-btn.selected {
-            background-color: #DC2626; /* red-600 */
+            background-color: #DC2626;
             color: white;
-            transform: scale(1.1);
+            transform: scale(1.15);
+            box-shadow: 0 0 15px #ef444488;
         }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
 
-    <div id="app" class="w-full max-w-5xl mx-auto p-4">
+    <canvas id="particle-canvas"></canvas>
+
+    <div id="app" class="w-full max-w-5xl mx-auto p-4 z-10">
 
         <!-- Layar Utama / Lobi -->
-        <div id="home-screen" class="text-center space-y-6 fade-in">
+        <div id="home-screen" class="text-center space-y-6 pop-in">
             <div class="flex justify-center items-center gap-3">
                 <i class="ph-bold ph-diamonds-four text-5xl text-red-500"></i>
                 <h1 class="text-4xl md:text-5xl font-bold tracking-tight">King of Diamonds</h1>
@@ -71,12 +110,12 @@
             
             <div id="action-buttons-container" class="pt-4 space-y-4">
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button id="create-game-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>
+                    <button id="create-game-btn" class="interactive-btn text-white font-bold py-3 px-6 rounded-lg shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed disabled:shadow-none disabled:bg-none" disabled>
                         Buat Game Baru
                     </button>
                     <div class="flex items-center gap-2">
                         <input type="text" id="join-game-input" placeholder="Masukkan Kode Game" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-center w-full sm:w-auto disabled:cursor-not-allowed" disabled>
-                        <button id="join-game-btn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 disabled:bg-gray-600 disabled:cursor-not-allowed" disabled>
+                        <button id="join-game-btn" class="interactive-btn-gray text-white font-bold py-3 px-6 rounded-lg shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed disabled:shadow-none disabled:bg-none" disabled>
                             Gabung
                         </button>
                     </div>
@@ -88,29 +127,29 @@
         </div>
 
         <!-- Layar Tunggu / Lobi Game -->
-        <div id="lobby-screen" class="hidden text-center space-y-6 fade-in">
-            <h2 class="text-3xl font-bold">Lobi Game</h2>
-            <p class="text-gray-400">Bagikan kode ini ke temanmu untuk bergabung.</p>
-            <div class="flex items-center justify-center gap-2 bg-gray-800 p-3 rounded-lg max-w-sm mx-auto">
+        <div id="lobby-screen" class="hidden text-center space-y-6">
+            <h2 class="text-3xl font-bold pop-in">Lobi Game</h2>
+            <p class="text-gray-400 pop-in" style="animation-delay: 0.1s;">Bagikan kode ini ke temanmu untuk bergabung.</p>
+            <div class="flex items-center justify-center gap-2 bg-gray-800 p-3 rounded-lg max-w-sm mx-auto pop-in" style="animation-delay: 0.2s;">
                 <span id="game-code-display" class="text-2xl font-mono tracking-widest text-green-400"></span>
                 <button id="copy-code-btn" class="p-2 rounded-md hover:bg-gray-700">
                     <i class="ph ph-copy text-xl"></i>
                 </button>
             </div>
             <div id="message-box" class="text-sm text-green-400 h-5"></div>
-            <h3 class="text-xl font-semibold pt-4">Pemain (<span id="player-count">1</span>/5)</h3>
+            <h3 class="text-xl font-semibold pt-4 pop-in" style="animation-delay: 0.3s;">Pemain (<span id="player-count">1</span>/5)</h3>
             <div id="player-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-2xl mx-auto">
                 <!-- Daftar pemain akan muncul di sini -->
             </div>
             <p id="waiting-for-host" class="text-gray-500 italic hidden">Menunggu host memulai permainan...</p>
-            <button id="start-game-btn" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 mt-6">
+            <button id="start-game-btn" class="hidden interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg mt-6 pop-in" style="animation-delay: 0.4s;">
                 Mulai Permainan
             </button>
         </div>
 
         <!-- Layar Permainan Utama -->
-        <div id="game-screen" class="hidden space-y-6 fade-in">
-            <div class="flex justify-between items-center">
+        <div id="game-screen" class="hidden space-y-6">
+            <div class="flex justify-between items-center pop-in">
                 <h2 class="text-3xl font-bold">Ronde <span id="round-number">1</span></h2>
                 <div class="text-right">
                     <p class="font-semibold text-red-500">King of Diamonds</p>
@@ -118,83 +157,73 @@
                 </div>
             </div>
 
-            <!-- Tampilan Aturan Baru -->
-            <div id="rule-display" class="p-4 bg-gray-800 rounded-lg shadow-lg text-left text-sm">
+            <div id="rule-display" class="p-4 bg-gray-800 rounded-lg shadow-lg text-left text-sm pop-in" style="animation-delay: 0.1s;">
                 <h3 class="text-lg font-semibold text-yellow-400 text-center mb-2">Aturan Ronde Ini:</h3>
                 <div id="rule-text"></div>
             </div>
             
-            <!-- Daftar Pemain di Game -->
-            <div id="game-player-cards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                <!-- Kartu pemain selama game -->
-            </div>
+            <div id="game-player-cards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
 
-            <!-- Input Area -->
-            <div id="input-area" class="mt-8 p-6 bg-gray-800 rounded-lg shadow-xl text-center">
+            <div id="input-area" class="mt-8 p-6 bg-gray-800 rounded-lg shadow-xl text-center pop-in" style="animation-delay: 0.2s;">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-semibold">Pilih angkamu: <span id="selected-number-display" class="text-yellow-400 text-2xl font-bold">-</span></h3>
-                    <button id="submit-number-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 disabled:bg-gray-500 disabled:cursor-not-allowed" disabled>
+                    <button id="submit-number-btn" class="interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg disabled:bg-gray-500 disabled:cursor-not-allowed" disabled>
                         Kunci Jawaban
                     </button>
                 </div>
-                <div id="number-buttons-container" class="h-48 overflow-y-auto grid grid-cols-10 gap-2 p-2 bg-gray-900 rounded-lg">
-                    <!-- Tombol 0-100 akan digenerate di sini oleh JS -->
-                </div>
+                <div id="number-buttons-container" class="h-48 overflow-y-auto grid grid-cols-10 gap-2 p-2 bg-gray-900 rounded-lg"></div>
             </div>
         </div>
 
         <!-- Layar Hasil Ronde -->
-        <div id="round-result-screen" class="hidden text-center space-y-4 fade-in">
-            <h2 class="text-3xl font-bold">Hasil Ronde <span id="result-round-number">1</span></h2>
-            <div id="result-details" class="p-6 bg-gray-800 rounded-lg shadow-xl space-y-4">
+        <div id="round-result-screen" class="hidden text-center space-y-4">
+            <h2 class="text-3xl font-bold pop-in">Hasil Ronde <span id="result-round-number">1</span></h2>
+            <div id="result-details" class="p-6 bg-gray-800 rounded-lg shadow-xl space-y-4 pop-in" style="animation-delay: 0.1s;">
                 <div class="flex justify-around items-center text-center">
                     <div>
                         <p class="text-gray-400 text-sm">Rata-rata</p>
                         <p id="average-result" class="text-3xl font-bold text-blue-400">0</p>
                     </div>
                     <div>
-                        <p class="text-gray-400 text-sm">Angka Kemenangan (Rata-rata x 0.8)</p>
+                        <p class="text-gray-400 text-sm">Angka Kemenangan</p>
                         <p id="winning-number-result" class="text-4xl font-bold text-green-400">0</p>
                     </div>
                 </div>
             </div>
-            <h3 class="text-xl font-semibold pt-4">Pilihan Pemain</h3>
-            <div id="result-player-list" class="space-y-3 max-w-md mx-auto">
-                <!-- Hasil pilihan pemain -->
-            </div>
-            <div class="pt-4 space-y-2">
+            <h3 class="text-xl font-semibold pt-4 pop-in" style="animation-delay: 0.2s;">Pilihan Pemain</h3>
+            <div id="result-player-list" class="space-y-3 max-w-md mx-auto"></div>
+            <div class="pt-4 space-y-2 pop-in" style="animation-delay: 0.3s;">
                 <p id="round-winner-text" class="text-lg text-yellow-400"></p>
                 <p id="round-loser-text" class="text-lg text-red-400"></p>
             </div>
-            <button id="next-round-btn" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 mt-6">
+            <button id="next-round-btn" class="hidden interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg mt-6 pop-in" style="animation-delay: 0.4s;">
                 Lanjut ke Ronde Berikutnya
             </button>
         </div>
 
         <!-- Layar Pemenang Game -->
-        <div id="game-over-screen" class="hidden text-center space-y-6 fade-in">
-            <i class="ph-bold ph-crown text-8xl text-yellow-400"></i>
-            <h2 class="text-5xl font-bold">Permainan Selesai!</h2>
-            <p class="text-2xl">Pemenangnya adalah...</p>
-            <p id="final-winner-name" class="text-4xl font-bold text-green-400 bg-gray-800 p-4 rounded-lg inline-block"></p>
-            <button id="play-again-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:scale-105 mt-6">
+        <div id="game-over-screen" class="hidden text-center space-y-6">
+            <i class="ph-bold ph-crown text-8xl text-yellow-400 pop-in"></i>
+            <h2 class="text-5xl font-bold pop-in" style="animation-delay: 0.1s;">Permainan Selesai!</h2>
+            <p class="text-2xl pop-in" style="animation-delay: 0.2s;">Pemenangnya adalah...</p>
+            <p id="final-winner-name" class="text-4xl font-bold text-green-400 bg-gray-800 p-4 rounded-lg inline-block pop-in" style="animation-delay: 0.3s;"></p>
+            <button id="play-again-btn" class="interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg mt-6 pop-in" style="animation-delay: 0.4s;">
                 Main Lagi
             </button>
         </div>
         
         <!-- Modal untuk Nama Pemain -->
         <div id="name-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center space-y-4 w-full max-w-sm">
+            <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center space-y-4 w-full max-w-sm pop-in">
                 <h2 class="text-2xl font-bold">Masukkan Namamu</h2>
                 <input type="text" id="player-name-input" placeholder="Contoh: Chishiya" maxlength="15" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-center">
-                <button id="submit-name-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg">Simpan Nama</button>
+                <button id="submit-name-btn" class="w-full interactive-btn text-white font-bold py-3 px-6 rounded-lg">Simpan Nama</button>
             </div>
         </div>
     </div>
 
     <!-- Firebase SDK -->
     <script type="module">
-        // Import fungsi yang diperlukan dari Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -209,7 +238,6 @@
             appId: "1:644169659991:web:377b41583fcd31d0b41512"
         };
         
-        // Inisialisasi Firebase
         let app, db, auth;
         try {
             app = initializeApp(firebaseConfig);
@@ -220,22 +248,27 @@
             document.body.innerHTML = `<div class="text-red-500 text-center p-8">Error: Gagal menginisialisasi Firebase. Pastikan konfigurasi sudah benar.</div>`;
         }
 
+        // --- Sound Manager ---
+        const sound = {
+            isMuted: false,
+            synth: new Tone.Synth().toDestination(),
+            polySynth: new Tone.PolySynth(Tone.Synth).toDestination(),
+            playClick: () => { if (!sound.isMuted) sound.synth.triggerAttackRelease("C4", "8n"); },
+            playLock: () => { if (!sound.isMuted) sound.synth.triggerAttackRelease("G4", "8n"); },
+            playLoseLife: () => { if (!sound.isMuted) sound.polySynth.triggerAttackRelease(["C3", "E3"], "8n"); },
+            playWin: () => { if (!sound.isMuted) sound.polySynth.triggerAttackRelease(["C5", "E5", "G5"], "4n"); }
+        };
+
         // --- STATE APLIKASI ---
         let currentUser = null;
         let currentGameId = null;
         let currentPlayerName = localStorage.getItem('playerName') || '';
         let unsubscribeGameListener = null;
         let selectedNumber = null;
-        let lastSeenRound = 0; // Variabel untuk melacak ronde
+        let lastSeenRound = 0;
 
         // --- ELEMEN DOM ---
-        const screens = {
-            home: document.getElementById('home-screen'),
-            lobby: document.getElementById('lobby-screen'),
-            game: document.getElementById('game-screen'),
-            roundResult: document.getElementById('round-result-screen'),
-            gameOver: document.getElementById('game-over-screen'),
-        };
+        const screens = { home: document.getElementById('home-screen'), lobby: document.getElementById('lobby-screen'), game: document.getElementById('game-screen'), roundResult: document.getElementById('round-result-screen'), gameOver: document.getElementById('game-over-screen') };
         const nameModal = document.getElementById('name-modal');
         const playerNameInput = document.getElementById('player-name-input');
         const submitNameBtn = document.getElementById('submit-name-btn');
@@ -292,156 +325,58 @@
                     createGameBtn.disabled = false;
                     joinGameInput.disabled = false;
                     joinGameBtn.disabled = false;
-                    if (!currentPlayerName) {
-                        nameModal.classList.remove('hidden');
-                    }
+                    if (!currentPlayerName) { nameModal.classList.remove('hidden'); }
                 }
             });
-
-            try {
-                await signInAnonymously(auth);
-            } catch (error) {
-                console.error("Gagal login:", error);
-                loadingMessage.textContent = 'Gagal terhubung. Pastikan konfigurasi Firebase benar.';
-                alert("Gagal terhubung ke server. Silakan refresh halaman.");
-            }
+            try { await signInAnonymously(auth); } catch (error) { console.error("Gagal login:", error); loadingMessage.textContent = 'Gagal terhubung.'; }
         }
         
-        function getGameDocRef(gameId) {
-            return doc(db, "games", gameId);
-        }
+        function getGameDocRef(gameId) { return doc(db, "games", gameId); }
 
         async function createGame() {
-            if (!currentUser) {
-                alert("Belum terhubung ke server. Mohon tunggu sebentar.");
-                return;
-            }
+            if (!currentUser) return;
             const gameId = Math.random().toString(36).substring(2, 7).toUpperCase();
             currentGameId = gameId;
-
-            const gameData = {
-                gameId: gameId,
-                hostId: currentUser.uid,
-                status: 'waiting',
-                currentRound: 1,
-                players: {
-                    [currentUser.uid]: {
-                        name: currentPlayerName,
-                        status: 'active',
-                        lives: 10,
-                        currentChoice: null,
-                        isReady: false
-                    }
-                },
-                roundResults: {}
-            };
-
-            try {
-                await setDoc(getGameDocRef(gameId), gameData);
-                joinGameSession(gameId);
-            } catch (error) {
-                console.error("Gagal membuat game:", error);
-                alert("Gagal membuat game. Coba lagi.");
-            }
+            const gameData = { gameId, hostId: currentUser.uid, status: 'waiting', currentRound: 1, players: { [currentUser.uid]: { name: currentPlayerName, status: 'active', lives: 10, currentChoice: null, isReady: false } }, roundResults: {} };
+            try { await setDoc(getGameDocRef(gameId), gameData); joinGameSession(gameId); } catch (error) { console.error("Gagal membuat game:", error); }
         }
 
         async function joinGame(gameId) {
-            if (!currentUser) {
-                alert("Belum terhubung ke server. Mohon tunggu sebentar.");
-                return;
-            }
-            
+            if (!currentUser) return;
             const gameRef = getGameDocRef(gameId);
             try {
                 const gameSnap = await getDoc(gameRef);
-                if (!gameSnap.exists()) {
-                    alert("Game tidak ditemukan!");
-                    return;
-                }
-
+                if (!gameSnap.exists()) { alert("Game tidak ditemukan!"); return; }
                 const gameData = gameSnap.data();
-                if (Object.keys(gameData.players).length >= 5 && !gameData.players[currentUser.uid]) {
-                    alert("Maaf, lobi sudah penuh.");
-                    return;
-                }
-                
-                if (gameData.status !== 'waiting') {
-                    alert("Maaf, permainan sudah dimulai.");
-                    return;
-                }
-
-                const newPlayerData = {
-                    name: currentPlayerName,
-                    status: 'active',
-                    lives: 10,
-                    currentChoice: null,
-                    isReady: false
-                };
-                await updateDoc(gameRef, {
-                    [`players.${currentUser.uid}`]: newPlayerData
-                });
-                
+                if (Object.keys(gameData.players).length >= 5 && !gameData.players[currentUser.uid]) { alert("Maaf, lobi sudah penuh."); return; }
+                if (gameData.status !== 'waiting') { alert("Maaf, permainan sudah dimulai."); return; }
+                const newPlayerData = { name: currentPlayerName, status: 'active', lives: 10, currentChoice: null, isReady: false };
+                await updateDoc(gameRef, { [`players.${currentUser.uid}`]: newPlayerData });
                 currentGameId = gameId;
                 joinGameSession(gameId);
-
-            } catch (error) {
-                console.error("Gagal bergabung ke game:", error);
-                alert("Gagal bergabung ke game. Periksa kembali kode game.");
-            }
+            } catch (error) { console.error("Gagal bergabung ke game:", error); }
         }
         
         function joinGameSession(gameId) {
-            if (unsubscribeGameListener) {
-                unsubscribeGameListener();
-            }
+            if (unsubscribeGameListener) unsubscribeGameListener();
             unsubscribeGameListener = onSnapshot(getGameDocRef(gameId), (docSnap) => {
-                if (!docSnap.exists()) {
-                    alert("Game telah ditutup oleh host.");
-                    resetToHome();
-                    return;
-                }
-                const gameData = docSnap.data();
-                updateUI(gameData);
+                if (!docSnap.exists()) { alert("Game telah ditutup oleh host."); resetToHome(); return; }
+                updateUI(docSnap.data());
             });
         }
 
         function updateUI(gameData) {
             if (!gameData || !currentUser) return;
-
-            // PERBAIKAN BUG: Reset state lokal HANYA jika ronde berganti.
-            if (gameData.currentRound > lastSeenRound) {
-                selectedNumber = null;
-                lastSeenRound = gameData.currentRound;
-            }
-
+            if (gameData.currentRound > lastSeenRound) { selectedNumber = null; lastSeenRound = gameData.currentRound; }
             if (gameData.status === 'in-progress' && currentUser.uid === gameData.hostId) {
-                const activePlayers = Object.values(gameData.players).filter(player => player.status === 'active');
-                if (activePlayers.length > 0) {
-                    const allReady = activePlayers.every(player => player.isReady);
-                    if (allReady) {
-                        calculateRoundResults(gameData);
-                        return;
-                    }
-                }
+                const activePlayers = Object.values(gameData.players).filter(p => p.status === 'active');
+                if (activePlayers.length > 0 && activePlayers.every(p => p.isReady)) { calculateRoundResults(gameData); return; }
             }
-            
             switch (gameData.status) {
-                case 'waiting':
-                    showScreen('lobby');
-                    updateLobbyUI(gameData);
-                    break;
-                case 'in-progress':
-                    showScreen('game');
-                    updateGameUI(gameData);
-                    break;
-                case 'round-result':
-                    showScreen('roundResult');
-                    updateRoundResultUI(gameData);
-                    break;
-                case 'finished':
-                    showScreen('gameOver');
-                    updateGameOverUI(gameData);
-                    break;
+                case 'waiting': showScreen('lobby'); updateLobbyUI(gameData); break;
+                case 'in-progress': showScreen('game'); updateGameUI(gameData); break;
+                case 'round-result': showScreen('roundResult'); updateRoundResultUI(gameData); break;
+                case 'finished': showScreen('gameOver'); updateGameOverUI(gameData); break;
             }
         }
 
@@ -450,75 +385,54 @@
             const players = Object.values(gameData.players);
             playerCount.textContent = players.length;
             playerList.innerHTML = '';
-            players.forEach(player => {
+            players.forEach((player, index) => {
                 const playerDiv = document.createElement('div');
-                playerDiv.className = 'bg-gray-700 p-4 rounded-lg shadow-md';
+                playerDiv.className = 'bg-gray-700 p-4 rounded-lg shadow-md pop-in';
+                playerDiv.style.animationDelay = `${index * 0.1}s`;
                 playerDiv.innerHTML = `<p class="font-semibold truncate">${player.name}</p>`;
                 playerList.appendChild(playerDiv);
             });
-
-            if (currentUser.uid === gameData.hostId && players.length > 1) {
-                startGameBtn.classList.remove('hidden');
-                waitingForHost.classList.add('hidden');
-            } else {
-                startGameBtn.classList.add('hidden');
-                 if (currentUser.uid !== gameData.hostId) {
-                    waitingForHost.classList.remove('hidden');
-                }
-            }
+            if (currentUser.uid === gameData.hostId && players.length > 1) { startGameBtn.classList.remove('hidden'); waitingForHost.classList.add('hidden'); }
+            else { startGameBtn.classList.add('hidden'); if (currentUser.uid !== gameData.hostId) { waitingForHost.classList.remove('hidden'); } }
         }
         
         function updateGameUI(gameData) {
             roundNumber.textContent = gameData.currentRound;
             const players = gameData.players;
             const myData = players[currentUser.uid];
-            
             const activePlayerCount = Object.values(players).filter(p => p.status === 'active').length;
             
             let ruleHtml = '';
-            if (activePlayerCount <= 4) {
-                ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 1 (≤4 Pemain):</strong> Jika ada 2+ pemain memilih angka yang sama, mereka kalah.</p>`;
+            if (activePlayerCount <= 4) ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 1:</strong> Jika ada 2+ pemain memilih angka sama, mereka kalah.</p>`;
+            if (activePlayerCount <= 3) ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 2:</strong> Jika 1 pemain menebak 80% rata-rata (dibulatkan), dia menang & lainnya -2 nyawa.</p>`;
+            if (activePlayerCount === 2) ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 3:</strong> Jika ada yang memilih 0 & 100, pemilik angka 100 menang.</p>`;
+            ruleHtml += `<p><strong class="text-yellow-500">Aturan Dasar:</strong> Jika tidak, pemain terjauh dari 80% rata-rata kalah.</p>`;
+            
+            // Efek mengetik
+            let i = 0;
+            ruleText.innerHTML = "";
+            function typeWriter() {
+                if (i < ruleHtml.length) {
+                    ruleText.innerHTML += ruleHtml.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 10);
+                }
             }
-            if (activePlayerCount <= 3) {
-                ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 2 (≤3 Pemain):</strong> Jika ada 1 pemain menebak 80% rata-rata (dibulatkan), dia menang & lainnya -2 nyawa.</p>`;
-            }
-            if (activePlayerCount === 2) {
-                ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 3 (2 Pemain):</strong> Jika ada yang memilih 0 & 100, pemilik angka 100 menang.</p>`;
-            }
-            ruleHtml += `<p><strong class="text-yellow-500">Aturan Dasar:</strong> Jika tidak ada aturan di atas berlaku, pemain terjauh dari 80% rata-rata kalah.</p>`;
-            ruleText.innerHTML = ruleHtml;
+            typeWriter();
 
             gamePlayerCards.innerHTML = '';
-            Object.entries(players).forEach(([uid, player]) => {
+            Object.entries(players).forEach(([uid, player], index) => {
                 const card = document.createElement('div');
-                card.className = `player-card bg-gray-800 p-3 rounded-lg shadow-lg text-center space-y-2 ${player.status === 'eliminated' ? 'eliminated' : ''}`;
-                
-                let statusIcon = '';
-                if (player.status === 'eliminated') {
-                    statusIcon = `<i class="ph-bold ph-skull text-4xl text-gray-500"></i>`;
-                } else if (player.isReady) {
-                    statusIcon = `<i class="ph-bold ph-check-circle text-4xl text-green-400"></i>`;
-                } else {
-                    statusIcon = `<i class="ph ph-clock text-4xl text-yellow-400 animate-pulse"></i>`;
-                }
-
-                card.innerHTML = `
-                    <div>${statusIcon}</div>
-                    <p class="font-bold truncate">${player.name}</p>
-                    <div class="flex items-center justify-center gap-1 text-red-500 font-bold">
-                        <i class="ph-fill ph-heart"></i>
-                        <span>${player.lives}</span>
-                    </div>
-                `;
-                if (uid === currentUser.uid) {
-                    card.classList.add('ring-2', 'ring-red-500');
-                }
+                card.className = `player-card bg-gray-800 p-3 rounded-lg shadow-lg text-center space-y-2 pop-in ${player.status === 'eliminated' ? 'eliminated' : ''}`;
+                card.style.animationDelay = `${index * 0.1}s`;
+                const statusIcon = player.status === 'eliminated' ? `<i class="ph-bold ph-skull text-4xl text-gray-500"></i>` : (player.isReady ? `<i class="ph-bold ph-check-circle text-4xl text-green-400"></i>` : `<i class="ph ph-clock text-4xl text-yellow-400 animate-pulse"></i>`);
+                card.innerHTML = `<div>${statusIcon}</div><p class="font-bold truncate">${player.name}</p><div class="flex items-center justify-center gap-1 text-red-500 font-bold"><i class="ph-fill ph-heart"></i><span data-uid="${uid}">${player.lives}</span></div>`;
+                if (uid === currentUser.uid) card.classList.add('ring-2', 'ring-red-500');
                 gamePlayerCards.appendChild(card);
             });
 
             if (myData && myData.status === 'active' && !myData.isReady) {
                 inputArea.classList.remove('hidden');
-                // PERBAIKAN BUG: Jangan reset state di sini, cukup perbarui UI
                 if (selectedNumber !== null) {
                     selectedNumberDisplay.textContent = selectedNumber;
                     submitNumberBtn.disabled = false;
@@ -532,162 +446,91 @@
                     const currentSelectedBtn = numberButtonsContainer.querySelector('.selected');
                     if (currentSelectedBtn) currentSelectedBtn.classList.remove('selected');
                 }
-            } else {
-                inputArea.classList.add('hidden');
-            }
+            } else { inputArea.classList.add('hidden'); }
         }
 
         function updateRoundResultUI(gameData) {
             const round = gameData.currentRound;
             const results = gameData.roundResults[round];
             if (!results) return;
+            sound.playWin();
 
             resultRoundNumber.textContent = round;
             
             if (results.average !== undefined) {
                 resultDetails.classList.remove('hidden');
-                averageResult.textContent = results.average.toFixed(2);
-                winningNumberResult.textContent = results.winningNumber.toFixed(2);
-            } else {
-                resultDetails.classList.add('hidden');
-            }
+                animateValue(averageResult, 0, results.average, 500);
+                animateValue(winningNumberResult, 0, results.winningNumber, 500);
+            } else { resultDetails.classList.add('hidden'); }
             
             resultPlayerList.innerHTML = '';
-            Object.entries(results.choices).forEach(([uid, choice]) => {
+            Object.entries(results.choices).forEach(([uid, choice], index) => {
                 const player = gameData.players[uid];
                 let diffText = '';
-                if (results.winningNumber !== undefined) {
-                    const diff = Math.abs(choice - results.winningNumber);
-                    diffText = `(Jarak: ${diff.toFixed(2)})`;
-                }
-
+                if (results.winningNumber !== undefined) { diffText = `(Jarak: ${Math.abs(choice - results.winningNumber).toFixed(2)})`; }
                 let highlightClass = '';
                 if (uid === results.winner) highlightClass = 'bg-green-900/50 ring-2 ring-green-500';
-                if (results.loserIds && results.loserIds.includes(uid)) {
-                    highlightClass = 'bg-red-900/50 ring-2 ring-red-500';
-                }
-
+                if (results.loserIds && results.loserIds.includes(uid)) highlightClass = 'bg-red-900/50 ring-2 ring-red-500';
                 const resultDiv = document.createElement('div');
-                resultDiv.className = `flex justify-between items-center p-3 rounded-lg bg-gray-700 ${highlightClass}`;
-                resultDiv.innerHTML = `
-                    <span class="font-semibold">${player.name}</span>
-                    <div class="text-right">
-                        <span class="text-xl font-bold">${choice}</span>
-                        <span class="text-xs text-gray-400 ml-2">${diffText}</span>
-                    </div>
-                `;
+                resultDiv.className = `flex justify-between items-center p-3 rounded-lg bg-gray-700 pop-in ${highlightClass}`;
+                resultDiv.style.animationDelay = `${(index * 0.1) + 0.3}s`;
+                resultDiv.innerHTML = `<span class="font-semibold">${player.name}</span><div class="text-right"><span class="text-xl font-bold">${choice}</span><span class="text-xs text-gray-400 ml-2">${diffText}</span></div>`;
                 resultPlayerList.appendChild(resultDiv);
             });
 
-            if (results.winner) {
-                roundWinnertext.textContent = `Pemenang Ronde: ${gameData.players[results.winner].name}`;
-            } else {
-                roundWinnertext.textContent = `Tidak ada pemenang ronde ini.`;
-            }
-
+            roundWinnertext.textContent = results.winner ? `Pemenang Ronde: ${gameData.players[results.winner].name}` : `Tidak ada pemenang ronde ini.`;
             if (results.loserIds && results.loserIds.length > 0) {
+                sound.playLoseLife();
                 const livesLost = results.livesLost || 1;
-                if (results.loserIds.length > 1) {
-                    const loserNames = results.loserIds.map(id => gameData.players[id].name).join(' & ');
-                    roundLoserText.textContent = `${loserNames} masing-masing kehilangan ${livesLost} nyawa.`;
-                } else {
-                    const loserPlayer = gameData.players[results.loserIds[0]];
-                    if (loserPlayer.status === 'eliminated') {
-                        roundLoserText.textContent = `${loserPlayer.name} kehilangan nyawa terakhir dan tereliminasi!`;
-                    } else {
-                        roundLoserText.textContent = `${loserPlayer.name} kehilangan ${livesLost} nyawa.`;
-                    }
-                }
-            } else {
-                roundLoserText.textContent = 'Tidak ada yang kehilangan nyawa ronde ini.';
-            }
+                const loserNames = results.loserIds.map(id => gameData.players[id].name).join(' & ');
+                roundLoserText.textContent = `${loserNames} kehilangan ${livesLost} nyawa.`;
+            } else { roundLoserText.textContent = 'Tidak ada yang kehilangan nyawa ronde ini.'; }
 
-
-            if (currentUser.uid === gameData.hostId) {
-                nextRoundBtn.classList.remove('hidden');
-            } else {
-                nextRoundBtn.classList.add('hidden');
-            }
+            if (currentUser.uid === gameData.hostId) { nextRoundBtn.classList.remove('hidden'); } else { nextRoundBtn.classList.add('hidden'); }
         }
         
         function updateGameOverUI(gameData) {
-            if (gameData.winner && gameData.players[gameData.winner]) {
-                finalWinnerName.textContent = gameData.players[gameData.winner].name;
-            } else {
-                 finalWinnerName.textContent = "Tidak ada pemenang";
-            }
+            finalWinnerName.textContent = (gameData.winner && gameData.players[gameData.winner]) ? gameData.players[gameData.winner].name : "Tidak ada pemenang";
         }
 
         async function handleStartGame() {
+            sound.playClick();
             if (!currentGameId) return;
             await updateDoc(getGameDocRef(currentGameId), { status: 'in-progress' });
         }
 
         async function handleSubmitNumber() {
-            if (selectedNumber === null) {
-                alert("Pilih angka terlebih dahulu.");
-                return;
-            }
-
-            const gameRef = getGameDocRef(currentGameId);
-            await updateDoc(gameRef, {
-                [`players.${currentUser.uid}.currentChoice`]: selectedNumber,
-                [`players.${currentUser.uid}.isReady`]: true
-            });
+            sound.playLock();
+            if (selectedNumber === null) return;
+            await updateDoc(getGameDocRef(currentGameId), { [`players.${currentUser.uid}.currentChoice`]: selectedNumber, [`players.${currentUser.uid}.isReady`]: true });
         }
         
         async function calculateRoundResults(gameData) {
-            const activePlayers = Object.entries(gameData.players).filter(([uid, player]) => player.status === 'active');
+            const activePlayers = Object.entries(gameData.players).filter(([uid, p]) => p.status === 'active');
             const activePlayerCount = activePlayers.length;
-
             const updates = {};
             const choices = {};
-            activePlayers.forEach(([uid, player]) => {
-                choices[uid] = player.currentChoice;
-            });
-
-            let winnerId = null;
-            let loserIds = [];
-            let livesToLose = 1;
-            let roundResultData = { choices };
-            let ruleApplied = false;
+            activePlayers.forEach(([uid, p]) => { choices[uid] = p.currentChoice; });
+            let winnerId = null, loserIds = [], livesToLose = 1, ruleApplied = false, roundResultData = { choices };
 
             const normalRule = () => {
-                let sum = 0;
-                activePlayers.forEach(([uid, player]) => { sum += player.currentChoice; });
-                const average = activePlayers.length > 0 ? sum / activePlayers.length : 0;
+                let sum = 0; activePlayers.forEach(([uid, p]) => { sum += p.currentChoice; });
+                const average = activePlayerCount > 0 ? sum / activePlayerCount : 0;
                 const winningNumber = average * 0.8;
-                roundResultData.average = average;
-                roundResultData.winningNumber = winningNumber;
-
-                let minDiff = Infinity;
-                let maxDiff = -1;
-                
-                activePlayers.forEach(([uid, player]) => {
-                    const diff = Math.abs(player.currentChoice - winningNumber);
-                    if (diff < minDiff) {
-                        minDiff = diff;
-                        winnerId = uid;
-                    }
-                    if (diff > maxDiff) {
-                        maxDiff = diff;
-                    }
+                roundResultData.average = average; roundResultData.winningNumber = winningNumber;
+                let minDiff = Infinity, maxDiff = -1;
+                activePlayers.forEach(([uid, p]) => {
+                    const diff = Math.abs(p.currentChoice - winningNumber);
+                    if (diff < minDiff) { minDiff = diff; winnerId = uid; }
+                    if (diff > maxDiff) maxDiff = diff;
                 });
-                
-                const farthestPlayers = activePlayers.filter(([uid, p]) => Math.abs(p.currentChoice - winningNumber) === maxDiff);
-                if (farthestPlayers.length === 1) {
-                    loserIds.push(farthestPlayers[0][0]);
-                }
+                const farthest = activePlayers.filter(([uid, p]) => Math.abs(p.currentChoice - winningNumber) === maxDiff);
+                if (farthest.length === 1) loserIds.push(farthest[0][0]);
             };
 
-            // Aturan Prioritas 1: Duplikat (<= 4 pemain)
             if (activePlayerCount <= 4) {
-                const counts = {};
-                activePlayers.forEach(([uid, player]) => {
-                    counts[player.currentChoice] = (counts[player.currentChoice] || 0) + 1;
-                });
+                const counts = {}; activePlayers.forEach(([uid, p]) => { counts[p.currentChoice] = (counts[p.currentChoice] || 0) + 1; });
                 const duplicates = Object.entries(counts).filter(([num, count]) => count > 1).map(([num, count]) => parseInt(num));
-
                 if (duplicates.length > 0) {
                     loserIds = activePlayers.filter(([uid, p]) => duplicates.includes(p.currentChoice)).map(([uid, p]) => uid);
                     const winners = activePlayers.filter(([uid, p]) => !loserIds.includes(uid));
@@ -695,28 +538,18 @@
                     ruleApplied = true;
                 }
             }
-
-            // Aturan Prioritas 2: Tebakan Tepat (<= 3 pemain)
             if (!ruleApplied && activePlayerCount <= 3) {
-                let sum = 0;
-                activePlayers.forEach(([uid, player]) => { sum += player.currentChoice; });
-                const average = activePlayers.length > 0 ? sum / activePlayers.length : 0;
+                let sum = 0; activePlayers.forEach(([uid, p]) => { sum += p.currentChoice; });
+                const average = activePlayerCount > 0 ? sum / activePlayerCount : 0;
                 const winningNumber = average * 0.8;
-                const roundedWinningNumber = Math.round(winningNumber);
-                roundResultData.average = average;
-                roundResultData.winningNumber = winningNumber;
-
-                const perfectGuessers = activePlayers.filter(([uid, p]) => p.currentChoice === roundedWinningNumber);
-
+                roundResultData.average = average; roundResultData.winningNumber = winningNumber;
+                const perfectGuessers = activePlayers.filter(([uid, p]) => p.currentChoice === Math.round(winningNumber));
                 if (perfectGuessers.length === 1) {
                     winnerId = perfectGuessers[0][0];
                     loserIds = activePlayers.filter(([uid, p]) => uid !== winnerId).map(([uid, p]) => uid);
-                    livesToLose = 2;
-                    ruleApplied = true;
+                    livesToLose = 2; ruleApplied = true;
                 }
             }
-
-            // Aturan Prioritas 3: 0 vs 100 (2 pemain)
             if (!ruleApplied && activePlayerCount === 2) {
                 const choicesArray = activePlayers.map(([uid, p]) => p.currentChoice);
                 if ((choicesArray.includes(0) && choicesArray.includes(100))) {
@@ -725,137 +558,151 @@
                     ruleApplied = true;
                 }
             }
+            if (!ruleApplied) normalRule();
 
-            // Aturan Dasar (Fallback)
-            if (!ruleApplied) {
-                normalRule();
-            }
-
-            roundResultData.winner = winnerId;
-            roundResultData.loserIds = loserIds;
-            roundResultData.livesLost = livesToLose;
-            updates.status = 'round-result';
-            updates[`roundResults.${gameData.currentRound}`] = roundResultData;
-
+            roundResultData.winner = winnerId; roundResultData.loserIds = loserIds; roundResultData.livesLost = livesToLose;
+            updates.status = 'round-result'; updates[`roundResults.${gameData.currentRound}`] = roundResultData;
             loserIds.forEach(loserId => {
                 const newLives = gameData.players[loserId].lives - livesToLose;
                 updates[`players.${loserId}.lives`] = newLives;
-                if (newLives <= 0) {
-                    updates[`players.${loserId}.status`] = 'eliminated';
-                }
+                if (newLives <= 0) updates[`players.${loserId}.status`] = 'eliminated';
             });
-            
             await updateDoc(getGameDocRef(currentGameId), updates);
         }
 
         async function handleNextRound() {
+            sound.playClick();
             const gameRef = getGameDocRef(currentGameId);
             const gameSnap = await getDoc(gameRef);
             if (!gameSnap.exists()) return;
             const gameData = gameSnap.data();
-
             const activePlayers = Object.values(gameData.players).filter(p => p.status === 'active');
-
             if (activePlayers.length <= 1) {
-                await updateDoc(gameRef, {
-                    status: 'finished',
-                    winner: activePlayers.length > 0 ? Object.keys(gameData.players).find(uid => gameData.players[uid].status === 'active') : null
-                });
+                await updateDoc(gameRef, { status: 'finished', winner: activePlayers.length > 0 ? Object.keys(gameData.players).find(uid => gameData.players[uid].status === 'active') : null });
             } else {
-                const updates = {
-                    status: 'in-progress',
-                    currentRound: gameData.currentRound + 1
-                };
-                Object.keys(gameData.players).forEach(uid => {
-                    if (gameData.players[uid].status === 'active') {
-                        updates[`players.${uid}.currentChoice`] = null;
-                        updates[`players.${uid}.isReady`] = false;
-                    }
-                });
+                const updates = { status: 'in-progress', currentRound: gameData.currentRound + 1 };
+                Object.keys(gameData.players).forEach(uid => { if (gameData.players[uid].status === 'active') { updates[`players.${uid}.currentChoice`] = null; updates[`players.${uid}.isReady`] = false; } });
                 await updateDoc(gameRef, updates);
             }
         }
 
         function resetToHome() {
-            if (unsubscribeGameListener) {
-                unsubscribeGameListener();
-                unsubscribeGameListener = null;
-            }
-            currentGameId = null;
-            joinGameInput.value = '';
-            showScreen('home');
+            sound.playClick();
+            if (unsubscribeGameListener) { unsubscribeGameListener(); unsubscribeGameListener = null; }
+            currentGameId = null; joinGameInput.value = ''; showScreen('home');
         }
 
         function generateNumberButtons() {
             for (let i = 0; i <= 100; i++) {
                 const button = document.createElement('button');
-                button.textContent = i;
-                button.dataset.number = i;
+                button.textContent = i; button.dataset.number = i;
                 button.className = 'number-btn bg-gray-700 hover:bg-gray-600 rounded-md p-2 text-sm font-semibold transition-all duration-150';
                 numberButtonsContainer.appendChild(button);
             }
         }
 
-        // --- EVENT LISTENERS ---
-        window.addEventListener('load', () => {
-            generateNumberButtons();
-            if(auth) handleAuth();
-        });
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = (Math.floor(progress * (end - start) + start)).toFixed(2);
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
 
+        // --- Event Listeners ---
+        window.addEventListener('load', () => { generateNumberButtons(); if(auth) handleAuth(); });
         submitNameBtn.addEventListener('click', () => {
+            sound.playClick();
             const name = playerNameInput.value.trim();
-            if (name) {
-                currentPlayerName = name;
-                localStorage.setItem('playerName', name);
-                nameModal.classList.add('hidden');
-            } else {
-                alert("Nama tidak boleh kosong.");
-            }
+            if (name) { currentPlayerName = name; localStorage.setItem('playerName', name); nameModal.classList.add('hidden'); }
+            else { alert("Nama tidak boleh kosong."); }
         });
-
-        createGameBtn.addEventListener('click', () => {
-             if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; }
-             createGame();
-        });
-
+        createGameBtn.addEventListener('click', () => { sound.playClick(); if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; } createGame(); });
         joinGameBtn.addEventListener('click', () => {
+            sound.playClick();
             if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; }
             const gameId = joinGameInput.value.trim().toUpperCase();
-            if (gameId) {
-                joinGame(gameId);
-            } else {
-                alert("Masukkan kode game.");
-            }
+            if (gameId) joinGame(gameId); else alert("Masukkan kode game.");
         });
-        
         copyCodeBtn.addEventListener('click', () => {
+            sound.playClick();
             if (!currentGameId) return;
-            navigator.clipboard.writeText(currentGameId).then(() => {
-                showMessage('Kode berhasil disalin!');
-            }).catch(err => {
-                console.error('Gagal menyalin kode: ', err);
-            });
+            navigator.clipboard.writeText(currentGameId).then(() => showMessage('Kode berhasil disalin!')).catch(err => console.error('Gagal menyalin kode: ', err));
         });
-
         numberButtonsContainer.addEventListener('click', (e) => {
             if (e.target.classList.contains('number-btn')) {
+                sound.playClick();
                 const number = e.target.dataset.number;
                 selectedNumber = parseInt(number);
                 selectedNumberDisplay.textContent = number;
                 submitNumberBtn.disabled = false;
-
                 const currentSelected = numberButtonsContainer.querySelector('.selected');
-                if (currentSelected) {
-                    currentSelected.classList.remove('selected');
-                }
+                if (currentSelected) currentSelected.classList.remove('selected');
                 e.target.classList.add('selected');
             }
         });
-
         startGameBtn.addEventListener('click', handleStartGame);
         submitNumberBtn.addEventListener('click', handleSubmitNumber);
         nextRoundBtn.addEventListener('click', handleNextRound);
         playAgainBtn.addEventListener('click', resetToHome);
+
+        // --- Background Animation ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particles = [];
+        const particleCount = 50;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5 + 0.5;
+                this.speedX = (Math.random() * 0.5 - 0.25) * 0.5;
+                this.speedY = (Math.random() * 0.5 - 0.25) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width || this.x < 0) this.x = Math.random() * canvas.width;
+                if (this.y > canvas.height || this.y < 0) this.y = Math.random() * canvas.height;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            initParticles();
+        });
 
     </script>
 </body>
