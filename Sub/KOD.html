@@ -13,12 +13,42 @@
     <!-- Ikon dari Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
+        /* --- SKEMA WARNA DENGAN CSS VARIABLES --- */
+        :root {
+            --bg-primary: #0c0a18;
+            --bg-surface: #1f2937;
+            --bg-surface-alt: #111827;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border-color: #4b5563;
+            --accent-red: #ef4444;
+            --accent-red-dark: #dc2626;
+            --accent-yellow: #f59e0b;
+            --accent-green: #22c55e;
+            --accent-blue: #3b82f6;
+        }
+
+        html.light {
+            --bg-primary: #f3f4f6;
+            --bg-surface: #ffffff;
+            --bg-surface-alt: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --border-color: #d1d5db;
+            --accent-red: #ef4444;
+            --accent-red-dark: #dc2626;
+            --accent-yellow: #f59e0b;
+            --accent-green: #16a34a;
+            --accent-blue: #2563eb;
+        }
+
         /* Menggunakan font Inter sebagai default */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0c0a18; /* Latar belakang lebih gelap */
-            color: #F9FAFB;
-            overflow: hidden; /* Mencegah scroll karena canvas */
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         #particle-canvas {
             position: fixed;
@@ -29,23 +59,20 @@
             z-index: -1;
         }
         .interactive-btn {
-            background-image: linear-gradient(to right, #ef4444 0%, #dc2626 51%, #ef4444 100%);
+            background-image: linear-gradient(to right, var(--accent-red) 0%, var(--accent-red-dark) 51%, var(--accent-red) 100%);
             transition: 0.5s;
             background-size: 200% auto;
             box-shadow: 0 0 20px #ef444444;
         }
-        .interactive-btn:hover {
-            background-position: right center;
-        }
+        .interactive-btn:hover { background-position: right center; }
         .interactive-btn-gray {
             background-image: linear-gradient(to right, #6b7280 0%, #4b5563 51%, #6b7280 100%);
             transition: 0.5s;
             background-size: 200% auto;
             box-shadow: 0 0 20px #6b728044;
         }
-        .interactive-btn-gray:hover {
-            background-position: right center;
-        }
+        .interactive-btn-gray:hover { background-position: right center; }
+        
         /* Animasi */
         @keyframes pop-in {
             0% { opacity: 0; transform: scale(0.8); }
@@ -54,38 +81,19 @@
         }
         .pop-in { animation: pop-in 0.5s ease-out forwards; }
         
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+        /* Transisi untuk elemen yang warnanya berubah */
+        .themed {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
-        .shake { animation: shake 0.3s ease-in-out; }
-        
-        /* Style untuk kartu pemain */
-        .player-card {
-            transition: all 0.3s ease-in-out;
-        }
-        .player-card.eliminated {
-            filter: grayscale(1) opacity(0.5);
-            transform: scale(0.9);
-        }
+
         /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1f2937;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4b5563;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
-        }
-        /* Style untuk tombol angka yang dipilih */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-surface-alt); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
         .number-btn.selected {
-            background-color: #DC2626;
+            background-color: var(--accent-red-dark);
             color: white;
             transform: scale(1.15);
             box-shadow: 0 0 15px #ef444488;
@@ -96,231 +104,198 @@
 
     <canvas id="particle-canvas"></canvas>
 
-    <div id="app" class="w-full max-w-5xl mx-auto p-4 z-10">
+    <div id="app" class="w-full max-w-5xl mx-auto p-4 z-10 relative">
+
+        <!-- Tombol Setelan -->
+        <div class="absolute top-4 right-4 z-50">
+            <button id="settings-btn" class="p-3 rounded-full bg-[var(--bg-surface)] themed shadow-lg hover:bg-gray-700 transition-transform transform hover:scale-110">
+                <i class="ph ph-gear text-2xl text-[var(--text-secondary)] themed"></i>
+            </button>
+        </div>
 
         <!-- Layar Utama / Lobi -->
         <div id="home-screen" class="text-center space-y-6 pop-in">
             <div class="flex justify-center items-center gap-3">
-                <i class="ph-bold ph-diamonds-four text-5xl text-red-500"></i>
-                <h1 class="text-4xl md:text-5xl font-bold tracking-tight">King of Diamonds</h1>
+                <i class="ph-bold ph-diamonds-four text-5xl" style="color: var(--accent-red);"></i>
+                <h1 class="text-4xl md:text-5xl font-bold tracking-tight themed">King of Diamonds</h1>
             </div>
-            <p class="text-lg text-gray-400 max-w-2xl mx-auto">Selamat datang di game Equilibrium. Pilih angka antara 0 dan 100. Pemenang adalah yang angkanya paling mendekati 80% dari rata-rata semua angka yang dipilih. Yang paling jauh akan kehilangan nyawa. Bertahanlah sampai akhir.</p>
+            <p class="text-lg text-[var(--text-secondary)] themed max-w-2xl mx-auto">Selamat datang di game Equilibrium. Pilih angka antara 0 dan 100. Pemenang adalah yang angkanya paling mendekati 80% dari rata-rata semua angka yang dipilih. Yang paling jauh akan kehilangan nyawa. Bertahanlah sampai akhir.</p>
             
             <div id="action-buttons-container" class="pt-4 space-y-4">
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button id="create-game-btn" class="interactive-btn text-white font-bold py-3 px-6 rounded-lg shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed disabled:shadow-none disabled:bg-none" disabled>
+                    <button id="create-game-btn" class="interactive-btn text-white font-bold py-3 px-6 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none" disabled>
                         Buat Game Baru
                     </button>
                     <div class="flex items-center gap-2">
-                        <input type="text" id="join-game-input" placeholder="Masukkan Kode Game" class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-center w-full sm:w-auto disabled:cursor-not-allowed" disabled>
-                        <button id="join-game-btn" class="interactive-btn-gray text-white font-bold py-3 px-6 rounded-lg shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed disabled:shadow-none disabled:bg-none" disabled>
+                        <input type="text" id="join-game-input" placeholder="Masukkan Kode Game" class="themed bg-[var(--bg-surface-alt)] border border-[var(--border-color)] rounded-lg px-4 py-3 text-center w-full sm:w-auto disabled:cursor-not-allowed" disabled>
+                        <button id="join-game-btn" class="interactive-btn-gray text-white font-bold py-3 px-6 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none" disabled>
                             Gabung
                         </button>
                     </div>
                 </div>
-                <p id="loading-message" class="text-yellow-400 text-sm">Menghubungkan ke server...</p>
+                <p id="loading-message" class="text-[var(--accent-yellow)] themed text-sm">Menghubungkan ke server...</p>
             </div>
 
-             <div id="user-info" class="text-xs text-gray-500 pt-4"></div>
+             <div id="user-info" class="text-xs text-[var(--text-secondary)] themed pt-4"></div>
         </div>
 
-        <!-- Layar Tunggu / Lobi Game -->
+        <!-- Layar-layar lainnya akan disembunyikan dan hanya ditampilkan saat dibutuhkan -->
         <div id="lobby-screen" class="hidden text-center space-y-6">
-            <h2 class="text-3xl font-bold pop-in">Lobi Game</h2>
-            <p class="text-gray-400 pop-in" style="animation-delay: 0.1s;">Bagikan kode ini ke temanmu untuk bergabung.</p>
-            <div class="flex items-center justify-center gap-2 bg-gray-800 p-3 rounded-lg max-w-sm mx-auto pop-in" style="animation-delay: 0.2s;">
-                <span id="game-code-display" class="text-2xl font-mono tracking-widest text-green-400"></span>
-                <button id="copy-code-btn" class="p-2 rounded-md hover:bg-gray-700">
-                    <i class="ph ph-copy text-xl"></i>
-                </button>
-            </div>
-            <div id="message-box" class="text-sm text-green-400 h-5"></div>
-            <h3 class="text-xl font-semibold pt-4 pop-in" style="animation-delay: 0.3s;">Pemain (<span id="player-count">1</span>/5)</h3>
-            <div id="player-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-2xl mx-auto">
-                <!-- Daftar pemain akan muncul di sini -->
-            </div>
-            <p id="waiting-for-host" class="text-gray-500 italic hidden">Menunggu host memulai permainan...</p>
-            <button id="start-game-btn" class="hidden interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg mt-6 pop-in" style="animation-delay: 0.4s;">
-                Mulai Permainan
-            </button>
+             <h2 class="text-3xl font-bold pop-in themed">Lobi Game</h2>
+             <p class="text-[var(--text-secondary)] themed pop-in" style="animation-delay: 0.1s;">Bagikan kode ini ke temanmu untuk bergabung.</p>
+             <div class="flex items-center justify-center gap-2 bg-[var(--bg-surface)] themed p-3 rounded-lg max-w-sm mx-auto pop-in" style="animation-delay: 0.2s;">
+                 <span id="game-code-display" class="text-2xl font-mono tracking-widest themed" style="color: var(--accent-green);"></span>
+                 <button id="copy-code-btn" class="p-2 rounded-md hover:bg-[var(--bg-surface-alt)] themed">
+                     <i class="ph ph-copy text-xl"></i>
+                 </button>
+             </div>
+             <div id="message-box" class="text-sm themed h-5" style="color: var(--accent-green);"></div>
+             <h3 class="text-xl font-semibold pt-4 pop-in themed" style="animation-delay: 0.3s;">Pemain (<span id="player-count">1</span>/5)</h3>
+             <div id="player-list" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-2xl mx-auto"></div>
+             <p id="waiting-for-host" class="text-[var(--text-secondary)] themed italic hidden">Menunggu host memulai permainan...</p>
+             <button id="start-game-btn" class="hidden interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg mt-6 pop-in" style="animation-delay: 0.4s;">Mulai Permainan</button>
         </div>
 
-        <!-- Layar Permainan Utama -->
         <div id="game-screen" class="hidden space-y-6">
-            <div class="flex justify-between items-center pop-in">
-                <h2 class="text-3xl font-bold">Ronde <span id="round-number">1</span></h2>
-                <div class="text-right">
-                    <p class="font-semibold text-red-500">King of Diamonds</p>
-                    <p class="text-sm text-gray-400">Equilibrium</p>
-                </div>
-            </div>
-
-            <div id="rule-display" class="p-4 bg-gray-800 rounded-lg shadow-lg text-left text-sm pop-in" style="animation-delay: 0.1s;">
-                <h3 class="text-lg font-semibold text-yellow-400 text-center mb-2">Aturan Ronde Ini:</h3>
-                <div id="rule-text"></div>
-            </div>
-            
-            <div id="game-player-cards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
-
-            <div id="input-area" class="mt-8 p-6 bg-gray-800 rounded-lg shadow-xl text-center pop-in" style="animation-delay: 0.2s;">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold">Pilih angkamu: <span id="selected-number-display" class="text-yellow-400 text-2xl font-bold">-</span></h3>
-                    <button id="submit-number-btn" class="interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg disabled:bg-gray-500 disabled:cursor-not-allowed" disabled>
-                        Kunci Jawaban
-                    </button>
-                </div>
-                <div id="number-buttons-container" class="h-48 overflow-y-auto grid grid-cols-10 gap-2 p-2 bg-gray-900 rounded-lg"></div>
-            </div>
-        </div>
-
-        <!-- Layar Hasil Ronde -->
-        <div id="round-result-screen" class="hidden text-center space-y-4">
-            <h2 class="text-3xl font-bold pop-in">Hasil Ronde <span id="result-round-number">1</span></h2>
-            <div id="result-details" class="p-6 bg-gray-800 rounded-lg shadow-xl space-y-4 pop-in" style="animation-delay: 0.1s;">
-                <div class="flex justify-around items-center text-center">
-                    <div>
-                        <p class="text-gray-400 text-sm">Rata-rata</p>
-                        <p id="average-result" class="text-3xl font-bold text-blue-400">0</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-400 text-sm">Angka Kemenangan</p>
-                        <p id="winning-number-result" class="text-4xl font-bold text-green-400">0</p>
-                    </div>
-                </div>
-            </div>
-            <h3 class="text-xl font-semibold pt-4 pop-in" style="animation-delay: 0.2s;">Pilihan Pemain</h3>
-            <div id="result-player-list" class="space-y-3 max-w-md mx-auto"></div>
-            <div class="pt-4 space-y-2 pop-in" style="animation-delay: 0.3s;">
-                <p id="round-winner-text" class="text-lg text-yellow-400"></p>
-                <p id="round-loser-text" class="text-lg text-red-400"></p>
-            </div>
-            <button id="next-round-btn" class="hidden interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg mt-6 pop-in" style="animation-delay: 0.4s;">
-                Lanjut ke Ronde Berikutnya
-            </button>
-        </div>
-
-        <!-- Layar Pemenang Game -->
-        <div id="game-over-screen" class="hidden text-center space-y-6">
-            <i class="ph-bold ph-crown text-8xl text-yellow-400 pop-in"></i>
-            <h2 class="text-5xl font-bold pop-in" style="animation-delay: 0.1s;">Permainan Selesai!</h2>
-            <p class="text-2xl pop-in" style="animation-delay: 0.2s;">Pemenangnya adalah...</p>
-            <p id="final-winner-name" class="text-4xl font-bold text-green-400 bg-gray-800 p-4 rounded-lg inline-block pop-in" style="animation-delay: 0.3s;"></p>
-            <button id="play-again-btn" class="interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg mt-6 pop-in" style="animation-delay: 0.4s;">
-                Main Lagi
-            </button>
+             <div class="flex justify-between items-center pop-in">
+                 <h2 class="text-3xl font-bold themed">Ronde <span id="round-number">1</span></h2>
+                 <div class="text-right">
+                     <p class="font-semibold" style="color: var(--accent-red);">King of Diamonds</p>
+                     <p class="text-sm text-[var(--text-secondary)] themed">Equilibrium</p>
+                 </div>
+             </div>
+             <div id="rule-display" class="p-4 bg-[var(--bg-surface)] themed rounded-lg shadow-lg text-left text-sm pop-in" style="animation-delay: 0.1s;">
+                 <h3 class="text-lg font-semibold text-center mb-2 themed" style="color: var(--accent-yellow);">Aturan Ronde Ini:</h3>
+                 <div id="rule-text" class="themed"></div>
+             </div>
+             <div id="game-player-cards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+             <div id="input-area" class="mt-8 p-6 bg-[var(--bg-surface)] themed rounded-lg shadow-xl text-center pop-in" style="animation-delay: 0.2s;">
+                 <div class="flex justify-between items-center mb-4">
+                     <h3 class="text-xl font-semibold themed">Pilih angkamu: <span id="selected-number-display" class="themed text-2xl font-bold" style="color: var(--accent-yellow);">-</span></h3>
+                     <button id="submit-number-btn" class="interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>Kunci Jawaban</button>
+                 </div>
+                 <div id="number-buttons-container" class="h-48 overflow-y-auto grid grid-cols-10 gap-2 p-2 bg-[var(--bg-surface-alt)] themed rounded-lg"></div>
+             </div>
         </div>
         
-        <!-- Modal untuk Nama Pemain -->
+        <div id="round-result-screen" class="hidden text-center space-y-4">
+             <h2 class="text-3xl font-bold pop-in themed">Hasil Ronde <span id="result-round-number">1</span></h2>
+             <div id="result-details" class="p-6 bg-[var(--bg-surface)] themed rounded-lg shadow-xl space-y-4 pop-in" style="animation-delay: 0.1s;">
+                <div class="flex justify-around items-center text-center">
+                    <div>
+                        <p class="text-[var(--text-secondary)] themed text-sm">Rata-rata</p>
+                        <p id="average-result" class="text-3xl font-bold themed" style="color: var(--accent-blue);">0</p>
+                    </div>
+                    <div>
+                        <p class="text-[var(--text-secondary)] themed text-sm">Angka Kemenangan</p>
+                        <p id="winning-number-result" class="text-4xl font-bold themed" style="color: var(--accent-green);">0</p>
+                    </div>
+                </div>
+             </div>
+             <h3 class="text-xl font-semibold pt-4 pop-in themed" style="animation-delay: 0.2s;">Pilihan Pemain</h3>
+             <div id="result-player-list" class="space-y-3 max-w-md mx-auto"></div>
+             <div class="pt-4 space-y-2 pop-in" style="animation-delay: 0.3s;">
+                 <p id="round-winner-text" class="text-lg themed" style="color: var(--accent-yellow);"></p>
+                 <p id="round-loser-text" class="text-lg themed" style="color: var(--accent-red);"></p>
+             </div>
+             <button id="next-round-btn" class="hidden interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg mt-6 pop-in" style="animation-delay: 0.4s;">Lanjut ke Ronde Berikutnya</button>
+        </div>
+        
+        <div id="game-over-screen" class="hidden text-center space-y-6">
+             <i class="ph-bold ph-crown text-8xl pop-in" style="color: var(--accent-yellow);"></i>
+             <h2 class="text-5xl font-bold pop-in themed" style="animation-delay: 0.1s;">Permainan Selesai!</h2>
+             <p class="text-2xl pop-in themed" style="animation-delay: 0.2s;">Pemenangnya adalah...</p>
+             <p id="final-winner-name" class="text-4xl font-bold bg-[var(--bg-surface)] themed p-4 rounded-lg inline-block pop-in" style="color: var(--accent-green); animation-delay: 0.3s;"></p>
+             <button id="play-again-btn" class="interactive-btn text-white font-bold py-3 px-8 rounded-lg shadow-lg mt-6 pop-in" style="animation-delay: 0.4s;">Main Lagi</button>
+        </div>
+        
+        <!-- Modal Nama Pemain -->
         <div id="name-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-            <div class="bg-gray-800 p-8 rounded-lg shadow-xl text-center space-y-4 w-full max-w-sm pop-in">
-                <h2 class="text-2xl font-bold">Masukkan Namamu</h2>
-                <input type="text" id="player-name-input" placeholder="Contoh: Chishiya" maxlength="15" class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-center">
+            <div class="bg-[var(--bg-surface)] themed p-8 rounded-lg shadow-xl text-center space-y-4 w-full max-w-sm pop-in">
+                <h2 class="text-2xl font-bold themed">Masukkan Namamu</h2>
+                <input type="text" id="player-name-input" placeholder="Contoh: Chishiya" maxlength="15" class="w-full bg-[var(--bg-surface-alt)] themed border border-[var(--border-color)] rounded-lg px-4 py-3 text-center">
                 <button id="submit-name-btn" class="w-full interactive-btn text-white font-bold py-3 px-6 rounded-lg">Simpan Nama</button>
             </div>
         </div>
+        
+        <!-- Modal Setelan -->
+        <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+             <div class="bg-[var(--bg-surface)] themed p-8 rounded-lg shadow-xl text-center space-y-6 w-full max-w-sm pop-in relative">
+                 <button id="close-settings-btn" class="absolute top-2 right-2 p-2 rounded-full hover:bg-[var(--bg-surface-alt)] themed">
+                     <i class="ph ph-x text-xl"></i>
+                 </button>
+                 <h2 class="text-2xl font-bold themed">Setelan</h2>
+                 <div class="flex items-center justify-between">
+                     <span class="text-lg themed">Tema Terang</span>
+                     <label for="theme-toggle" class="relative inline-flex items-center cursor-pointer">
+                         <input type="checkbox" value="" id="theme-toggle" class="sr-only peer">
+                         <div class="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                     </label>
+                 </div>
+             </div>
+        </div>
+
     </div>
 
     <!-- Firebase SDK -->
     <script type="module">
+        // Import a-z...
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // --- KONFIGURASI FIREBASE ANDA ---
-
+        const firebaseConfig = { apiKey: "AIzaSyC4TLLsgsVjRbAOIxizgS-Mp5rAXfLe5gE", authDomain: "king-of-diamonds-36bae.firebaseapp.com", projectId: "king-of-diamonds-36bae", storageBucket: "king-of-diamonds-36bae.appspot.com", messagingSenderId: "644169659991", appId: "1:644169659991:web:377b41583fcd31d0b41512" };
         
         let app, db, auth;
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-        } catch (e) {
-            console.error("Gagal menginisialisasi Firebase:", e);
-            document.body.innerHTML = `<div class="text-red-500 text-center p-8">Error: Gagal menginisialisasi Firebase. Pastikan konfigurasi sudah benar.</div>`;
-        }
+        try { app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app); } catch (e) { console.error("Gagal menginisialisasi Firebase:", e); }
 
-        // --- STATE APLIKASI ---
-        let currentUser = null;
-        let currentGameId = null;
-        let currentPlayerName = localStorage.getItem('playerName') || '';
-        let unsubscribeGameListener = null;
-        let selectedNumber = null;
-        let lastSeenRound = 0;
+        let currentUser = null, currentGameId = null, currentPlayerName = localStorage.getItem('playerName') || '', unsubscribeGameListener = null, selectedNumber = null, lastSeenRound = 0;
 
-        // --- ELEMEN DOM ---
         const screens = { home: document.getElementById('home-screen'), lobby: document.getElementById('lobby-screen'), game: document.getElementById('game-screen'), roundResult: document.getElementById('round-result-screen'), gameOver: document.getElementById('game-over-screen') };
-        const nameModal = document.getElementById('name-modal');
-        const playerNameInput = document.getElementById('player-name-input');
-        const submitNameBtn = document.getElementById('submit-name-btn');
-        const createGameBtn = document.getElementById('create-game-btn');
-        const joinGameInput = document.getElementById('join-game-input');
-        const joinGameBtn = document.getElementById('join-game-btn');
-        const userInfo = document.getElementById('user-info');
-        const gameCodeDisplay = document.getElementById('game-code-display');
-        const copyCodeBtn = document.getElementById('copy-code-btn');
-        const messageBox = document.getElementById('message-box');
-        const playerList = document.getElementById('player-list');
-        const playerCount = document.getElementById('player-count');
-        const startGameBtn = document.getElementById('start-game-btn');
-        const waitingForHost = document.getElementById('waiting-for-host');
-        const roundNumber = document.getElementById('round-number');
-        const ruleText = document.getElementById('rule-text');
-        const gamePlayerCards = document.getElementById('game-player-cards');
-        const inputArea = document.getElementById('input-area');
-        const numberButtonsContainer = document.getElementById('number-buttons-container');
-        const selectedNumberDisplay = document.getElementById('selected-number-display');
-        const submitNumberBtn = document.getElementById('submit-number-btn');
-        const resultRoundNumber = document.getElementById('result-round-number');
-        const resultDetails = document.getElementById('result-details');
-        const averageResult = document.getElementById('average-result');
-        const winningNumberResult = document.getElementById('winning-number-result');
-        const resultPlayerList = document.getElementById('result-player-list');
-        const roundWinnertext = document.getElementById('round-winner-text');
-        const roundLoserText = document.getElementById('round-loser-text');
-        const nextRoundBtn = document.getElementById('next-round-btn');
-        const finalWinnerName = document.getElementById('final-winner-name');
-        const playAgainBtn = document.getElementById('play-again-btn');
+        const nameModal = document.getElementById('name-modal'), playerNameInput = document.getElementById('player-name-input'), submitNameBtn = document.getElementById('submit-name-btn');
+        const createGameBtn = document.getElementById('create-game-btn'), joinGameInput = document.getElementById('join-game-input'), joinGameBtn = document.getElementById('join-game-btn');
+        const userInfo = document.getElementById('user-info'), gameCodeDisplay = document.getElementById('game-code-display'), copyCodeBtn = document.getElementById('copy-code-btn');
+        const messageBox = document.getElementById('message-box'), playerList = document.getElementById('player-list'), playerCount = document.getElementById('player-count');
+        const startGameBtn = document.getElementById('start-game-btn'), waitingForHost = document.getElementById('waiting-for-host');
+        const roundNumber = document.getElementById('round-number'), ruleText = document.getElementById('rule-text'), gamePlayerCards = document.getElementById('game-player-cards');
+        const inputArea = document.getElementById('input-area'), numberButtonsContainer = document.getElementById('number-buttons-container'), selectedNumberDisplay = document.getElementById('selected-number-display'), submitNumberBtn = document.getElementById('submit-number-btn');
+        const resultRoundNumber = document.getElementById('result-round-number'), resultDetails = document.getElementById('result-details'), averageResult = document.getElementById('average-result'), winningNumberResult = document.getElementById('winning-number-result');
+        const resultPlayerList = document.getElementById('result-player-list'), roundWinnertext = document.getElementById('round-winner-text'), roundLoserText = document.getElementById('round-loser-text');
+        const nextRoundBtn = document.getElementById('next-round-btn'), finalWinnerName = document.getElementById('final-winner-name'), playAgainBtn = document.getElementById('play-again-btn');
         const loadingMessage = document.getElementById('loading-message');
+        const settingsBtn = document.getElementById('settings-btn'), settingsModal = document.getElementById('settings-modal'), closeSettingsBtn = document.getElementById('close-settings-btn'), themeToggle = document.getElementById('theme-toggle');
 
-        // --- FUNGSI UTAMA ---
-
-        function showScreen(screenName) {
-            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
-            if (screens[screenName]) {
-                screens[screenName].classList.remove('hidden');
-            }
+        // --- THEME LOGIC ---
+        function applyTheme(theme) {
+            if (theme === 'light') { document.documentElement.classList.add('light'); themeToggle.checked = true; } 
+            else { document.documentElement.classList.remove('light'); themeToggle.checked = false; }
         }
-
-        function showMessage(text) {
-            messageBox.textContent = text;
-            setTimeout(() => { messageBox.textContent = ''; }, 2000);
+        function toggleTheme() {
+            const newTheme = document.documentElement.classList.contains('light') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
         }
         
+        // --- CORE FUNCTIONS ---
+        function showScreen(screenName) { Object.values(screens).forEach(s => s.classList.add('hidden')); if (screens[screenName]) screens[screenName].classList.remove('hidden'); }
         async function handleAuth() {
-            onAuthStateChanged(auth, (user) => {
+            onAuthStateChanged(auth, user => {
                 if (user) {
-                    currentUser = user;
-                    userInfo.textContent = `ID Pengguna: ${user.uid}`;
-                    loadingMessage.classList.add('hidden');
-                    createGameBtn.disabled = false;
-                    joinGameInput.disabled = false;
-                    joinGameBtn.disabled = false;
-                    if (!currentPlayerName) { nameModal.classList.remove('hidden'); }
+                    currentUser = user; userInfo.textContent = `ID Pengguna: ${user.uid}`;
+                    loadingMessage.classList.add('hidden'); createGameBtn.disabled = false; joinGameInput.disabled = false; joinGameBtn.disabled = false;
+                    if (!currentPlayerName) nameModal.classList.remove('hidden');
                 }
             });
-            try { await signInAnonymously(auth); } catch (error) { console.error("Gagal login:", error); loadingMessage.textContent = 'Gagal terhubung.'; }
+            try { await signInAnonymously(auth); } catch (e) { console.error("Gagal login:", e); }
         }
-        
         function getGameDocRef(gameId) { return doc(db, "games", gameId); }
-
         async function createGame() {
             if (!currentUser) return;
             const gameId = Math.random().toString(36).substring(2, 7).toUpperCase();
             currentGameId = gameId;
             const gameData = { gameId, hostId: currentUser.uid, status: 'waiting', currentRound: 1, players: { [currentUser.uid]: { name: currentPlayerName, status: 'active', lives: 10, currentChoice: null, isReady: false } }, roundResults: {} };
-            try { await setDoc(getGameDocRef(gameId), gameData); joinGameSession(gameId); } catch (error) { console.error("Gagal membuat game:", error); }
+            try { await setDoc(getGameDocRef(gameId), gameData); joinGameSession(gameId); } catch (e) { console.error("Gagal membuat game:", e); }
         }
-
         async function joinGame(gameId) {
             if (!currentUser) return;
             const gameRef = getGameDocRef(gameId);
@@ -328,29 +303,25 @@
                 const gameSnap = await getDoc(gameRef);
                 if (!gameSnap.exists()) { alert("Game tidak ditemukan!"); return; }
                 const gameData = gameSnap.data();
-                if (Object.keys(gameData.players).length >= 5 && !gameData.players[currentUser.uid]) { alert("Maaf, lobi sudah penuh."); return; }
-                if (gameData.status !== 'waiting') { alert("Maaf, permainan sudah dimulai."); return; }
-                const newPlayerData = { name: currentPlayerName, status: 'active', lives: 10, currentChoice: null, isReady: false };
-                await updateDoc(gameRef, { [`players.${currentUser.uid}`]: newPlayerData });
-                currentGameId = gameId;
-                joinGameSession(gameId);
-            } catch (error) { console.error("Gagal bergabung ke game:", error); }
+                if (Object.keys(gameData.players).length >= 5 && !gameData.players[currentUser.uid]) { alert("Lobi penuh."); return; }
+                if (gameData.status !== 'waiting') { alert("Permainan sudah dimulai."); return; }
+                await updateDoc(gameRef, { [`players.${currentUser.uid}`]: { name: currentPlayerName, status: 'active', lives: 10, currentChoice: null, isReady: false } });
+                currentGameId = gameId; joinGameSession(gameId);
+            } catch (e) { console.error("Gagal bergabung:", e); }
         }
-        
         function joinGameSession(gameId) {
             if (unsubscribeGameListener) unsubscribeGameListener();
-            unsubscribeGameListener = onSnapshot(getGameDocRef(gameId), (docSnap) => {
-                if (!docSnap.exists()) { alert("Game telah ditutup oleh host."); resetToHome(); return; }
+            unsubscribeGameListener = onSnapshot(getGameDocRef(gameId), docSnap => {
+                if (!docSnap.exists()) { alert("Game ditutup."); resetToHome(); return; }
                 updateUI(docSnap.data());
             });
         }
-
         function updateUI(gameData) {
             if (!gameData || !currentUser) return;
             if (gameData.currentRound > lastSeenRound) { selectedNumber = null; lastSeenRound = gameData.currentRound; }
             if (gameData.status === 'in-progress' && currentUser.uid === gameData.hostId) {
-                const activePlayers = Object.values(gameData.players).filter(p => p.status === 'active');
-                if (activePlayers.length > 0 && activePlayers.every(p => p.isReady)) { calculateRoundResults(gameData); return; }
+                const active = Object.values(gameData.players).filter(p => p.status === 'active');
+                if (active.length > 0 && active.every(p => p.isReady)) { calculateRoundResults(gameData); return; }
             }
             switch (gameData.status) {
                 case 'waiting': showScreen('lobby'); updateLobbyUI(gameData); break;
@@ -359,72 +330,58 @@
                 case 'finished': showScreen('gameOver'); updateGameOverUI(gameData); break;
             }
         }
-
         function updateLobbyUI(gameData) {
             gameCodeDisplay.textContent = gameData.gameId;
             const players = Object.values(gameData.players);
             playerCount.textContent = players.length;
             playerList.innerHTML = '';
-            players.forEach((player, index) => {
-                const playerDiv = document.createElement('div');
-                playerDiv.className = 'bg-gray-700 p-4 rounded-lg shadow-md pop-in';
-                playerDiv.style.animationDelay = `${index * 0.1}s`;
-                playerDiv.innerHTML = `<p class="font-semibold truncate">${player.name}</p>`;
-                playerList.appendChild(playerDiv);
+            players.forEach((p, i) => {
+                const div = document.createElement('div');
+                div.className = 'themed bg-[var(--bg-surface)] p-4 rounded-lg shadow-md pop-in';
+                div.style.animationDelay = `${i * 0.1}s`;
+                div.innerHTML = `<p class="font-semibold truncate">${p.name}</p>`;
+                playerList.appendChild(div);
             });
             if (currentUser.uid === gameData.hostId && players.length > 1) { startGameBtn.classList.remove('hidden'); waitingForHost.classList.add('hidden'); }
-            else { startGameBtn.classList.add('hidden'); if (currentUser.uid !== gameData.hostId) { waitingForHost.classList.remove('hidden'); } }
+            else { startGameBtn.classList.add('hidden'); if (currentUser.uid !== gameData.hostId) waitingForHost.classList.remove('hidden'); }
         }
-        
         function updateGameUI(gameData) {
             roundNumber.textContent = gameData.currentRound;
-            const players = gameData.players;
-            const myData = players[currentUser.uid];
-            const activePlayerCount = Object.values(players).filter(p => p.status === 'active').length;
+            const players = gameData.players, myData = players[currentUser.uid];
+            const activeCount = Object.values(players).filter(p => p.status === 'active').length;
             
-            let ruleHtml = '';
-            if (activePlayerCount <= 4) ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 1:</strong> Jika ada 2+ pemain memilih angka sama, mereka kalah.</p>`;
-            if (activePlayerCount <= 3) ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 2:</strong> Jika 1 pemain menebak 80% rata-rata (dibulatkan), dia menang & lainnya -2 nyawa.</p>`;
-            if (activePlayerCount === 2) ruleHtml += `<p class="mb-1"><strong class="text-yellow-500">Prioritas 3:</strong> Jika ada yang memilih 0 & 100, pemilik angka 100 menang.</p>`;
-            ruleHtml += `<p><strong class="text-yellow-500">Aturan Dasar:</strong> Jika tidak, pemain terjauh dari 80% rata-rata kalah.</p>`;
-            ruleText.innerHTML = ruleHtml;
+            let rules = '';
+            if (activeCount <= 4) rules += `<p class="mb-1"><strong class="text-[var(--accent-yellow)]">Prioritas 1:</strong> Jika ada 2+ pemain memilih angka sama, mereka kalah.</p>`;
+            if (activeCount <= 3) rules += `<p class="mb-1"><strong class="text-[var(--accent-yellow)]">Prioritas 2:</strong> Jika 1 pemain menebak 80% rata-rata (dibulatkan), dia menang & lainnya -2 nyawa.</p>`;
+            if (activeCount === 2) rules += `<p class="mb-1"><strong class="text-[var(--accent-yellow)]">Prioritas 3:</strong> Jika ada yang memilih 0 & 100, pemilik angka 100 menang.</p>`;
+            rules += `<p><strong class="text-[var(--accent-yellow)]">Aturan Dasar:</strong> Jika tidak, pemain terjauh dari 80% rata-rata kalah.</p>`;
+            ruleText.innerHTML = rules;
 
             gamePlayerCards.innerHTML = '';
-            Object.entries(players).forEach(([uid, player], index) => {
+            Object.entries(players).forEach(([uid, p], i) => {
                 const card = document.createElement('div');
-                card.className = `player-card bg-gray-800 p-3 rounded-lg shadow-lg text-center space-y-2 pop-in ${player.status === 'eliminated' ? 'eliminated' : ''}`;
-                card.style.animationDelay = `${index * 0.1}s`;
-                const statusIcon = player.status === 'eliminated' ? `<i class="ph-bold ph-skull text-4xl text-gray-500"></i>` : (player.isReady ? `<i class="ph-bold ph-check-circle text-4xl text-green-400"></i>` : `<i class="ph ph-clock text-4xl text-yellow-400 animate-pulse"></i>`);
-                card.innerHTML = `<div>${statusIcon}</div><p class="font-bold truncate">${player.name}</p><div class="flex items-center justify-center gap-1 text-red-500 font-bold"><i class="ph-fill ph-heart"></i><span data-uid="${uid}">${player.lives}</span></div>`;
-                if (uid === currentUser.uid) card.classList.add('ring-2', 'ring-red-500');
+                card.className = `player-card themed bg-[var(--bg-surface)] p-3 rounded-lg shadow-lg text-center space-y-2 pop-in ${p.status === 'eliminated' ? 'eliminated' : ''}`;
+                card.style.animationDelay = `${i * 0.1}s`;
+                const icon = p.status === 'eliminated' ? `<i class="ph-bold ph-skull text-4xl text-gray-500"></i>` : (p.isReady ? `<i class="ph-bold ph-check-circle text-4xl text-[var(--accent-green)]"></i>` : `<i class="ph ph-clock text-4xl text-[var(--accent-yellow)] animate-pulse"></i>`);
+                card.innerHTML = `<div>${icon}</div><p class="font-bold truncate">${p.name}</p><div class="flex items-center justify-center gap-1 font-bold text-[var(--accent-red)]"><i class="ph-fill ph-heart"></i><span>${p.lives}</span></div>`;
+                if (uid === currentUser.uid) card.classList.add('ring-2', 'ring-[var(--accent-red)]');
                 gamePlayerCards.appendChild(card);
             });
 
             if (myData && myData.status === 'active' && !myData.isReady) {
                 inputArea.classList.remove('hidden');
+                selectedNumberDisplay.textContent = selectedNumber !== null ? selectedNumber : '-';
+                submitNumberBtn.disabled = selectedNumber === null;
+                const current = numberButtonsContainer.querySelector('.selected'); if (current) current.classList.remove('selected');
                 if (selectedNumber !== null) {
-                    selectedNumberDisplay.textContent = selectedNumber;
-                    submitNumberBtn.disabled = false;
-                    const currentSelectedBtn = numberButtonsContainer.querySelector('.selected');
-                    if (currentSelectedBtn) currentSelectedBtn.classList.remove('selected');
-                    const newSelectedBtn = numberButtonsContainer.querySelector(`[data-number="${selectedNumber}"]`);
-                    if (newSelectedBtn) newSelectedBtn.classList.add('selected');
-                } else {
-                    selectedNumberDisplay.textContent = '-';
-                    submitNumberBtn.disabled = true;
-                    const currentSelectedBtn = numberButtonsContainer.querySelector('.selected');
-                    if (currentSelectedBtn) currentSelectedBtn.classList.remove('selected');
+                    const newSelected = numberButtonsContainer.querySelector(`[data-number="${selectedNumber}"]`);
+                    if (newSelected) newSelected.classList.add('selected');
                 }
             } else { inputArea.classList.add('hidden'); }
         }
-
         function updateRoundResultUI(gameData) {
-            const round = gameData.currentRound;
-            const results = gameData.roundResults[round];
-            if (!results) return;
-
+            const round = gameData.currentRound, results = gameData.roundResults[round]; if (!results) return;
             resultRoundNumber.textContent = round;
-            
             if (results.average !== undefined) {
                 resultDetails.classList.remove('hidden');
                 animateValue(averageResult, 0, results.average, 500);
@@ -432,258 +389,157 @@
             } else { resultDetails.classList.add('hidden'); }
             
             resultPlayerList.innerHTML = '';
-            Object.entries(results.choices).forEach(([uid, choice], index) => {
-                const player = gameData.players[uid];
-                let diffText = '';
-                if (results.winningNumber !== undefined) { diffText = `(Jarak: ${Math.abs(choice - results.winningNumber).toFixed(2)})`; }
-                let highlightClass = '';
-                if (uid === results.winner) highlightClass = 'bg-green-900/50 ring-2 ring-green-500';
-                if (results.loserIds && results.loserIds.includes(uid)) highlightClass = 'bg-red-900/50 ring-2 ring-red-500';
-                const resultDiv = document.createElement('div');
-                resultDiv.className = `flex justify-between items-center p-3 rounded-lg bg-gray-700 pop-in ${highlightClass}`;
-                resultDiv.style.animationDelay = `${(index * 0.1) + 0.3}s`;
-                resultDiv.innerHTML = `<span class="font-semibold">${player.name}</span><div class="text-right"><span class="text-xl font-bold">${choice}</span><span class="text-xs text-gray-400 ml-2">${diffText}</span></div>`;
-                resultPlayerList.appendChild(resultDiv);
+            Object.entries(results.choices).forEach(([uid, choice], i) => {
+                const p = gameData.players[uid];
+                let diff = '', highlight = '';
+                if (results.winningNumber !== undefined) diff = `(Jarak: ${Math.abs(choice - results.winningNumber).toFixed(2)})`;
+                if (uid === results.winner) highlight = 'bg-green-900/50 ring-2 ring-green-500';
+                if (results.loserIds && results.loserIds.includes(uid)) highlight = 'bg-red-900/50 ring-2 ring-red-500';
+                const div = document.createElement('div');
+                div.className = `themed flex justify-between items-center p-3 rounded-lg bg-[var(--bg-surface)] pop-in ${highlight}`;
+                div.style.animationDelay = `${(i * 0.1) + 0.3}s`;
+                div.innerHTML = `<span class="font-semibold">${p.name}</span><div class="text-right"><span class="text-xl font-bold">${choice}</span><span class="text-xs text-[var(--text-secondary)] ml-2">${diff}</span></div>`;
+                resultPlayerList.appendChild(div);
             });
 
-            roundWinnertext.textContent = results.winner ? `Pemenang Ronde: ${gameData.players[results.winner].name}` : `Tidak ada pemenang ronde ini.`;
+            roundWinnertext.textContent = results.winner ? `Pemenang Ronde: ${gameData.players[results.winner].name}` : `Tidak ada pemenang.`;
             if (results.loserIds && results.loserIds.length > 0) {
-                const livesLost = results.livesLost || 1;
-                const loserNames = results.loserIds.map(id => gameData.players[id].name).join(' & ');
-                roundLoserText.textContent = `${loserNames} kehilangan ${livesLost} nyawa.`;
-            } else { roundLoserText.textContent = 'Tidak ada yang kehilangan nyawa ronde ini.'; }
-
-            if (currentUser.uid === gameData.hostId) { nextRoundBtn.classList.remove('hidden'); } else { nextRoundBtn.classList.add('hidden'); }
+                const names = results.loserIds.map(id => gameData.players[id].name).join(' & ');
+                roundLoserText.textContent = `${names} kehilangan ${results.livesLost || 1} nyawa.`;
+            } else { roundLoserText.textContent = 'Tidak ada yang kehilangan nyawa.'; }
+            if (currentUser.uid === gameData.hostId) nextRoundBtn.classList.remove('hidden'); else nextRoundBtn.classList.add('hidden');
         }
-        
-        function updateGameOverUI(gameData) {
-            finalWinnerName.textContent = (gameData.winner && gameData.players[gameData.winner]) ? gameData.players[gameData.winner].name : "Tidak ada pemenang";
-        }
-
-        async function handleStartGame() {
-            if (!currentGameId) return;
-            await updateDoc(getGameDocRef(currentGameId), { status: 'in-progress' });
-        }
-
-        async function handleSubmitNumber() {
-            if (selectedNumber === null) return;
-            await updateDoc(getGameDocRef(currentGameId), { [`players.${currentUser.uid}.currentChoice`]: selectedNumber, [`players.${currentUser.uid}.isReady`]: true });
-        }
-        
+        function updateGameOverUI(gameData) { finalWinnerName.textContent = (gameData.winner && gameData.players[gameData.winner]) ? gameData.players[gameData.winner].name : "Tidak ada pemenang"; }
+        async function handleStartGame() { if (!currentGameId) return; await updateDoc(getGameDocRef(currentGameId), { status: 'in-progress' }); }
+        async function handleSubmitNumber() { if (selectedNumber === null) return; await updateDoc(getGameDocRef(currentGameId), { [`players.${currentUser.uid}.currentChoice`]: selectedNumber, [`players.${currentUser.uid}.isReady`]: true }); }
         async function calculateRoundResults(gameData) {
-            const activePlayers = Object.entries(gameData.players).filter(([uid, p]) => p.status === 'active');
-            const activePlayerCount = activePlayers.length;
-            const updates = {};
-            const choices = {};
-            activePlayers.forEach(([uid, p]) => { choices[uid] = p.currentChoice; });
-            let winnerId = null, loserIds = [], livesToLose = 1, ruleApplied = false, roundResultData = { choices };
+            const active = Object.entries(gameData.players).filter(([uid, p]) => p.status === 'active'), activeCount = active.length;
+            const updates = {}, choices = {}; active.forEach(([uid, p]) => { choices[uid] = p.currentChoice; });
+            let winnerId = null, loserIds = [], livesToLose = 1, applied = false, resultData = { choices };
 
             const normalRule = () => {
-                let sum = 0; activePlayers.forEach(([uid, p]) => { sum += p.currentChoice; });
-                const average = activePlayerCount > 0 ? sum / activePlayerCount : 0;
-                const winningNumber = average * 0.8;
-                roundResultData.average = average; roundResultData.winningNumber = winningNumber;
-                let minDiff = Infinity, maxDiff = -1;
-                activePlayers.forEach(([uid, p]) => {
-                    const diff = Math.abs(p.currentChoice - winningNumber);
-                    if (diff < minDiff) { minDiff = diff; winnerId = uid; }
-                    if (diff > maxDiff) maxDiff = diff;
+                let sum = 0; active.forEach(([uid, p]) => { sum += p.currentChoice; });
+                const avg = activeCount > 0 ? sum / activeCount : 0, winNum = avg * 0.8;
+                resultData.average = avg; resultData.winningNumber = winNum;
+                let min = Infinity, max = -1;
+                active.forEach(([uid, p]) => {
+                    const diff = Math.abs(p.currentChoice - winNum);
+                    if (diff < min) { min = diff; winnerId = uid; }
+                    if (diff > max) max = diff;
                 });
-                const farthest = activePlayers.filter(([uid, p]) => Math.abs(p.currentChoice - winningNumber) === maxDiff);
-                if (farthest.length === 1) loserIds.push(farthest[0][0]);
+                const far = active.filter(([uid, p]) => Math.abs(p.currentChoice - winNum) === max);
+                if (far.length === 1) loserIds.push(far[0][0]);
             };
 
-            if (activePlayerCount <= 4) {
-                const counts = {}; activePlayers.forEach(([uid, p]) => { counts[p.currentChoice] = (counts[p.currentChoice] || 0) + 1; });
-                const duplicates = Object.entries(counts).filter(([num, count]) => count > 1).map(([num, count]) => parseInt(num));
-                if (duplicates.length > 0) {
-                    loserIds = activePlayers.filter(([uid, p]) => duplicates.includes(p.currentChoice)).map(([uid, p]) => uid);
-                    const winners = activePlayers.filter(([uid, p]) => !loserIds.includes(uid));
-                    if (winners.length > 0) winnerId = winners[0][0];
-                    ruleApplied = true;
+            if (activeCount <= 4) {
+                const counts = {}; active.forEach(([uid, p]) => { counts[p.currentChoice] = (counts[p.currentChoice] || 0) + 1; });
+                const dups = Object.entries(counts).filter(([n, c]) => c > 1).map(([n, c]) => parseInt(n));
+                if (dups.length > 0) {
+                    loserIds = active.filter(([uid, p]) => dups.includes(p.currentChoice)).map(([uid, p]) => uid);
+                    const winners = active.filter(([uid, p]) => !loserIds.includes(uid));
+                    if (winners.length > 0) winnerId = winners[0][0]; applied = true;
                 }
             }
-            if (!ruleApplied && activePlayerCount <= 3) {
-                let sum = 0; activePlayers.forEach(([uid, p]) => { sum += p.currentChoice; });
-                const average = activePlayerCount > 0 ? sum / activePlayerCount : 0;
-                const winningNumber = average * 0.8;
-                roundResultData.average = average; roundResultData.winningNumber = winningNumber;
-                const perfectGuessers = activePlayers.filter(([uid, p]) => p.currentChoice === Math.round(winningNumber));
-                if (perfectGuessers.length === 1) {
-                    winnerId = perfectGuessers[0][0];
-                    loserIds = activePlayers.filter(([uid, p]) => uid !== winnerId).map(([uid, p]) => uid);
-                    livesToLose = 2; ruleApplied = true;
+            if (!applied && activeCount <= 3) {
+                let sum = 0; active.forEach(([uid, p]) => { sum += p.currentChoice; });
+                const avg = activeCount > 0 ? sum / activeCount : 0, winNum = avg * 0.8;
+                resultData.average = avg; resultData.winningNumber = winNum;
+                const guessers = active.filter(([uid, p]) => p.currentChoice === Math.round(winNum));
+                if (guessers.length === 1) {
+                    winnerId = guessers[0][0];
+                    loserIds = active.filter(([uid, p]) => uid !== winnerId).map(([uid, p]) => uid);
+                    livesToLose = 2; applied = true;
                 }
             }
-            if (!ruleApplied && activePlayerCount === 2) {
-                const choicesArray = activePlayers.map(([uid, p]) => p.currentChoice);
-                if ((choicesArray.includes(0) && choicesArray.includes(100))) {
-                    winnerId = activePlayers.find(([uid, p]) => p.currentChoice === 100)[0];
-                    loserIds.push(activePlayers.find(([uid, p]) => p.currentChoice === 0)[0]);
-                    ruleApplied = true;
+            if (!applied && activeCount === 2) {
+                const choiceArr = active.map(([uid, p]) => p.currentChoice);
+                if (choiceArr.includes(0) && choiceArr.includes(100)) {
+                    winnerId = active.find(([uid, p]) => p.currentChoice === 100)[0];
+                    loserIds.push(active.find(([uid, p]) => p.currentChoice === 0)[0]);
+                    applied = true;
                 }
             }
-            if (!ruleApplied) normalRule();
+            if (!applied) normalRule();
 
-            roundResultData.winner = winnerId; roundResultData.loserIds = loserIds; roundResultData.livesLost = livesToLose;
-            updates.status = 'round-result'; updates[`roundResults.${gameData.currentRound}`] = roundResultData;
-            loserIds.forEach(loserId => {
-                const newLives = gameData.players[loserId].lives - livesToLose;
-                updates[`players.${loserId}.lives`] = newLives;
-                if (newLives <= 0) updates[`players.${loserId}.status`] = 'eliminated';
+            resultData.winner = winnerId; resultData.loserIds = loserIds; resultData.livesLost = livesToLose;
+            updates.status = 'round-result'; updates[`roundResults.${gameData.currentRound}`] = resultData;
+            loserIds.forEach(id => {
+                const newLives = gameData.players[id].lives - livesToLose;
+                updates[`players.${id}.lives`] = newLives;
+                if (newLives <= 0) updates[`players.${id}.status`] = 'eliminated';
             });
             await updateDoc(getGameDocRef(currentGameId), updates);
         }
-
         async function handleNextRound() {
-            const gameRef = getGameDocRef(currentGameId);
-            const gameSnap = await getDoc(gameRef);
-            if (!gameSnap.exists()) return;
-            const gameData = gameSnap.data();
-            const activePlayers = Object.values(gameData.players).filter(p => p.status === 'active');
-            if (activePlayers.length <= 1) {
-                await updateDoc(gameRef, { status: 'finished', winner: activePlayers.length > 0 ? Object.keys(gameData.players).find(uid => gameData.players[uid].status === 'active') : null });
+            const gameRef = getGameDocRef(currentGameId), gameSnap = await getDoc(gameRef); if (!gameSnap.exists()) return;
+            const gameData = gameSnap.data(), active = Object.values(gameData.players).filter(p => p.status === 'active');
+            if (active.length <= 1) {
+                await updateDoc(gameRef, { status: 'finished', winner: active.length > 0 ? Object.keys(gameData.players).find(uid => gameData.players[uid].status === 'active') : null });
             } else {
                 const updates = { status: 'in-progress', currentRound: gameData.currentRound + 1 };
                 Object.keys(gameData.players).forEach(uid => { if (gameData.players[uid].status === 'active') { updates[`players.${uid}.currentChoice`] = null; updates[`players.${uid}.isReady`] = false; } });
                 await updateDoc(gameRef, updates);
             }
         }
-
-        function resetToHome() {
-            if (unsubscribeGameListener) { unsubscribeGameListener(); unsubscribeGameListener = null; }
-            currentGameId = null; joinGameInput.value = ''; showScreen('home');
-        }
-
-        function generateNumberButtons() {
-            for (let i = 0; i <= 100; i++) {
-                const button = document.createElement('button');
-                button.textContent = i; button.dataset.number = i;
-                button.className = 'number-btn bg-gray-700 hover:bg-gray-600 rounded-md p-2 text-sm font-semibold transition-all duration-150';
-                numberButtonsContainer.appendChild(button);
-            }
-        }
-
-        function animateValue(obj, start, end, duration) {
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = (progress * (end - start) + start).toFixed(2);
-                if (progress < 1) window.requestAnimationFrame(step);
-            };
-            window.requestAnimationFrame(step);
-        }
+        function resetToHome() { if (unsubscribeGameListener) { unsubscribeGameListener(); unsubscribeGameListener = null; } currentGameId = null; joinGameInput.value = ''; showScreen('home'); }
+        function generateNumberButtons() { for (let i = 0; i <= 100; i++) { const btn = document.createElement('button'); btn.textContent = i; btn.dataset.number = i; btn.className = 'themed number-btn bg-[var(--bg-surface)] hover:bg-[var(--border-color)] rounded-md p-2 text-sm font-semibold transition-all duration-150'; numberButtonsContainer.appendChild(btn); } }
+        function animateValue(obj, start, end, duration) { let ts = null; const step = t => { if (!ts) ts = t; const p = Math.min((t - ts) / duration, 1); obj.innerHTML = (p * (end - start) + start).toFixed(2); if (p < 1) window.requestAnimationFrame(step); }; window.requestAnimationFrame(step); }
 
         // --- Event Listeners ---
-        window.addEventListener('load', () => { generateNumberButtons(); if(auth) handleAuth(); });
-        submitNameBtn.addEventListener('click', () => {
-            const name = playerNameInput.value.trim();
-            if (name) { currentPlayerName = name; localStorage.setItem('playerName', name); nameModal.classList.add('hidden'); }
-            else { alert("Nama tidak boleh kosong."); }
+        window.addEventListener('load', () => {
+            generateNumberButtons();
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+            if(auth) handleAuth();
         });
+        submitNameBtn.addEventListener('click', () => { const name = playerNameInput.value.trim(); if (name) { currentPlayerName = name; localStorage.setItem('playerName', name); nameModal.classList.add('hidden'); } else alert("Nama tidak boleh kosong."); });
         createGameBtn.addEventListener('click', () => { if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; } createGame(); });
-        joinGameBtn.addEventListener('click', () => {
-            if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; }
-            const gameId = joinGameInput.value.trim().toUpperCase();
-            if (gameId) joinGame(gameId); else alert("Masukkan kode game.");
-        });
+        joinGameBtn.addEventListener('click', () => { if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; } const id = joinGameInput.value.trim().toUpperCase(); if (id) joinGame(id); else alert("Masukkan kode game."); });
         copyCodeBtn.addEventListener('click', () => {
             if (!currentGameId) return;
-            navigator.clipboard.writeText(currentGameId).then(() => {
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = currentGameId;
+                textArea.style.position = "fixed"; textArea.style.opacity = "0";
+                document.body.appendChild(textArea);
+                textArea.focus(); textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
                 showMessage('Kode berhasil disalin!');
-            }).catch(err => {
-                console.error('Gagal menyalin kode (metode modern), mencoba fallback: ', err);
-                try {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = currentGameId;
-                    textArea.style.position = "fixed";
-                    textArea.style.top = "0";
-                    textArea.style.left = "0";
-                    textArea.style.opacity = "0";
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    showMessage('Kode berhasil disalin!');
-                } catch (e) {
-                    console.error('Gagal menyalin kode (metode fallback): ', e);
-                    showMessage('Gagal menyalin kode.');
-                }
-            });
+            } catch (e) { showMessage('Gagal menyalin kode.'); }
         });
-        numberButtonsContainer.addEventListener('click', (e) => {
+        numberButtonsContainer.addEventListener('click', e => {
             if (e.target.classList.contains('number-btn')) {
-                const number = e.target.dataset.number;
-                selectedNumber = parseInt(number);
-                selectedNumberDisplay.textContent = number;
+                const num = e.target.dataset.number;
+                selectedNumber = parseInt(num);
+                selectedNumberDisplay.textContent = num;
                 submitNumberBtn.disabled = false;
-                const currentSelected = numberButtonsContainer.querySelector('.selected');
-                if (currentSelected) currentSelected.classList.remove('selected');
+                const current = numberButtonsContainer.querySelector('.selected'); if (current) current.classList.remove('selected');
                 e.target.classList.add('selected');
             }
         });
+        settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
+        closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
+        themeToggle.addEventListener('change', toggleTheme);
         startGameBtn.addEventListener('click', handleStartGame);
         submitNumberBtn.addEventListener('click', handleSubmitNumber);
         nextRoundBtn.addEventListener('click', handleNextRound);
         playAgainBtn.addEventListener('click', resetToHome);
 
         // --- Background Animation ---
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        let particles = [];
-        const particleCount = 50;
-
+        const canvas = document.getElementById('particle-canvas'), ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let particles = []; const particleCount = 50;
         class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 1.5 + 0.5;
-                this.speedX = (Math.random() * 0.5 - 0.25) * 0.5;
-                this.speedY = (Math.random() * 0.5 - 0.25) * 0.5;
-                this.opacity = Math.random() * 0.5 + 0.2;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.x > canvas.width || this.x < 0) this.x = Math.random() * canvas.width;
-                if (this.y > canvas.height || this.y < 0) this.y = Math.random() * canvas.height;
-            }
-            draw() {
-                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            constructor() { this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.size = Math.random() * 1.5 + 0.5; this.speedX = (Math.random() * 0.5 - 0.25) * 0.5; this.speedY = (Math.random() * 0.5 - 0.25) * 0.5; this.opacity = Math.random() * 0.5 + 0.2; }
+            update() { this.x += this.speedX; this.y += this.speedY; if (this.x > canvas.width || this.x < 0) this.x = Math.random() * canvas.width; if (this.y > canvas.height || this.y < 0) this.y = Math.random() * canvas.height; }
+            draw() { ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill(); }
         }
-
-        function initParticles() {
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new Particle());
-            }
-        }
-
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-            }
-            requestAnimationFrame(animateParticles);
-        }
-
-        initParticles();
-        animateParticles();
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            particles = [];
-            initParticles();
-        });
-
+        function initParticles() { for (let i = 0; i < particleCount; i++) particles.push(new Particle()); }
+        function animateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animateParticles); }
+        initParticles(); animateParticles();
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; particles = []; initParticles(); });
     </script>
 </body>
 </html>
+
