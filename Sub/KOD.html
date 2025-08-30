@@ -220,11 +220,22 @@
         
         <!-- Modal Setelan -->
         <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
-             <div class="bg-[var(--bg-surface)] themed p-8 rounded-lg shadow-xl text-center space-y-6 w-full max-w-sm pop-in relative">
+             <div class="bg-[var(--bg-surface)] themed p-8 rounded-lg shadow-xl text-left space-y-6 w-full max-w-sm pop-in relative">
                  <button id="close-settings-btn" class="absolute top-2 right-2 p-2 rounded-full hover:bg-[var(--bg-surface-alt)] themed">
                      <i class="ph ph-x text-xl"></i>
                  </button>
-                 <h2 class="text-2xl font-bold themed">Setelan</h2>
+                 <h2 class="text-2xl font-bold themed text-center">Setelan</h2>
+                 
+                 <div class="space-y-2">
+                    <label class="text-sm font-medium text-[var(--text-secondary)] themed">Ganti Nama</label>
+                    <div class="flex items-center justify-between gap-2">
+                        <input type="text" id="change-name-input" placeholder="Nama Baru" maxlength="15" class="w-full bg-[var(--bg-surface-alt)] themed border border-[var(--border-color)] rounded-lg px-4 py-2 text-center">
+                        <button id="save-name-btn" class="interactive-btn text-white font-bold py-2 px-4 rounded-lg text-sm">Simpan</button>
+                    </div>
+                 </div>
+
+                 <div class="border-t border-[var(--border-color)] themed my-4"></div>
+
                  <div class="flex items-center justify-between">
                      <span class="text-lg themed">Tema Terang</span>
                      <label for="theme-toggle" class="relative inline-flex items-center cursor-pointer">
@@ -264,6 +275,8 @@
         const nextRoundBtn = document.getElementById('next-round-btn'), finalWinnerName = document.getElementById('final-winner-name'), playAgainBtn = document.getElementById('play-again-btn');
         const loadingMessage = document.getElementById('loading-message');
         const settingsBtnContainer = document.getElementById('settings-btn-container'), settingsBtn = document.getElementById('settings-btn'), settingsModal = document.getElementById('settings-modal'), closeSettingsBtn = document.getElementById('close-settings-btn'), themeToggle = document.getElementById('theme-toggle');
+        const changeNameInput = document.getElementById('change-name-input'), saveNameBtn = document.getElementById('save-name-btn');
+
 
         // --- THEME LOGIC ---
         function applyTheme(theme) {
@@ -277,11 +290,20 @@
         }
         
         // --- CORE FUNCTIONS ---
+        async function updatePlayerName(newName) {
+            currentPlayerName = newName;
+            localStorage.setItem('playerName', newName);
+            if (currentGameId && currentUser) {
+                const gameRef = getGameDocRef(currentGameId);
+                const gameSnap = await getDoc(gameRef);
+                if (gameSnap.exists() && gameSnap.data().players[currentUser.uid]) {
+                    await updateDoc(gameRef, { [`players.${currentUser.uid}.name`]: newName });
+                }
+            }
+        }
         function showScreen(screenName) {
             Object.values(screens).forEach(s => s.classList.add('hidden'));
             if (screens[screenName]) screens[screenName].classList.remove('hidden');
-
-            // BUG FIX 1: Show/hide settings button based on screen
             if (screenName === 'game' || screenName === 'roundResult' || screenName === 'gameOver') {
                 settingsBtnContainer.classList.add('hidden');
             } else {
@@ -497,7 +519,6 @@
                 const btn = document.createElement('button'); 
                 btn.textContent = i; 
                 btn.dataset.number = i; 
-                // BUG FIX 2: Add flex properties to center text inside button
                 btn.className = 'themed number-btn bg-[var(--bg-surface)] hover:bg-[var(--border-color)] rounded-md p-2 text-sm font-semibold transition-all duration-150 flex items-center justify-center'; 
                 numberButtonsContainer.appendChild(btn); 
             } 
@@ -511,7 +532,25 @@
             applyTheme(savedTheme);
             if(auth) handleAuth();
         });
-        submitNameBtn.addEventListener('click', () => { const name = playerNameInput.value.trim(); if (name) { currentPlayerName = name; localStorage.setItem('playerName', name); nameModal.classList.add('hidden'); } else alert("Nama tidak boleh kosong."); });
+        submitNameBtn.addEventListener('click', () => { 
+            const name = playerNameInput.value.trim(); 
+            if (name) { 
+                updatePlayerName(name);
+                nameModal.classList.add('hidden'); 
+            } else { 
+                alert("Nama tidak boleh kosong.");
+            }
+        });
+        saveNameBtn.addEventListener('click', () => {
+            const newName = changeNameInput.value.trim();
+            if (newName && newName !== currentPlayerName) {
+                updatePlayerName(newName);
+            } else if (!newName) {
+                alert("Nama tidak boleh kosong.");
+                return; // Prevent closing modal if name is empty
+            }
+            settingsModal.classList.add('hidden');
+        });
         createGameBtn.addEventListener('click', () => { if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; } createGame(); });
         joinGameBtn.addEventListener('click', () => { if (!currentPlayerName) { nameModal.classList.remove('hidden'); return; } const id = joinGameInput.value.trim().toUpperCase(); if (id) joinGame(id); else alert("Masukkan kode game."); });
         copyCodeBtn.addEventListener('click', () => {
@@ -537,7 +576,10 @@
                 e.target.classList.add('selected');
             }
         });
-        settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
+        settingsBtn.addEventListener('click', () => {
+            changeNameInput.value = currentPlayerName;
+            settingsModal.classList.remove('hidden')
+        });
         closeSettingsBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
         themeToggle.addEventListener('change', toggleTheme);
         startGameBtn.addEventListener('click', handleStartGame);
@@ -561,4 +603,3 @@
     </script>
 </body>
 </html>
-
