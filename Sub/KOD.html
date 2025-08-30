@@ -107,7 +107,7 @@
     <div id="app" class="w-full max-w-5xl mx-auto p-4 z-10 relative">
 
         <!-- Tombol Setelan -->
-        <div class="absolute top-4 right-4 z-50">
+        <div id="settings-btn-container" class="absolute top-4 right-4 z-50">
             <button id="settings-btn" class="p-3 rounded-full bg-[var(--bg-surface)] themed shadow-lg hover:bg-gray-700 transition-transform transform hover:scale-110">
                 <i class="ph ph-gear text-2xl text-[var(--text-secondary)] themed"></i>
             </button>
@@ -263,7 +263,7 @@
         const resultPlayerList = document.getElementById('result-player-list'), roundWinnertext = document.getElementById('round-winner-text'), roundLoserText = document.getElementById('round-loser-text');
         const nextRoundBtn = document.getElementById('next-round-btn'), finalWinnerName = document.getElementById('final-winner-name'), playAgainBtn = document.getElementById('play-again-btn');
         const loadingMessage = document.getElementById('loading-message');
-        const settingsBtn = document.getElementById('settings-btn'), settingsModal = document.getElementById('settings-modal'), closeSettingsBtn = document.getElementById('close-settings-btn'), themeToggle = document.getElementById('theme-toggle');
+        const settingsBtnContainer = document.getElementById('settings-btn-container'), settingsBtn = document.getElementById('settings-btn'), settingsModal = document.getElementById('settings-modal'), closeSettingsBtn = document.getElementById('close-settings-btn'), themeToggle = document.getElementById('theme-toggle');
 
         // --- THEME LOGIC ---
         function applyTheme(theme) {
@@ -277,7 +277,17 @@
         }
         
         // --- CORE FUNCTIONS ---
-        function showScreen(screenName) { Object.values(screens).forEach(s => s.classList.add('hidden')); if (screens[screenName]) screens[screenName].classList.remove('hidden'); }
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            if (screens[screenName]) screens[screenName].classList.remove('hidden');
+
+            // BUG FIX 1: Show/hide settings button based on screen
+            if (screenName === 'game' || screenName === 'roundResult' || screenName === 'gameOver') {
+                settingsBtnContainer.classList.add('hidden');
+            } else {
+                settingsBtnContainer.classList.remove('hidden');
+            }
+        }
         async function handleAuth() {
             onAuthStateChanged(auth, user => {
                 if (user) {
@@ -482,7 +492,16 @@
             }
         }
         function resetToHome() { if (unsubscribeGameListener) { unsubscribeGameListener(); unsubscribeGameListener = null; } currentGameId = null; joinGameInput.value = ''; showScreen('home'); }
-        function generateNumberButtons() { for (let i = 0; i <= 100; i++) { const btn = document.createElement('button'); btn.textContent = i; btn.dataset.number = i; btn.className = 'themed number-btn bg-[var(--bg-surface)] hover:bg-[var(--border-color)] rounded-md p-2 text-sm font-semibold transition-all duration-150'; numberButtonsContainer.appendChild(btn); } }
+        function generateNumberButtons() { 
+            for (let i = 0; i <= 100; i++) { 
+                const btn = document.createElement('button'); 
+                btn.textContent = i; 
+                btn.dataset.number = i; 
+                // BUG FIX 2: Add flex properties to center text inside button
+                btn.className = 'themed number-btn bg-[var(--bg-surface)] hover:bg-[var(--border-color)] rounded-md p-2 text-sm font-semibold transition-all duration-150 flex items-center justify-center'; 
+                numberButtonsContainer.appendChild(btn); 
+            } 
+        }
         function animateValue(obj, start, end, duration) { let ts = null; const step = t => { if (!ts) ts = t; const p = Math.min((t - ts) / duration, 1); obj.innerHTML = (p * (end - start) + start).toFixed(2); if (p < 1) window.requestAnimationFrame(step); }; window.requestAnimationFrame(step); }
 
         // --- Event Listeners ---
