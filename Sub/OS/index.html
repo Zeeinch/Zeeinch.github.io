@@ -1,1 +1,376 @@
 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Interaktif Sejarah OS - Muh kholaf asmaul ikhsan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #7b2cbf; /* Purple */
+            --accent-color: #e0aaff;  /* Light Purple */
+            --surface-color-rgba: 255, 255, 255, 0.2; /* Glassmorphism background */
+            --text-color: #1c1c1e;
+            --text-color-light: #f8f9fa;
+            --border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #fde4cf, #f5d3ff, #cde9ff, #d7f9f3);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            color: var(--text-color-light);
+            padding: 2rem 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .timeline-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 15px;
+            background: rgba(var(--surface-color-rgba));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-item {
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            transition: background-color 0.3s, transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-item:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .timeline-item.active {
+            background-color: var(--primary-color);
+            transform: scale(1.15);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+        
+        .timeline-item.active .os-icon {
+            filter: brightness(0) invert(1);
+        }
+        
+        .os-icon {
+            width: 30px;
+            height: 30px;
+            display: block;
+        }
+        
+        .content-card {
+            display: none; /* Hidden by default */
+            padding: 30px;
+            background: rgba(var(--surface-color-rgba));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        .content-card.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .content-card h2 {
+            font-size: 2em;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        .content-card h3 {
+            color: var(--text-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 5px;
+        }
+        
+        .content-card ul {
+            padding-left: 20px;
+            list-style-type: '✓ ';
+        }
+        
+        .content-card li {
+            margin-bottom: 8px;
+        }
+
+        .fun-fact {
+            margin-top: 20px;
+            padding: 15px;
+            border-left: 4px solid var(--primary-color);
+            background: rgba(224, 170, 255, 0.3);
+            border-radius: 5px;
+        }
+        .fun-fact p {
+            margin: 0;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+        
+        /* New Styles for Reference Section */
+        .references-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(var(--surface-color-rgba));
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .references-section h2 {
+             font-size: 2em;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .reference-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .reference-list li {
+            margin-bottom: 15px;
+        }
+
+        .reference-list a {
+            display: block;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.2s, color 0.3s;
+            border: 1px solid var(--border-color);
+        }
+
+        .reference-list a:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            color: var(--primary-color);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            color: #343a40;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Blog Interaktif Sejarah OS</h1>
+            <p style="font-weight: 600;">Oleh: Muh kholaf asmaul ikhsan</p>
+        </header>
+
+        <nav class="timeline-nav">
+            <div class="timeline-item active" data-target="dos">
+                <svg class="os-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6 8L10 12L6 16" stroke="#1c1c1e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 16H18" stroke="#1c1c1e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="timeline-item" data-target="windows">
+                <img class="os-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAC7klEQVR4nO2dMWsUURRGT5EQi1hsl0Ibwcou/gAbC2PSBlKJILEWLey0FazsoqUQEa1iK1hZCPoDtBBlk1gKsRANyMjgK9ZldrJv582+b3a/A6/cmXvfmdy9E5J3wRhjjDHGGGNMl1kGVoEt4B6wC7wHjoA+sJY7wFlkATgPbAC3gR3gDXAAFCesUoqZkB5wEbgGPABeAB+An2NsfN0yNSwBF4BN4C7wGHgbSkyTTbeQGhYHSsydsOlliTlsYbOPgY/AHvAQ2J5nIb2WSkzV+h6u/TT8ZG2Ge5+qiGtuhJwFnoSN+dHCph+FDmk3dExboYMqO6kYOi9kIZSYdeAWcCPU+mHeJSoxn4BXAyXmErCSMJ/OCFkJyW+HzdgL9fe4IomXFZ//E7Hxh+F7Yyd8j2wE6aX8tpESUveiFPMk/664dlWJKcvXM+B+uGdZ109nyLsuztYpn7JzwGXgJvAIeA18jnyKixNW9kQnpLU4Y0pM03VgIaMpv1y/ZehiCgupZpzf0cS8KI3bxRQWMt4Fm74opUqksJB/a7CLWW2xiyksZEoXTHTfwkIsZBIsRAwLEcNCxLAQMSxEDAsRw0LEsBAxLEQMCxHDQsSwEDEsRAwLEcNCxLAQMSxEDAuZNyG51jC540mVRzS5Eygs5H/2BZLoi8aVIo9o1jIn3weuCMaVKg9jjDFmaqw3/JeEpmt/xBkhueNKlUc0Cp1MXzSuFHlEU4isYXLHkyqPaHInUFhIfeLToogUooqFiGEhYliIGBYihoWIYSFiWIgYFiKGhYhhIWJYiBgWIoaFiGEhYliIGBYihoWIYSFiWMi8CfEhmGJCqpaPiR1N8jib/EGaD1ImfZxXWxoP5KPGG+LD+Cdj6nF6XEU9MznQ5VfFtatKoAe6TKkEPq/4vEceZRoKdn1E++yhYGKcCUMiPTZPlJ4HS3aDRY9e7Q5LHk7cHXoe3z37A+6/5g5+3lge8SJcNgFffNaJMcYYY4wxBkH+Ajh4IFF50Ia9AAAAAElFTkSuQmCC" alt="Windows Logo">
+            </div>
+            <div class="timeline-item" data-target="macos">
+                <img class="os-icon" src="data:image/png;base64,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" alt="macOS Logo">
+            </div>
+            <div class="timeline-item" data-target="linux">
+                <img class="os-icon" src="data:image/png;base64,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" alt="Linux Logo">
+            </div>
+            <div class="timeline-item" data-target="android">
+                <img class="os-icon" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAFgElEQVR4nO2d3WsdRRiHn2iTojQpVW/USP3Ar0hBbwRBBAUVtViKihTBC5VakaKg/gnWBNvU2BsVBe+9EqvYSgVbK8WoFzZplSJeSCIKNtAkijmVkYG3cBhmT87mnJl9Z3YfGDik05nf7313Zz/Ou3ugWp4CFoCzwNYKdTwE/AEsAc9SUwaAc4CRtgCMVqBjVOa+oMMmZR015GLZKk1b+1wSFYsBmbNdw4JoqyUvOcEwwM6I8+/0zG811ZaLgK+cgCwBN0SY+1pnybTteJ33jgtcByw6gfky8NJlxz7szLkM3BhwzqR42bN07Hb6XAM8DowDHwHTwJycoZ2Xdlb+Ni19bN/H5P+2s9szn9XQ0LZ0HfMsXU8Ak8AvngCWbXaMfTLmkvNvx0RDwypLl4nQmqWqgCHg0woSclDmbmjjQeCnVQLXAk4AbwLPAHcDm4FNwKC0TbKn3QM8J8vd93J86TS2nfuBqoOggUuBDzoE6jzwGbADGO5hHpuop4EjwH8d5nsfuISaciswUxCYFeBd2QNCXH+8A/xbMPePwM3UjLvkFNUXkI+B6yNo2Cxz+TT8BdxJTbjfc9ppJEE7KtDzZMHGYc/47iVz7ihIxs/ALRXqsrdqThYk5XYyZVSuol3TR50D9npgApiX/uN9Oi0daht3Xj63jzvsuTi17TfgKjLD3rD72mPW/m2D03fC088mpVfGuxh3Q0FSjuZ2Jf+ax+SvwBWevvOevr/3QUO349pT5DM535a3Z0z/OObscWRLicDN9UHHXIlxt8gtlfa+y4FOw6PzoScQr3ToP1HhktXOq57+75E4N3luW/ywynfW6yUpcwEO6uMlxl0nWt0LVntrJlne9mxlj5AOWz3695Io9mbfn46Z7yIXMfTKgGcvmUv1jOthz9b1POnxgsfHfSTIXs/6eznpcZnnRuTrJIjvQjCXdoQE+VtB4EygZsuHksNk3pKj6oCZuiXkNmC/fOu3JEuU/fyG3NlVb6Akrp9R8Toj3pfks/0ef4yI2KvbA6sUDqzUICErHfzb2EzJtVjwZHyRyy5ekrV4Phw6KQdyWnNLslbfbxHwmOEuU7PAo/Jtm23bgFM1SshsF/5bUmHTd/Z7xIx4+m0ETtcgIbMl/Nua4r4z60xit4YittcgIdtK+LcFFH3HfbilUyXhSA0SMlzCf5Ar+7IBzj0hlftXJygy6vyrExQZdf7VCYqMOv/qBEVGnX91giKjzr86QZFR51+doMio869OUGTU+VcnKDLq/KsTFBl1/tUJiow6/+oERUadf3WCIqPOvzpBkVHnX52gyKjzr05QZNT5VycoMur8qxMUGXX+1QmKjDr/6gRFRp1/dYIio86/OkGRUedfnaDIqPPfFMqhq1DOfR1fU0pacSnppDPJKSksdtlY8IbR1DE9+A/y9ocxz+MIp2VrGJG2vcPrXlPHeFo3/lsh35Y3VSCsm5Y6Zo3NrizBGPT8qkCTEArboRjPGQ7KY1qtDkLq/tBnS/aM4Mlwjyn75AxiUd64Zj/vqdFj0XvE87LE4KQcwIM8wtYruSckOZI3kJuf5A3k5id5A7n5ce99VfGjkf1iNIfXM51wTHwCXE2ayTjoePmGBHmxh6tbo7ztIkGG5OeGTGbt29gXfP3kSnk1rMmkTYunpBmUV60er+hn8UyPbVG070p5z+gG13hq/bNDW4BNkxBdATZNQnQF2DQJ0RVg0yREV4BNkxBdATZNQnQF2DQJ0RVg0yREV4BNkxBdATZNQnQF2NQ9Ib1U059TMH52zASuJp8JPH52TAauJp8MPH52rLWavtVlNXno8bNkKnA1+VTg8bOjbDX9oZLf2oUeP0u6qaZv9VBNHnr8bBlzqun7XU0eevy+8D9V1ahLfDKiUwAAAABJRU5kJggg==" alt="Android Logo">
+            </div>
+        </nav>
+
+        <main id="content-area">
+            <!-- DOS Content -->
+            <div id="dos" class="content-card active">
+                <h2>DOS (Disk Operating System)</h2>
+                <p><b>Disk Operating System (DOS)</b> adalah keluarga sistem operasi berbasis teks yang mendominasi pasar komputer pribadi (PC) dari awal 1980-an hingga pertengahan 1990-an. Pengguna berinteraksi melalu antarmuka baris perintah (command-line), mengetikkan perintah untuk menjalankan program atau mengelola file. MS-DOS dari Microsoft adalah varian yang paling terkenal dan menjadi dasar bagi versi awal Windows.</p>
+                <h3>Perkembangan Kunci:</h3>
+                <ul>
+                    <li><b>1980:</b> QDOS (Quick and Dirty Operating System) diciptakan oleh Tim Paterson dari Seattle Computer Products.</li>
+                    <li><b>1981:</b> Microsoft membeli QDOS, mengubah namanya menjadi MS-DOS, dan melisensikannya kepada IBM untuk PC pertama mereka (dirilis sebagai PC-DOS).</li>
+                    <li><b>1983:</b> MS-DOS 2.0 dirilis, menambahkan dukungan untuk hard drive dan subdirektori, sebuah lompatan besar dari sistem berbasis disket.</li>
+                    <li><b>1995:</b> Popularitas DOS menurun drastis setelah peluncuran Windows 95, yang merupakan sistem operasi grafis mandiri.</li>
+                </ul>
+                <div class="fun-fact">
+                    <p><b>Fakta Unik:</b> Bill Gates awalnya menyarankan IBM untuk menggunakan sistem operasi CP/M yang populer saat itu. Namun, karena negosiasi gagal, Microsoft mengambil kesempatan untuk menyediakan OS mereka sendiri.</p>
+                </div>
+            </div>
+
+            <!-- Windows Content -->
+            <div id="windows" class="content-card">
+                <h2>Microsoft Windows</h2>
+                <p><b>Microsoft Windows</b> adalah sistem operasi antarmuka grafis (GUI) yang paling dominan di dunia untuk komputer pribadi. Awalnya dirilis sebagai "lapisan" di atas MS-DOS, Windows berevolusi menjadi sistem operasi mandiri yang kuat, memperkenalkan konsep seperti desktop, ikon, dan Start Menu kepada jutaan pengguna.</p>
+                <h3>Perkembangan Kunci:</h3>
+                <ul>
+                    <li><b>1985:</b> Windows 1.0 dirilis sebagai lingkungan operasi grafis pertama dari Microsoft.</li>
+                    <li><b>1995:</b> Windows 95 menjadi sebuah fenomena global, memperkenalkan Start Menu, taskbar, dan arsitektur 32-bit.</li>
+                    <li><b>2001:</b> Windows XP dirilis, menggabungkan stabilitas dari kernel NT dengan antarmuka yang ramah pengguna. Menjadi salah satu versi Windows paling dicintai.</li>
+                    <li><b>2015:</b> Windows 10 diperkenalkan dengan model "Windows as a Service", menyatukan pengalaman di berbagai perangkat dan menerima pembaruan berkelanjutan.</li>
+                </ul>
+                <div class="fun-fact">
+                    <p><b>Fakta Unik:</b> Nama kode internal untuk Windows 95 adalah "Chicago".</p>
+                </div>
+            </div>
+
+            <!-- macOS Content -->
+            <div id="macos" class="content-card">
+                 <h2>Apple macOS</h2>
+                 <p><b>macOS</b> (sebelumnya Mac OS X dan OS X) adalah sistem operasi yang dikembangkan oleh Apple Inc. secara eksklusif untuk jajaran komputernya. Dikenal dengan desain antarmuka yang elegan, kemudahan penggunaan, dan fondasi berbasis UNIX yang kuat, macOS menjadi pilihan utama bagi banyak profesional kreatif.</p>
+                <h3>Perkembangan Kunci:</h3>
+                <ul>
+                    <li><b>1984:</b> "System Software" debut bersama komputer Macintosh pertama, mempopulerkan antarmuka grafis (GUI) secara massal.</li>
+                    <li><b>2001:</b> Mac OS X 1.0 "Cheetah" dirilis, menandai transisi ke arsitektur berbasis UNIX (dari NeXTSTEP) yang jauh lebih stabil dan modern.</li>
+                    <li><b>2007:</b> Integrasi dengan iOS dimulai, membawa banyak fitur dari iPhone ke Mac.</li>
+                    <li><b>2020:</b> Apple memulai transisi dari prosesor Intel ke chip buatan sendiri (Apple Silicon), dan macOS Big Sur dirilis dengan desain ulang terbesar dalam hampir 20 tahun.</li>
+                </ul>
+                <div class="fun-fact">
+                    <p><b>Fakta Unik:</b> Sebelum dinamai berdasarkan lokasi di California (seperti Mavericks, Yosemite), semua versi Mac OS X (10.0-10.8) dinamai berdasarkan spesies kucing besar.</p>
+                </div>
+            </div>
+            
+            <!-- Linux Content -->
+            <div id="linux" class="content-card">
+                <h2>Linux</h2>
+                <p><b>Linux</b> adalah keluarga sistem operasi mirip Unix yang bersifat open-source dan dikembangkan secara kolaboratif. Awalnya hanya sebuah kernel yang dibuat oleh Linus Torvalds, Linux kini menjadi tulang punggung dari sebagian besar infrastruktur internet, superkomputer, dan perangkat IoT. Ia dikenal karena stabilitas, keamanan, dan fleksibilitasnya.</p>
+                <h3>Perkembangan Kunci:</h3>
+                <ul>
+                    <li><b>1991:</b> Linus Torvalds mengumumkan proyek hobinya untuk membuat kernel OS baru di Usenet.</li>
+                    <li><b>1992:</b> Kernel Linux digabungkan dengan komponen dari Proyek GNU, menciptakan sistem operasi GNU/Linux yang lengkap dan fungsional.</li>
+                    <li><b>1993:</b> Distribusi (distro) besar pertama seperti Slackware dan kemudian Debian muncul, memudahkan instalasi dan penggunaan Linux.</li>
+                    <li><b>2004:</b> Canonical merilis Ubuntu, distro yang berfokus pada kemudahan penggunaan dan mempopulerkan Linux di kalangan pengguna desktop.</li>
+                </ul>
+                <div class="fun-fact">
+                    <p><b>Fakta Unik:</b> Hampir semua superkomputer tercepat di dunia (TOP500) menjalankan varian dari sistem operasi Linux.</p>
+                </div>
+            </div>
+            
+            <!-- Android Content -->
+            <div id="android" class="content-card">
+                 <h2>Android</h2>
+                 <p><b>Android</b> adalah sistem operasi seluler berbasis kernel Linux yang dimodifikasi. Dikembangkan oleh Google, Android bersifat open-source, memungkinkan ribuan produsen perangkat untuk menggunakannya. Hal ini menjadikannya OS seluler paling populer di dunia, digunakan di smartphone, tablet, TV, dan banyak lagi.</p>
+                <h3>Perkembangan Kunci:</h3>
+                <ul>
+                    <li><b>2005:</b> Google mengakuisisi perusahaan startup bernama Android Inc.</li>
+                    <li><b>2008:</b> HTC Dream (T-Mobile G1) dirilis sebagai ponsel Android komersial pertama.</li>
+                    <li><b>2010:</b> Android 2.2 "Froyo" dirilis, membawa peningkatan kecepatan signifikan dan dukungan untuk fitur seperti hotspot Wi-Fi.</li>
+                    <li><b>2014:</b> Android 5.0 "Lollipop" memperkenalkan bahasa desain "Material Design" yang menjadi ciri khas antarmuka Android modern.</li>
+                </ul>
+                 <div class="fun-fact">
+                    <p><b>Fakta Unik:</b> Setiap versi mayor Android (dari 1.5 hingga 9) dinamai berdasarkan makanan manis atau pencuci mulut secara alfabetis (Cupcake, Donut, Eclair, Froyo, ...).</p>
+                </div>
+            </div>
+        </main>
+        
+        <div class="references-section">
+            <h2>Sumber Referensi</h2>
+            <p>Berikut adalah daftar sumber yang digunakan untuk menyusun informasi di halaman ini. Semua tautan mengarah ke sumber eksternal yang tepercaya.</p>
+             <ul class="reference-list">
+                <li><a href="https://en.wikipedia.org/wiki/DOS" target="_blank">Wikipedia - DOS</a></li>
+                <li><a href="https://en.wikipedia.org/wiki/History_of_Microsoft_Windows" target="_blank">Wikipedia - History of Microsoft Windows</a></li>
+                <li><a href="https://www.computerhistory.org/timeline/software-os/" target="_blank">Computer History Museum - Software & OS Timeline</a></li>
+                <li><a href="https://en.wikipedia.org/wiki/History_of_macOS" target="_blank">Wikipedia - History of macOS</a></li>
+                <li><a href="https://en.wikipedia.org/wiki/History_of_Linux" target="_blank">Wikipedia - History of Linux</a></li>
+                <li><a href="https://en.wikipedia.org/wiki/Android_version_history" target="_blank">Wikipedia - Android Version History</a></li>
+            </ul>
+        </div>
+        
+        <footer>
+            <p>&copy; 2025 - Blog Interaktif oleh Muh kholaf asmaul ikhsan</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timelineItems = document.querySelectorAll('.timeline-item');
+            const contentCards = document.querySelectorAll('.content-card');
+
+            // Set DOS as active initially
+            document.querySelector('.timeline-item[data-target="dos"]').classList.add('active');
+            document.getElementById('dos').classList.add('active');
+
+            timelineItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.getAttribute('data-target');
+
+                    // Update active timeline item
+                    timelineItems.forEach(navItem => navItem.classList.remove('active'));
+                    item.classList.add('active');
+
+                    // Update active content card
+                    contentCards.forEach(card => card.classList.remove('active'));
+                    
+                    const targetCard = document.getElementById(targetId);
+                    if (targetCard) {
+                        targetCard.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
+
