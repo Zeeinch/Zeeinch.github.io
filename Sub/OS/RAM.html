@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Interaktif: Penjelasan Video Random Access Memory (RAM)</title>
+    <!-- Muat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Muat Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Terapkan font Inter sebagai default */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Styling untuk video responsif */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+    <div class="container mx-auto max-w-4xl p-4 md:p-8">
+        <!-- Judul dan Header -->
+        <header class="mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                Blog Interaktif: Membedah Random Access Memory (RAM)
+            </h1>
+            <p class="text-md text-gray-600">
+                Berdasarkan video <span class="font-semibold">'Random Acces Memory'</span> oleh 
+                <a href="https://www.youtube.com/channel/UC-l-092qg-m-ffA-yRsmNGA" target="_blank" class="text-blue-600 hover:underline">Ibnu SWOT Channel</a>.
+            </p>
+            <p class="text-sm text-gray-500 mt-2">
+                Dibuat oleh: <span class="font-semibold">Muh Kholaf Asmaul Ikhsan</span>
+            </p>
+        </header>
+
+        <!-- Pemutar Video -->
+        <section class="mb-6 bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="video-container rounded-lg">
+                <!-- 
+                  Video YouTube disematkan. ID video 'D-AdqniwiKg' diambil dari URL.
+                  Parameter 'enablejsapi=1' ditambahkan untuk mengizinkan JavaScript mengontrol pemutar.
+                -->
+                <iframe 
+                    id="video-player" 
+                    width="560" 
+                    height="315" 
+                    src="https://www.youtube.com/embed/D-AdqniwiKg?enablejsapi=1" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </section>
+
+        <!-- Ringkasan dan Metadata -->
+        <section class="mb-6 p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4">Penjelasan Video (Poin Utama)</h2>
+            
+            <!-- Metadata Asli -->
+            <div class="flex flex-wrap gap-4 mb-6 pb-4 border-b border-gray-200 text-sm">
+                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                    <strong>Channel:</strong> Ibnu SWOT Channel
+                </span>
+                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                    <strong>Rilis:</strong> 17 Mei 2020
+                </span>
+                <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full">
+                    <strong>Views:</strong> 6,400+
+                </span>
+                <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full">
+                    <strong>Bahasa:</strong> Campuran (Pengantar Indonesia, Isi Inggris)
+                </span>
+            </div>
+
+            <!-- Penjelasan yang Diperbanyak -->
+            <div class="space-y-4 text-gray-700 leading-relaxed">
+                <p>
+                    <strong>Apa itu RAM?</strong>
+                    RAM (Random Access Memory) adalah memori utama komputer yang bersifat "sementara" (volatile). Fungsinya adalah menyimpan data dan instruksi program yang sedang aktif digunakan oleh CPU. Data ini hilang saat komputer dimatikan.
+                    <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:02:58]">[Lompat ke video]</a>
+                </p>
+                <p>
+                    <strong>Bagaimana RAM Bekerja (Alur Data)</strong>
+                    Saat Anda membuka program, data program tersebut disalin dari penyimpanan permanen (seperti Hard Drive atau SSD) ke RAM. CPU kemudian mengakses data super cepat dari RAM untuk bekerja.
+                    <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:03:50]">[Lompat ke video]</a>
+                </p>
+                <p>
+                    <strong>Mengapa RAM Besar Membuat Komputer Cepat?</strong>
+                    Jika RAM penuh, komputer terpaksa menggunakan Hard Drive (yang jauh lebih lambat) sebagai "memori" cadangan. Proses bolak-balik ke Hard Drive inilah yang membuat komputer terasa lambat. RAM yang lebih besar menyediakan ruang kerja yang lebih luas sehingga CPU tidak perlu "menunggu" data dari Hard Drive.
+                    <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:04:42]">[Lompat ke video]</a>
+                </p>
+                <p>
+                    <strong>Modul RAM: DIMM</strong>
+                    Secara fisik, RAM dipasang di motherboard menggunakan modul yang disebut DIMM (Dual Inline Memory Module). Modul ini memiliki pin di kedua sisinya. Jumlah pin bervariasi tergantung generasinya (misal, DDR3 memiliki 240 pin, DDR4 memiliki 288 pin). 
+                    <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:03:07]">[Lompat ke video]</a>
+                </p>
+                <p>
+                    <strong>Jenis RAM: DRAM vs SDRAM</strong>
+                    <ul>
+                        <li><strong>DRAM (Dynamic RAM):</strong> Jenis RAM dasar yang menyimpan data di kapasitor. Kapasitor ini "bocor" sehingga harus di-refresh secara konstan (dinamis) agar datanya tidak hilang. <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:05:18]">[Video]</a></li>
+                        <li><strong>SDRAM (Synchronous DRAM):</strong> Versi DRAM yang lebih modern dan lebih cepat karena kecepatannya disinkronkan dengan jam (clock) sistem komputer. <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:06:10]">[Video]</a></li>
+                    </ul>
+                </p>
+                <p>
+                    <strong>Pentingnya Jalur Data: 64-bit (DIMM) vs 32-bit (SIMM)</strong>
+                    Modul DIMM modern memiliki jalur data 64-bit, artinya mereka dapat mentransfer 64 bit data sekaligus dalam satu siklus jam. Ini dua kali lebih cepat dari modul SIMM (Single Inline Memory Module) lama yang hanya 32-bit.
+                    <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:07:23]">[Lompat ke video]</a>
+                </p>
+                <p>
+                    <strong>Memahami Kecepatan & Bandwidth (Contoh: PC100)</strong>
+                    Kecepatan RAM (misal, 100 MHz) dikalikan dengan lebar bus (8 byte untuk 64-bit) menghasilkan bandwidth. Contoh: RAM PC100 (100 MHz) x 8 byte = 800 Megabyte per detik (MB/s).
+                    <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:09:31]">[Lompat ke video]</a>
+                </p>
+                <p>
+                    <strong>Revolusi DDR (Double Data Rate)</strong>
+                    Teknologi DDR secara efektif menggandakan kecepatan transfer data. Jika RAM biasa (SDR) hanya mentransfer data pada "sisi naik" (rising edge) sinyal jam, DDR mentransfer data di sisi naik *dan* sisi turun (falling edge), sehingga menggandakan bandwidth tanpa harus menggandakan frekuensi jam. 
+                    <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:12:00]">[Lompat ke video]</a>
+                </p>
+                <p>
+                    <strong>Generasi DDR: DDR2, DDR3, DDR4</strong>
+                    Setiap generasi baru (DDR2, DDR3, DDR4) menawarkan kecepatan yang lebih tinggi, bandwidth lebih besar, dan konsumsi daya yang lebih rendah. Meskipun DDR2 dan DDR3 sama-sama memiliki 240 pin, posisi "takik" (notch) mereka berbeda sehingga tidak dapat ditukar. DDR4 memiliki 288 pin.
+                    <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:14:19]">[Lompat ke video]</a>
+                </p>
+                <p>
+                    <strong>Memori Khusus: ECC RAM</strong>
+                    ECC (Error Correcting Code) RAM adalah jenis memori khusus yang dapat mendeteksi dan memperbaiki kerusakan data kecil secara otomatis. Memori ini sangat penting untuk server dan sistem kritis (keuangan, medis) di mana korupsi data tidak dapat ditoleransi. Modul ECC dapat diidentifikasi secara fisik karena biasanya memiliki 9 chip memori (8 untuk data, 1 untuk ECC), bukan 8 chip seperti RAM non-ECC.
+                    <a href="#" class="transcript-link text-blue-600 hover:underline" data-time="[00:16:45]">[Lompat ke video]</a>
+                </p>
+            </div>
+        </section>
+
+        <!-- Transkrip Interaktif -->
+        <section class="bg-white rounded-lg shadow-md">
+            <header class="p-6 border-b border-gray-200">
+                <h2 class="text-2xl font-semibold">Pintasan Transkrip (Poin Utama)</h2>
+                <p class="text-sm text-gray-600 mt-1">Klik pada stempel waktu (misalnya, [00:02:58]) untuk melompat ke bagian tersebut di video.</p>
+            </header>
+            
+            <!-- Kontainer untuk transkrip yang dapat di-scroll -->
+            <div id="transcript-container" class="p-6 max-h-96 overflow-y-auto">
+                <!-- Konten transkrip akan dimasukkan oleh JavaScript -->
+                <div class="text-center text-gray-500">
+                    <p>Memuat transkrip...</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Data transkrip DIPERBARUI: Hanya berisi poin-poin utama yang relevan dengan penjelasan di atas
+        const transcriptData = [
+            "[00:02:58] ...primary memory or temporary storage and this is called RAM Ram stands for random access memory",
+            "[00:03:07] RAM is stored on the motherboard in modules that are called dims dim stands for dual inline memory module a",
+            "[00:03:50] in order for data or program to run on a computer it needs to be loaded into Ram first so...",
+            "[00:04:42] all you need to do is increase the amount of RAM on a computer and by increase in the memory",
+            "[00:04:57] the result is a faster performing computer so this is why a computer with more RAM performs faster...",
+            "[00:05:11] ram requires constant electrical power to store data and if the power is turned off then the data is erased",
+            "[00:05:18] Ram also comes in different types such as dynamic RAM or DRAM DRAM is memory that contains capacitors...",
+            "[00:05:54] ...this refreshing is where we get the name dynamic the capacitors have to be dynamically refreshed",
+            "[00:06:10] another type of memory is called SDRAM which stands for synchronous DRAM and this type of memory is what is...",
+            "[00:06:47] is why it is faster than DRAM all the signals are tied to the system clock for a better controlled...",
+            "[00:07:23] the term 64 or 32 bit data path refers to the number of bits of data that are transferred at...",
+            "[00:07:46] ...prior to dims there was an older Ram module called a sim and Sims had a 32-bit data path...",
+            "[00:09:03] for example a stick of old SDRAM... could be labeled PC 100 the 100 equals a maximum speed... which is 100 megahertz",
+            "[00:09:31] figure out the total bandwidth of PC 100 you multiply 100 megahertz times 8 bytes which equals 800 megabytes per...",
+            "[00:12:00] ...this newer technology was called DDR which stands for double data rate and that's...",
+            "[00:12:27] ...but DDR uses both the rising and falling edges of a clock signal to send data which gives DDR the ability to...",
+            "[00:14:19] a new technology that has succeeded DDR is ddr2 ddr2 is faster than DDR because it allows for higher bus speeds...",
+            "[00:14:37] a ddr2 jim has 240 pins compared to DDR which has a hundred and eighty four pins",
+            "[00:15:12] and right after ddr2 is ddr3 ddr3 is twice as fast as ddr2 and it also uses less power than...",
+            "[00:15:32] so you can't put a ddr3 DIMM and a ram slot made for a ddr2...",
+            "[00:16:02] and the fourth generation of DDR SDRAM is ddr4 ddr4 DIMMs have 288 pins and like its predecessors it also...",
+            "[00:16:45] for example in servers... some servers cannot afford being offline for any reason...",
+            "[00:17:03] ...and that's why some Ram modules have ECC which stands for error correcting code",
+            "[00:17:29] ...in a standard non-ecc them it will have eight memory chips but in an ECC memory module it will have nine memory chips..."
+        ];
+
+        /**
+         * Mengonversi string stempel waktu (misal "[00:01:30]") menjadi total detik (90).
+         * @param {string} timeString - String stempel waktu.
+         * @returns {number} - Total detik.
+         */
+        function timeToSeconds(timeString) {
+            // Hapus tanda kurung
+            const time = timeString.replace(/[\[\]]/g, '');
+            const parts = time.split(':').map(Number);
+            
+            let seconds = 0;
+            if (parts.length === 3) {
+                // Format HH:MM:SS
+                seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+            } else if (parts.length === 2) {
+                // Format MM:SS
+                seconds = parts[0] * 60 + parts[1];
+            }
+            return seconds;
+        }
+
+        /**
+         * Mengisi kontainer transkrip dengan data yang diformat.
+         */
+        function populateTranscript() {
+            const container = document.getElementById('transcript-container');
+            if (!container) return;
+
+            container.innerHTML = ''; // Kosongkan kontainer
+            const fragment = document.createDocumentFragment();
+
+            // Regex untuk menemukan stempel waktu
+            const timeRegex = /(\[\d{2}:\d{2}:\d{2}\])|(\[\d{2}:\d{2}\])/;
+
+            transcriptData.forEach(line => {
+                const match = line.match(timeRegex);
+                
+                if (match) {
+                    const time = match[0];
+                    const text = line.substring(time.length).trim();
+
+                    // Lewati baris yang hanya berisi titik atau kosong
+                    if (text === '.' || text === '') {
+                        return;
+                    }
+
+                    const p = document.createElement('p');
+                    p.className = 'mb-3 text-gray-800 leading-relaxed';
+
+                    // Buat link stempel waktu
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.className = 'transcript-time font-semibold text-blue-600 hover:underline mr-2';
+                    a.dataset.time = time; // Simpan stempel waktu di data attribute
+                    a.textContent = time;
+
+                    // Tambahkan elemen ke paragraf
+                    p.appendChild(a);
+                    p.appendChild(document.createTextNode(text));
+                    
+                    fragment.appendChild(p);
+                }
+            });
+
+            container.appendChild(fragment);
+        }
+
+        /**
+         * Menambahkan event listener ke kontainer transkrip untuk menangani klik pada stempel waktu.
+         */
+        function addTranscriptListeners() {
+            const container = document.getElementById('transcript-container');
+            const player = document.getElementById('video-player');
+            const explanationSection = document.querySelector('.space-y-4'); // Ambil kontainer penjelasan
+
+            if (!container || !player) return;
+
+            // Fungsi untuk melompat ke video
+            function seekVideo(timeString) {
+                const seconds = timeToSeconds(timeString);
+                // Kirim perintah 'seekTo' ke iframe YouTube menggunakan postMessage
+                player.contentWindow.postMessage(JSON.stringify({
+                    'event': 'command',
+                    'func': 'seekTo',
+                    'args': [seconds, true]
+                }), '*');
+            }
+
+            // Listener untuk transkrip
+            container.addEventListener('click', function(e) {
+                // Periksa apakah yang diklik adalah link stempel waktu
+                if (e.target.classList.contains('transcript-time')) {
+                    e.preventDefault(); // Mencegah link melompat ke atas halaman
+                    const timeString = e.target.dataset.time;
+                    seekVideo(timeString);
+                }
+            });
+
+            // Listener untuk bagian penjelasan
+            if (explanationSection) {
+                explanationSection.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('transcript-link')) {
+                        e.preventDefault();
+                        const timeString = e.target.dataset.time;
+                        seekVideo(timeString);
+                    }
+                });
+            }
+        }
+
+        // Jalankan fungsi saat DOM selesai dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            populateTranscript();
+            addTranscriptListeners();
+        });
+
+    </script>
+
+</body>
+</html>
+
+
