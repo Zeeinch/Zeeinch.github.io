@@ -322,8 +322,10 @@
             // --- Variabel State ---
             let participantsList = [];
             let gachaAnimationInterval = null;
-            // [BARU] State untuk fitur curang
+            // [DIUBAH] State untuk fitur curang dan deteksi klik manual
             let cheatHoldTimeout = null;
+            let holdStartTime = 0;
+            let isHolding = false;
             let manipulatedGroups = null; // Ini akan menyimpan grup yang sudah diatur
 
             // --- Event Listeners ---
@@ -331,9 +333,9 @@
             if (resetButton) resetButton.addEventListener('click', resetApp);
             if (closeModalButton) closeModalButton.addEventListener('click', () => errorModal.classList.add('hidden'));
             
-            // [DIUBAH] Event listener untuk tombol Tambah (trigger fitur curang)
+            // [DIUBAH] Event listener untuk tombol Tambah (trigger fitur curang + klik manual)
             if (addParticipantButton) {
-                addParticipantButton.addEventListener('click', addParticipant);
+                // addParticipantButton.addEventListener('click', addParticipant); // [DIHAPUS] Diganti dengan deteksi manual
                 
                 // Trigger Mousedown (Desktop)
                 addParticipantButton.addEventListener('mousedown', startCheatTimer);
@@ -342,7 +344,7 @@
                 
                 // Trigger Touch (Mobile)
                 addParticipantButton.addEventListener('touchstart', (e) => {
-                    e.preventDefault(); // Mencegah 'click' ganda
+                    e.preventDefault(); // Mencegah 'click' ganda & zoom
                     startCheatTimer();
                 });
                 addParticipantButton.addEventListener('touchend', cancelCheatTimer);
@@ -364,6 +366,9 @@
 
             // --- [BARU] Fungsi Fitur Curang ---
             function startCheatTimer() {
+                isHolding = true;
+                holdStartTime = Date.now();
+                
                 // Hanya mulai jika input kosong
                 if (participantNameInput.value.trim() === '') {
                     cheatHoldTimeout = setTimeout(showManipulationMenu, 5000); // 5 detik
@@ -371,13 +376,30 @@
             }
 
             function cancelCheatTimer() {
+                if (!isHolding) return; // Jika tidak menahan, abaikan
+                isHolding = false;
+                
+                const holdDuration = Date.now() - holdStartTime;
+
                 if (cheatHoldTimeout) {
                     clearTimeout(cheatHoldTimeout);
                     cheatHoldTimeout = null;
                 }
+                
+                // [BARU] Jika durasi tahan singkat, anggap sebagai "klik"
+                if (holdDuration < 300) { // Kurang dari 300ms dianggap klik
+                    addParticipant();
+                }
             }
 
             function showManipulationMenu() {
+                if (!isHolding) return; // Jika sudah dibatalkan, abaikan
+                isHolding = false; // Cheat aktif, reset status
+                if (cheatHoldTimeout) {
+                    clearTimeout(cheatHoldTimeout);
+                    cheatHoldTimeout = null;
+                }
+                
                 const groupCount = parseInt(groupCountInput.value, 10);
                 if (participantsList.length === 0) {
                     return showError("Tidak bisa manipulasi. Harap masukkan peserta terlebih dahulu!");
@@ -675,6 +697,7 @@
     </script>
 </body>
 </html>
+
 
 
 
