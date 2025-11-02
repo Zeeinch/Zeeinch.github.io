@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gacha Pembagi Kelompok</title>
+    <!-- Memuat Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat font pixel "Press Start 2P" -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        /* [DIUBAH] Menerapkan font pixel & latar belakang gradien BIRU MUDA */
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #e0f2fe; /* Fallback bg-sky-100 */
+            color: #1f2937; /* text-gray-800 */
+            image-rendering: pixelated;
+        }
+
+        /* [DIUBAH] .glass-box menjadi "frosted glass" putih */
+        .glass-box {
+            background: rgba(255, 255, 255, 0.6); /* Kaca buram putih */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #1f2937; /* Teks gelap */
+            /* [DIUBAH] Border biru dibuat lebih jelas */
+            border: 2px solid rgba(59, 130, 246, 0.5); /* blue-500 at 50% */
+            border-radius: 0;
+        }
+
+        /* [DIUBAH] Tombol LIME (Tidak ada perubahan, sudah cocok) */
+        .pixel-button {
+            background: #a3e635; /* LIME-400 */
+            color: #000;
+            border: 4px solid #000;
+            /* [DIUBAH] Shadow kuning diubah jadi biru tua */
+            box-shadow: 6px 6px 0 0 #1e40af; /* blue-800 */
+            border-radius: 0;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.05s linear;
+        }
+
+        .pixel-button:hover {
+            background: #bef264; /* LIME-300 */
+        }
+
+        .pixel-button:active {
+            box-shadow: 0 0 0 0 #1e40af; /* Shadow biru tua */
+            transform: translate(6px, 6px);
+        }
+        
+        /* [DIUBAH] Input dengan background terang dan teks gelap */
+        .pixel-input {
+            border: 2px solid rgba(59, 130, 246, 0.5); /* blue-500 at 50% */
+            border-radius: 0;
+            background: rgba(255, 255, 255, 0.3); /* Background putih transparan */
+            color: #1f2937; /* Teks gelap */
+            padding: 0.5rem;
+            width: 100%;
+        }
+        
+        .pixel-input:focus {
+            outline: none;
+            background: rgba(0, 0, 0, 0.4);
+            /* [DIUBAH] Fokus kuning diubah jadi lime transparan */
+            border-color: rgba(163, 230, 53, 0.5); /* lime-400 at 50% */
+        }
+        
+        .participant-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(0, 0, 0, 0.05); /* Sedikit gelap di atas putih */
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3); /* Border biru */
+        }
+        .participant-list-item:last-child {
+            border-bottom: none;
+        }
+        .delete-btn {
+            cursor: pointer;
+            color: #c53030; /* Merah (tetap untuk UX) */
+            font-weight: bold;
+            padding: 0 0.5rem;
+        }
+        .delete-btn:hover {
+            color: #9b2c2c;
+        }
+
+        /* Animasi GACHA (Tetap sama) */
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0) rotate(0); }
+            10% { transform: translate(-5px, -5px) rotate(-3deg); }
+            20% { transform: translate(5px, 5px) rotate(3deg); }
+            30% { transform: translate(-5px, 5px) rotate(-3deg); }
+            40% { transform: translate(5px, -5px) rotate(3deg); }
+            50% { transform: translate(-5px, -5px) rotate(-3deg); }
+            60% { transform: translate(5px, 5px) rotate(3deg); }
+            70% { transform: translate(-5px, 5px) rotate(-3deg); }
+            80% { transform: translate(5px, -5px) rotate(3deg); }
+            90% { transform: translate(-5px, -5px) rotate(-3deg); }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        /* [DIUBAH] Gaya untuk Latar Belakang Awan Pixel (LIME & BIRU) */
+        .pixel-cloud {
+            position: absolute;
+            width: 100px;
+            height: 40px;
+            border-radius: 0;
+            /* [DIHAPUS] filter: blur(2px); (dihapus agar pixel lebih renyah) */
+            z-index: 0;
+            animation: move-cloud 20s linear infinite;
+        }
+        
+        /* [DIUBAH] Awan menjadi PUTIH */
+        .cloud-1, .cloud-3, .cloud-2 {
+            background: rgba(255, 255, 255, 0.7); /* Awan putih */
+            box-shadow:
+                20px 10px 0 0 rgba(255, 255, 255, 0.7), 30px 0px 0 0 rgba(255, 255, 255, 0.7),
+                40px 10px 0 0 rgba(255, 255, 255, 0.7), 50px 0px 0 -5px rgba(255, 255, 255, 0.7),
+                60px 10px 0 0 rgba(255, 255, 255, 0.7), 70px 0px 0 0 rgba(255, 255, 255, 0.7),
+                30px 20px 0 0 rgba(255, 255, 255, 0.7), 50px 20px 0 0 rgba(255, 255, 255, 0.7);
+        }
+        
+        /* [DIHAPUS] .cloud-2 (sudah digabung di atas) */
+
+        .cloud-1 { top: 15%; animation-duration: 45s; animation-delay: -5s; transform: scale(0.8); }
+        .cloud-2 { top: 40%; animation-duration: 60s; animation-delay: -10s; transform: scale(1.2); }
+        .cloud-3 { top: 75%; animation-duration: 35s; animation-delay: 0s; transform: scale(1); }
+
+        @keyframes move-cloud {
+            from { left: -150px; }
+            to { left: 100%; }
+        }
+        
+        /* Animasi item list baru (Tetap sama) */
+        @keyframes item-enter {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .item-enter {
+            animation: item-enter 0.3s ease-out;
+        }
+
+        /* [DIUBAH] Animasi counter peserta (LIME, state awal diubah ke gelap) */
+        @keyframes flash-lime {
+            0%, 100% { color: #1f2937; text-shadow: none; } /* Teks gelap */
+            50% { color: #a3e635; text-shadow: 0 0 8px #a3e635; } /* LIME */
+        }
+        .flash-lime {
+            animation: flash-lime 0.5s ease;
+        }
+
+        /* [BARU] Sembunyikan panah dropdown default */
+        .pixel-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231f2937%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-13%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2013l128%20128c3.6%203.6%207.8%205.4%2013%205.4s9.4-1.8%2013-5.4l128-128c3.6-3.6%205.4-7.8%205.4-13%200-5-1.8-9.4-5.4-13z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right .7rem center;
+            background-size: .65em auto;
+            padding-right: 2.5rem; /* Beri ruang untuk panah */
+        }
+
+    </style>
+</head>
+<!-- [DIUBAH] Latar belakang gradasi biru muda (langit) -->
+<body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-sky-100 to-blue-200">
+
+    <!-- Kontainer animasi awan -->
+    <div class="fixed inset-0 overflow-hidden z-0">
+        <div class="pixel-cloud cloud-1"></div>
+        <div class="pixel-cloud cloud-2"></div>
+        <div class="pixel-cloud cloud-3"></div>
+    </div>
+
+    <!-- Konten utama -->
+    <div class="w-full max-w-2xl mx-auto relative z-10">
+
+        <!-- ===== TAMPILAN INPUT (AWAL) ===== -->
+        <div id="input-screen" class="w-full">
+            <!-- [DIUBAH] Judul BIRU TUA */ -->
+            <h1 class="text-3xl sm:text-4xl text-center mb-8 text-blue-600">Gacha Kelompok!</h1>
+            
+            <div class="glass-box p-6 sm:p-8">
+                <!-- Input Peserta -->
+                <div class="mb-4">
+                    <label for="participant-name-input" class="block text-lg mb-3">Nama Peserta:</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="participant-name-input" class="pixel-input text-lg" placeholder="Udin...">
+                        <button id="add-participant-btn" class="pixel-button !py-2 !px-4 text-lg">Tambah</button>
+                    </div>
+                </div>
+                
+                <!-- Daftar Peserta -->
+                <div class="mb-6">
+                    <label class="block text-lg mb-3">Daftar Peserta (<span id="participant-count" class="transition-colors">0</span>):</label>
+                    <div id="participants-list-container" class="pixel-input !shadow-none h-48 overflow-y-auto">
+                        <!-- Daftar peserta akan muncul di sini -->
+                    </div>
+                </div>
+
+                <!-- Input Jumlah Kelompok -->
+                <div class="mb-8">
+                    <label for="group-count-input" class="block text-lg mb-3">Jumlah Kelompok:</label>
+                    <input type="number" id="group-count-input" class="pixel-input text-lg" min="1" value="2">
+                </div>
+
+                <!-- Tombol Mulai -->
+                <div class="text-center">
+                    <button id="start-gacha-btn" class="pixel-button text-xl w-full sm:w-auto">
+                        Mulai Gacha!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- [BARU] ===== TAMPILAN MANIPULASI (FITUR CURANG) ===== -->
+        <div id="manipulation-screen" class="w-full hidden">
+            <h1 class="text-3xl sm:text-4xl text-center mb-8 text-red-600">Mode Manipulasi</h1>
+            
+            <div class="glass-box p-6 sm:p-8">
+                <label class="block text-lg mb-3">Atur Tim Peserta:</label>
+                <div id="manipulation-list-container" class="pixel-input !shadow-none h-64 overflow-y-auto mb-6">
+                    <!-- Daftar manipulasi akan muncul di sini -->
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
+                    <button id="save-manipulation-btn" class="pixel-button text-lg w-full">Simpan & Keluar</button>
+                    <button id="cancel-manipulation-btn" class="pixel-button !bg-gray-500 !shadow-blue-900 text-lg w-full">Batal</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAMPILAN ANIMASI GACHA ===== -->
+        <div id="gacha-screen" class="w-full text-center hidden">
+            <!-- [DIUBAH] Mesin gacha BIRU -->
+            <div id="gacha-machine" class="mx-auto mb-8 w-48 h-48 sm:w-64 sm:h-64 bg-blue-500 border-8 border-black flex items-center justify-center text-black overflow-hidden" style="box-shadow: 10px 10px 0 0 #000;">
+                <span id="gacha-display-name" class="text-8xl sm:text-9xl text-black">?</span>
+            </div>
+            <!-- [DIPERBAIKI] Menambahkan kembali elemen status yang hilang -->
+            <h2 id="gacha-status" class="text-2xl text-gray-800">Mengocok...</h2>
+        </div>
+
+        <!-- ===== TAMPILAN HASIL ===== -->
+        <div id="results-screen" class="w-full hidden">
+            <!-- [DIUBAH] Judul BIRU TUA */ -->
+            <h1 class="text-3xl sm:text-4xl text-center mb-8 text-blue-600">Hasil Gacha!</h1>
+            
+            <div id="groups-container" class="space-y-6 mb-8">
+                <!-- Hasil kelompok akan dimasukkan di sini oleh JS -->
+            </div>
+            
+            <div class="text-center">
+                <button id="reset-btn" class="pixel-button text-xl">
+                    Ulangi
+                </button>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Modal Error -->
+    <div id="error-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div class="glass-box p-6 sm:p-8 max-w-sm w-full">
+            <h2 class="text-2xl text-red-400 mb-4">Error!</h2>
+            <p id="error-message" class="text-lg mb-6 text-gray-800">Pesan error akan muncul di sini.</p> <!-- [DIUBAH] Teks gelap -->
+            <div class="text-center">
+                <!-- Tombol error tetap merah untuk UX -->
+                <button id="close-modal-btn" class="pixel-button !bg-red-500 !text-white">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Referensi Elemen DOM ---
+            const inputScreen = document.getElementById('input-screen');
+            const gachaScreen = document.getElementById('gacha-screen');
+            const resultsScreen = document.getElementById('results-screen');
+            const startButton = document.getElementById('start-gacha-btn');
+            const resetButton = document.getElementById('reset-btn');
+            const participantNameInput = document.getElementById('participant-name-input');
+            const addParticipantButton = document.getElementById('add-participant-btn');
+            const participantsListContainer = document.getElementById('participants-list-container');
+            const participantCount = document.getElementById('participant-count');
+            const groupCountInput = document.getElementById('group-count-input');
+            const gachaMachine = document.getElementById('gacha-machine');
+            const gachaDisplayName = document.getElementById('gacha-display-name');
+            const gachaStatus = document.getElementById('gacha-status');
+            const groupsContainer = document.getElementById('groups-container');
+            const errorModal = document.getElementById('error-modal');
+            const errorMessage = document.getElementById('error-message');
+            const closeModalButton = document.getElementById('close-modal-btn');
+
+            // [BARU] Elemen untuk layar manipulasi
+            const manipulationScreen = document.getElementById('manipulation-screen');
+            const manipulationListContainer = document.getElementById('manipulation-list-container');
+            const saveManipulationButton = document.getElementById('save-manipulation-btn');
+            const cancelManipulationButton = document.getElementById('cancel-manipulation-btn');
+
+
+            // --- Variabel State ---
+            let participantsList = [];
+            let gachaAnimationInterval = null;
+            // [BARU] State untuk fitur curang
+            let cheatHoldTimeout = null;
+            let manipulatedGroups = null; // Ini akan menyimpan grup yang sudah diatur
+
+            // --- Event Listeners ---
+            if (startButton) startButton.addEventListener('click', startGacha);
+            if (resetButton) resetButton.addEventListener('click', resetApp);
+            if (closeModalButton) closeModalButton.addEventListener('click', () => errorModal.classList.add('hidden'));
+            
+            // [DIUBAH] Event listener untuk tombol Tambah (trigger fitur curang)
+            if (addParticipantButton) {
+                addParticipantButton.addEventListener('click', addParticipant);
+                
+                // Trigger Mousedown (Desktop)
+                addParticipantButton.addEventListener('mousedown', startCheatTimer);
+                addParticipantButton.addEventListener('mouseup', cancelCheatTimer);
+                addParticipantButton.addEventListener('mouseleave', cancelCheatTimer);
+                
+                // Trigger Touch (Mobile)
+                addParticipantButton.addEventListener('touchstart', (e) => {
+                    e.preventDefault(); // Mencegah 'click' ganda
+                    startCheatTimer();
+                });
+                addParticipantButton.addEventListener('touchend', cancelCheatTimer);
+            }
+            
+            if (participantNameInput) {
+                participantNameInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addParticipant();
+                    }
+                });
+            }
+
+            // [BARU] Event listener untuk tombol di layar manipulasi
+            if (saveManipulationButton) saveManipulationButton.addEventListener('click', saveManipulation);
+            if (cancelManipulationButton) cancelManipulationButton.addEventListener('click', cancelManipulation);
+
+
+            // --- [BARU] Fungsi Fitur Curang ---
+            function startCheatTimer() {
+                // Hanya mulai jika input kosong
+                if (participantNameInput.value.trim() === '') {
+                    cheatHoldTimeout = setTimeout(showManipulationMenu, 5000); // 5 detik
+                }
+            }
+
+            function cancelCheatTimer() {
+                if (cheatHoldTimeout) {
+                    clearTimeout(cheatHoldTimeout);
+                    cheatHoldTimeout = null;
+                }
+            }
+
+            function showManipulationMenu() {
+                const groupCount = parseInt(groupCountInput.value, 10);
+                if (participantsList.length === 0) {
+                    return showError("Tidak bisa manipulasi. Harap masukkan peserta terlebih dahulu!");
+                }
+                if (participantsList.length < groupCount) {
+                    return showError("Jumlah peserta lebih sedikit dari jumlah kelompok. Tidak bisa manipulasi.");
+                }
+                
+                manipulationListContainer.innerHTML = ''; // Kosongkan daftar
+                
+                // Buat daftar dropdown untuk setiap peserta
+                participantsList.forEach(name => {
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center py-2';
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = name;
+                    nameSpan.className = 'text-lg';
+                    
+                    const select = document.createElement('select');
+                    select.className = 'pixel-input pixel-select text-sm !w-auto';
+                    select.dataset.participantName = name; // Simpan nama di data
+                    
+                    // Opsi Acak (Default)
+                    const randomOption = document.createElement('option');
+                    randomOption.value = "-1";
+                    randomOption.textContent = "Acak";
+                    select.appendChild(randomOption);
+                    
+                    // Opsi Kelompok
+                    for (let i = 0; i < groupCount; i++) {
+                        const groupOption = document.createElement('option');
+                        groupOption.value = i;
+                        groupOption.textContent = `Kelompok ${i + 1}`;
+                        select.appendChild(groupOption);
+                    }
+                    
+                    item.appendChild(nameSpan);
+                    item.appendChild(select);
+                    manipulationListContainer.appendChild(item);
+                });
+                
+                // Tampilkan layar manipulasi
+                inputScreen.classList.add('hidden');
+                manipulationScreen.classList.remove('hidden');
+            }
+
+            function saveManipulation() {
+                const groupCount = parseInt(groupCountInput.value, 10);
+                let tempGroups = [];
+                for (let i = 0; i < groupCount; i++) tempGroups.push([]);
+                
+                let unassignedParticipants = [];
+                
+                // Kumpulkan pilihan dari dropdown
+                const selects = manipulationListContainer.querySelectorAll('select');
+                selects.forEach(select => {
+                    const name = select.dataset.participantName;
+                    const teamIndex = parseInt(select.value, 10);
+                    
+                    if (teamIndex === -1) {
+                        unassignedParticipants.push(name); // Masukkan ke daftar acak
+                    } else {
+                        tempGroups[teamIndex].push(name); // Masukkan ke tim yang dipilih
+                    }
+                });
+                
+                // Acak peserta yang tidak ditugaskan dan bagi rata
+                const shuffledUnassigned = shuffle(unassignedParticipants);
+                let groupIndex = 0;
+                shuffledUnassigned.forEach(participant => {
+                    // Cari grup terpendek untuk dimasukkan
+                    let shortestGroupIndex = 0;
+                    for(let i=1; i<groupCount; i++) {
+                        if(tempGroups[i].length < tempGroups[shortestGroupIndex].length) {
+                            shortestGroupIndex = i;
+                        }
+                    }
+                    tempGroups[shortestGroupIndex].push(participant);
+                });
+                
+                // Simpan hasilnya
+                manipulatedGroups = tempGroups;
+                
+                // Kembali ke layar awal
+                cancelManipulation();
+                showError("Manipulasi Disimpan. (Mode Curang Aktif)"); // Pesan rahasia
+            }
+
+            function cancelManipulation() {
+                manipulationScreen.classList.add('hidden');
+                inputScreen.classList.remove('hidden');
+            }
+
+
+            // --- Fungsi UI ---
+            function createParticipantElement(name, index) {
+                const item = document.createElement('div');
+                item.className = 'participant-list-item text-lg';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = name;
+                
+                const deleteBtn = document.createElement('span');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '[X]';
+                deleteBtn.title = 'Hapus ' + name;
+                deleteBtn.style.transition = 'transform 0.1s ease';
+                deleteBtn.onmouseenter = () => deleteBtn.style.transform = 'scale(1.1)';
+                deleteBtn.onmouseleave = () => deleteBtn.style.transform = 'scale(1)';
+                deleteBtn.onclick = () => deleteParticipant(index);
+                
+                item.appendChild(nameSpan);
+                item.appendChild(deleteBtn);
+                return item;
+            }
+
+            function updateParticipantCount() {
+                if (!participantCount) return;
+                participantCount.textContent = participantsList.length;
+                
+                // [DIUBAH] Animasi Flash LIME
+                participantCount.classList.remove('flash-lime');
+                void participantCount.offsetWidth;
+                participantCount.classList.add('flash-lime');
+                setTimeout(() => participantCount.classList.remove('flash-lime'), 500);
+            }
+
+            function addParticipant() {
+                const name = participantNameInput.value.trim();
+                if (name.length > 0) {
+                    participantsList.push(name);
+                    const newIndex = participantsList.length - 1;
+                    const newItem = createParticipantElement(name, newIndex);
+                    
+                    newItem.classList.add('item-enter');
+                    participantsListContainer.appendChild(newItem);
+                    participantsListContainer.scrollTop = participantsListContainer.scrollHeight;
+                    setTimeout(() => newItem.classList.remove('item-enter'), 300);
+
+                    updateParticipantCount();
+                    participantNameInput.value = '';
+                }
+                participantNameInput.focus();
+            }
+
+            function deleteParticipant(index) {
+                participantsList.splice(index, 1);
+                renderParticipantsList();
+                updateParticipantCount();
+            }
+
+            function renderParticipantsList() {
+                if (!participantsListContainer) return;
+                participantsListContainer.innerHTML = '';
+                participantsList.forEach((name, index) => {
+                    const item = createParticipantElement(name, index);
+                    participantsListContainer.appendChild(item);
+                });
+            }
+
+            function showError(message) {
+                if (!errorModal || !errorMessage) return;
+                errorMessage.textContent = message;
+                errorModal.classList.remove('hidden');
+            }
+
+            // --- Fungsi Logika Inti ---
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            function divideGroups(participants, groupCount) {
+                const shuffled = shuffle([...participants]);
+                const groups = [];
+                for (let i = 0; i < groupCount; i++) groups.push([]);
+                
+                let groupIndex = 0;
+                shuffled.forEach(participant => {
+                    groups[groupIndex].push(participant);
+                    groupIndex = (groupIndex + 1) % groupCount;
+                });
+                return groups;
+            }
+
+            // --- Fungsi Utama Gacha ---
+            function startGacha() {
+                const groupCount = parseInt(groupCountInput.value, 10);
+                const participants = participantsList;
+
+                if (participants.length === 0) return showError("Harap masukkan setidaknya satu nama peserta!");
+                if (isNaN(groupCount) || groupCount <= 0) return showError("Jumlah kelompok harus minimal 1.");
+                if (participants.length < groupCount) return showError("Jumlah peserta tidak boleh lebih sedikit dari jumlah kelompok.");
+
+                inputScreen.classList.add('hidden');
+                gachaScreen.classList.remove('hidden');
+                gachaMachine.classList.add('shake');
+                gachaStatus.textContent = "Mengocok...";
+
+                // [DIUBAH] Teks berputar jadi PUTIH agar kontras di background BIRU
+                gachaDisplayName.classList.remove('text-8xl', 'sm:text-9xl', 'text-black');
+                gachaDisplayName.classList.add('text-3xl', 'px-4', 'break-all', 'text-white');
+
+                gachaAnimationInterval = setInterval(() => {
+                    const randomName = participants[Math.floor(Math.random() * participants.length)];
+                    gachaDisplayName.textContent = randomName;
+                }, 70);
+
+                setTimeout(() => {
+                    clearInterval(gachaAnimationInterval);
+                    gachaMachine.classList.remove('shake');
+                    gachaStatus.textContent = "Selesai!";
+                    gachaDisplayName.textContent = "Selesai!";
+                    
+                    // [DIUBAH] Logika inti Gacha
+                    let finalGroups;
+                    if (manipulatedGroups !== null) {
+                        // JIKA CURANG: Gunakan grup yang sudah diatur
+                        finalGroups = manipulatedGroups;
+                        manipulatedGroups = null; // Hapus cheat setelah dipakai
+                    } else {
+                        // JIKA NORMAL: Acak seperti biasa
+                        finalGroups = divideGroups(participants, groupCount);
+                    }
+                    
+                    setTimeout(() => {
+                        gachaScreen.classList.add('hidden');
+                        resultsScreen.classList.remove('hidden');
+                        displayGroups(finalGroups);
+                    }, 1000);
+
+                }, 3000);
+            }
+
+            // --- Fungsi Menampilkan Hasil ---
+            function displayGroups(groups) {
+                groupsContainer.innerHTML = '';
+                groups.forEach((group, index) => {
+                    const groupElement = document.createElement('div');
+                    // [DIUBAH] Judul kelompok sekarang pakai border BIRU
+                    groupElement.className = 'glass-box p-4 sm:p-6 fade-in';
+                    groupElement.style.animationDelay = `${index * 150}ms`;
+
+                    const title = document.createElement('h3');
+                    title.className = 'text-xl sm:text-2xl mb-4 border-b-2 border-blue-500/30 pb-2'; // Border biru
+                    title.textContent = `Kelompok ${index + 1}`;
+                    groupElement.appendChild(title);
+
+                    const list = document.createElement('ul');
+                    list.className = 'space-y-2 text-lg';
+                    
+                    if (group.length > 0) {
+                        group.forEach(member => {
+                            const item = document.createElement('li');
+                            item.textContent = member;
+                            list.appendChild(item);
+                        });
+                    } else {
+                        const item = document.createElement('li');
+                        item.className = 'italic text-gray-500'; /* [DIUBAH] Teks sedikit lebih gelap */
+                        item.textContent = "(Kosong)";
+                        list.appendChild(item);
+                    }
+                    
+                    groupElement.appendChild(list);
+                    groupsContainer.appendChild(groupElement);
+                });
+            }
+
+            // --- Fungsi Reset Aplikasi ---
+            function resetApp() {
+                resultsScreen.classList.add('hidden');
+                inputScreen.classList.remove('hidden');
+
+                // [DIUBAH] Reset mesin gacha jadi '?' dan teks HITAM
+                gachaDisplayName.classList.remove('text-3xl', 'px-4', 'break-all', 'text-white');
+                gachaDisplayName.classList.add('text-8xl', 'sm:text-9xl', 'text-black');
+                gachaDisplayName.textContent = '?';
+
+                groupsContainer.innerHTML = '';
+
+                // [BARU] Pastikan manipulasi dibersihkan saat reset
+                manipulatedGroups = null;
+            }
+            
+            // Inisialisasi
+            renderParticipantsList();
+            updateParticipantCount();
+            
+        });
+    </script>
+</body>
+</html>
+
+
+
+
