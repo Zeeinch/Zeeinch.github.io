@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog ARSIKOM - Pembahasan Tugas 4: Memori</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Merriweather', serif;
+        }
+        .prose p {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            color: #334155;
+            text-align: justify;
+        }
+        /* Custom Pyramid CSS */
+        .pyramid-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 3rem 0;
+        }
+        .pyramid-level {
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 4px;
+            padding: 12px 0;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            cursor: default;
+        }
+        .pyramid-level:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        .level-1 { width: 30%; background-color: #ef4444; border-radius: 8px 8px 0 0; } /* Register */
+        .level-2 { width: 50%; background-color: #f97316; } /* Cache */
+        .level-3 { width: 70%; background-color: #3b82f6; } /* Main */
+        .level-4 { width: 90%; background-color: #22c55e; border-radius: 0 0 8px 8px; } /* Secondary */
+        
+        .section-divider {
+            border-bottom: 1px dashed #cbd5e1;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="cpu" class="w-6 h-6 text-blue-400"></i>
+                    <span class="font-bold text-xl tracking-tight">ZEEINCH<span class="text-blue-400">.my.id</span></span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#" class="bg-slate-800 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                        <a href="#definisi" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Definisi</a>
+                        <a href="#jenis" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Jenis</a>
+                        <a href="#evolusi" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Evolusi</a>
+                        <a href="#perbedaan" class="hover:bg-slate-700 px-3 py-2 rounded-md text-sm font-medium">Perbandingan RAM</a>
+                    </div>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button class="text-gray-300 hover:text-white focus:outline-none">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Layout -->
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Sidebar / Author Info (Visible on Desktop) -->
+            <aside class="hidden lg:block col-span-1">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 sticky top-24">
+                    <div class="flex items-center space-x-4 mb-6">
+                        <div class="h-12 w-12 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+                            MK
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 font-semibold uppercase tracking-wider">Mahasiswa</p>
+                            <h3 class="font-bold text-slate-800">Muh Kholaf Asmaul Ikhsan</h3>
+                            <p class="text-xs text-slate-400">NIM: 8020240158</p>
+                        </div>
+                    </div>
+                    <hr class="border-slate-100 my-4">
+                    <h4 class="font-bold text-slate-700 mb-3">Navigasi Cepat</h4>
+                    <ul class="space-y-3 text-sm text-slate-600">
+                        <li><a href="#definisi" class="hover:text-blue-600 flex items-center transition-colors"><i data-lucide="help-circle" class="w-4 h-4 mr-2"></i> Pengertian Memori</a></li>
+                        <li><a href="#jenis" class="hover:text-blue-600 flex items-center transition-colors"><i data-lucide="layers" class="w-4 h-4 mr-2"></i> Hirarki & Jenis</a></li>
+                        <li><a href="#evolusi" class="hover:text-blue-600 flex items-center transition-colors"><i data-lucide="history" class="w-4 h-4 mr-2"></i> Sejarah Evolusi</a></li>
+                        <li><a href="#perbedaan" class="hover:text-blue-600 flex items-center transition-colors"><i data-lucide="bar-chart-2" class="w-4 h-4 mr-2"></i> Perbandingan Teknis</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Main Blog Content -->
+            <main class="col-span-1 lg:col-span-2 space-y-8">
+                
+                <!-- Blog Header -->
+                <article class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-gradient-to-r from-slate-900 to-slate-800 h-64 relative flex items-end">
+                        <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#4b5563 1px, transparent 1px); background-size: 20px 20px;"></div>
+                        <div class="p-8 relative z-10 w-full bg-gradient-to-t from-slate-900/90 to-transparent">
+                            <span class="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block shadow-lg">Materi Kuliah</span>
+                            <h1 class="text-3xl sm:text-4xl font-bold text-white mb-2 leading-tight">Membedah Memori Komputer</h1>
+                            <p class="text-slate-300 font-light">Analisis Mendalam Tugas 4 ARSIKOM</p>
+                        </div>
+                    </div>
+
+                    <div class="p-8 prose max-w-none">
+                        <p class="lead text-xl text-slate-600 mb-8 border-l-4 border-blue-500 pl-4 italic">
+                            Berikut ini adalah ulasan komprehensif mengenai sistem memori komputer, mulai dari konsep dasar, klasifikasi hirarkis, sejarah perkembangannya, hingga perbandingan teknis antar generasi RAM.
+                        </p>
+
+                        <!-- Jawaban 1: Definisi -->
+                        <section id="definisi" class="mb-12 scroll-mt-24">
+                            <div class="flex items-center mb-6">
+                                <div class="bg-blue-100 p-3 rounded-xl mr-4 shadow-sm">
+                                    <i data-lucide="help-circle" class="w-6 h-6 text-blue-600"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-slate-800 m-0">1. Apa Itu Memori?</h2>
+                            </div>
+                            
+                            <div class="bg-slate-50 p-6 rounded-xl border border-slate-100 shadow-sm space-y-6">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-lg mb-2">Istilah Generik Penyimpanan</h3>
+                                    <p>
+                                        Memori dalam konteks komputer bukanlah merujuk pada satu komponen tunggal saja. Ia adalah <strong>istilah generik (umum)</strong> yang mencakup seluruh spektrum tempat penyimpanan data. Mulai dari yang sifatnya sangat sementara dan super cepat di dalam prosesor, hingga penyimpanan jangka panjang yang besar seperti hard disk. Semua wadah data ini, secara kolektif, disebut memori.
+                                    </p>
+                                </div>
+                                
+                                <div class="border-t border-slate-200 pt-4">
+                                    <h3 class="font-bold text-slate-800 text-lg mb-2">Jantung Pemrosesan Data</h3>
+                                    <p>
+                                        Secara fungsional, memori adalah "meja kerja" bagi komputer. Ia bertugas menyimpan data pada dua fase kritis:
+                                    </p>
+                                    <ul class="list-none space-y-3 mt-3">
+                                        <li class="flex items-start">
+                                            <i data-lucide="check-circle" class="w-5 h-5 text-green-500 mr-3 mt-1 flex-shrink-0"></i>
+                                            <span><strong>Sebelum Diproses:</strong> Memori menampung data mentah dan instruksi program yang antre untuk dieksekusi oleh prosesor.</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <i data-lucide="refresh-cw" class="w-5 h-5 text-blue-500 mr-3 mt-1 flex-shrink-0"></i>
+                                            <span><strong>Selama Diproses:</strong> Ketika aplikasi berjalan, data yang sedang aktif dimanipulasi disimpan sementara di sini agar CPU dapat mengaksesnya dengan cepat tanpa harus menunggu lama mengambil dari penyimpanan sekunder.</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="section-divider"></div>
+
+                        <!-- Jawaban 2: Jenis Memori -->
+                        <section id="jenis" class="mb-12 scroll-mt-24">
+                            <div class="flex items-center mb-6">
+                                <div class="bg-purple-100 p-3 rounded-xl mr-4 shadow-sm">
+                                    <i data-lucide="layers" class="w-6 h-6 text-purple-600"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-slate-800 m-0">2. Macam-Macam Memori</h2>
+                            </div>
+                            
+                            <p class="mb-6">
+                                Memori komputer diorganisir dalam sebuah struktur hirarki berdasarkan <strong>kecepatan akses</strong>. Prinsipnya sederhana: memori yang paling dekat dengan pemroses (otak komputer) adalah yang paling cepat, paling mahal, namun kapasitasnya paling kecil.
+                            </p>
+
+                            <!-- Custom CSS Pyramid -->
+                            <div class="pyramid-container relative">
+                                <div class="absolute right-0 top-0 h-full flex flex-col justify-between py-4 text-xs font-semibold text-slate-400">
+                                    <span class="text-red-500 flex items-center justify-end">CEPAT & MAHAL <i data-lucide="arrow-up" class="w-4 h-4 ml-1"></i></span>
+                                    <span class="text-green-600 flex items-center justify-end">LAMBAT & MURAH <i data-lucide="arrow-down" class="w-4 h-4 ml-1"></i></span>
+                                </div>
+
+                                <div class="pyramid-level level-1 shadow-lg">
+                                    <span class="block text-lg">REGISTER</span>
+                                    <span class="text-xs font-normal opacity-90">Terintegrasi dalam CPU</span>
+                                </div>
+                                <div class="pyramid-level level-2 shadow-lg">
+                                    <span class="block text-lg">CACHE MEMORY</span>
+                                    <span class="text-xs font-normal opacity-90">SRAM (L1, L2, L3)</span>
+                                </div>
+                                <div class="pyramid-level level-3 shadow-lg">
+                                    <span class="block text-lg">MAIN MEMORY</span>
+                                    <span class="text-xs font-normal opacity-90">RAM & ROM</span>
+                                </div>
+                                <div class="pyramid-level level-4 shadow-lg">
+                                    <span class="block text-lg">SECONDARY MEMORY</span>
+                                    <span class="text-xs font-normal opacity-90">HDD, SSD, Flash Disk</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-8 mt-10">
+                                <!-- Register -->
+                                <div class="flex gap-4">
+                                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 text-red-600 font-bold">A</div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-slate-800 mb-2">Register Memori</h3>
+                                        <p class="text-slate-600 mb-3">
+                                            Ini adalah memori "elite" yang berada langsung di jantung CPU. Kecepatannya tidak tertandingi karena tidak ada jarak latensi. Register digunakan untuk menyimpan instruksi atau data spesifik yang sedang dihitung detik itu juga.
+                                        </p>
+                                        <div class="bg-red-50 p-3 rounded-lg border border-red-100 text-sm text-slate-700">
+                                            <strong>Contoh Nyata:</strong> 
+                                            <em>Instruction Register</em> (menyimpan kode instruksi yang sedang dijalankan), <em>Program Counter</em> (menandai alamat instruksi selanjutnya), dan <em>Data Register</em>.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Cache -->
+                                <div class="flex gap-4">
+                                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 text-orange-600 font-bold">B</div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-slate-800 mb-2">Cache Memory</h3>
+                                        <p class="text-slate-600 mb-3">
+                                            Cache berfungsi sebagai "jembatan cerdas" antara CPU yang super cepat dan RAM yang relatif lebih lambat. Cache menyimpan salinan data yang paling sering digunakan CPU, sehingga CPU tidak perlu "pergi jauh" ke RAM berulang kali.
+                                        </p>
+                                        <ul class="list-disc pl-5 text-slate-600 text-sm space-y-2">
+                                            <li><strong>Cache L1 (Internal):</strong> Menyatu dengan inti prosesor. Kapasitas sangat kecil tapi kecepatan ekstrem.</li>
+                                            <li><strong>Cache L2 (Eksternal):</strong> Biasanya di motherboard atau paket prosesor, kapasitas lebih besar dari L1 untuk menampung lebih banyak data antrean.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <!-- Main Memory -->
+                                <div class="flex gap-4">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 text-blue-600 font-bold">C</div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-slate-800 mb-2">Memori Utama (Main Memory)</h3>
+                                        <p class="text-slate-600 mb-4">
+                                            Inilah yang biasa kita sebut sebagai "memori" sehari-hari. Terbagi menjadi dua kategori utama berdasarkan sifat penyimpannya:
+                                        </p>
+                                        <div class="grid md:grid-cols-2 gap-4">
+                                            <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                                <h4 class="font-bold text-blue-600 mb-2">1. RAM (Volatile)</h4>
+                                                <p class="text-sm text-slate-600">
+                                                    <em>Random Access Memory</em>. Data di sini bersifat sementara; <strong>akan hilang seketika jika listrik mati</strong>. Ini adalah area kerja aplikasi yang sedang berjalan.
+                                                </p>
+                                            </div>
+                                            <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                                                <h4 class="font-bold text-blue-600 mb-2">2. ROM (Non-Volatile)</h4>
+                                                <p class="text-sm text-slate-600">
+                                                    <em>Read Only Memory</em>. Data bersifat permanen dan tidak hilang walau listrik mati. Biasanya berisi <strong>Firmware atau BIOS</strong> untuk proses booting komputer.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Secondary -->
+                                <div class="flex gap-4">
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 text-green-600 font-bold">D</div>
+                                    <div>
+                                        <h3 class="text-xl font-bold text-slate-800 mb-2">Memori Sekunder</h3>
+                                        <p class="text-slate-600">
+                                            Gudang penyimpanan data. Meskipun aksesnya paling lambat dibandingkan jenis di atas, kapasitasnya sangat besar dan harganya murah per gigabyte-nya. Contohnya adalah Hard Disk (HDD), SSD, dan Flash Disk.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="section-divider"></div>
+
+                        <!-- Jawaban 3: Evolusi -->
+                        <section id="evolusi" class="mb-12 scroll-mt-24">
+                            <div class="flex items-center mb-6">
+                                <div class="bg-green-100 p-3 rounded-xl mr-4 shadow-sm">
+                                    <i data-lucide="history" class="w-6 h-6 text-green-600"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-slate-800 m-0">3. Evolusi Memori</h2>
+                            </div>
+                            
+                            <p class="mb-6">
+                                Teknologi RAM telah mengalami transformasi panjang untuk mengejar kecepatan prosesor yang terus meningkat. Berikut adalah jejak evolusinya:
+                            </p>
+
+                            <div class="relative border-l-2 border-slate-200 ml-6 space-y-10">
+                                <!-- Step 1 -->
+                                <div class="pl-8 relative">
+                                    <span class="absolute -left-[11px] top-0 bg-white border-2 border-slate-300 rounded-full w-5 h-5"></span>
+                                    <h4 class="font-bold text-lg text-slate-800">Generasi Awal: SRAM (Static RAM)</h4>
+                                    <p class="text-slate-600 mt-2">
+                                        Menggunakan rangkaian <em>flip-flop</em> transistor (Bipolar/CMOS). Disebut "Statis" karena selama ada listrik, data akan tetap terkunci tanpa perlu perawatan. Kelebihannya sangat cepat, namun kekurangannya adalah boros tempat (fisik chip besar) dan mahal.
+                                    </p>
+                                </div>
+
+                                <!-- Step 2 -->
+                                <div class="pl-8 relative">
+                                    <span class="absolute -left-[11px] top-0 bg-white border-2 border-slate-300 rounded-full w-5 h-5"></span>
+                                    <h4 class="font-bold text-lg text-slate-800">NV-RAM (Non-Volatile RAM)</h4>
+                                    <p class="text-slate-600 mt-2">
+                                        Inovasi untuk menyimpan konfigurasi penting (seperti jam dan setting BIOS) agar tidak hilang saat komputer dimatikan. Caranya dengan menanamkan baterai kecil (biasanya Litium CR-2032) yang terus memberi daya pada chip tersebut.
+                                    </p>
+                                </div>
+
+                                <!-- Step 3 -->
+                                <div class="pl-8 relative">
+                                    <span class="absolute -left-[11px] top-0 bg-white border-2 border-slate-300 rounded-full w-5 h-5"></span>
+                                    <h4 class="font-bold text-lg text-slate-800">Terobosan DRAM (Dynamic RAM)</h4>
+                                    <p class="text-slate-600 mt-2">
+                                        Mengganti transistor kompleks dengan <strong>kapasitor</strong> sederhana untuk menyimpan bit data. Ini memungkinkan kapasitas memori yang jauh lebih besar dalam ukuran chip yang sama. Namun, karena kapasitor sifatnya "bocor" (muatan listriknya hilang perlahan), data harus ditulis ulang atau <strong>disegarkan (refresh)</strong> ribuan kali per detik. Karena itulah disebut "Dinamis".
+                                    </p>
+                                </div>
+
+                                <!-- Step 4 -->
+                                <div class="pl-8 relative">
+                                    <span class="absolute -left-[11px] top-0 bg-blue-500 border-2 border-blue-500 rounded-full w-5 h-5 shadow-lg shadow-blue-200"></span>
+                                    <h4 class="font-bold text-lg text-blue-600">Era Modern: SDRAM & DDR</h4>
+                                    <p class="text-slate-600 mt-2">
+                                        DRAM kemudian berevolusi menjadi <strong>SDRAM (Synchronous DRAM)</strong> yang bekerja selaras dengan detak jantung (clock) komputer, menghilangkan waktu tunggu. Kemudian muncul teknologi <strong>DDR (Double Data Rate)</strong> yang revolusioner, mampu mengirim data dua kali dalam satu siklus detak, membuat komputer bekerja jauh lebih responsif.
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="section-divider"></div>
+
+                        <!-- Jawaban 4: Perbedaan RAM -->
+                        <section id="perbedaan" class="mb-8 scroll-mt-24">
+                            <div class="flex items-center mb-6">
+                                <div class="bg-red-100 p-3 rounded-xl mr-4 shadow-sm">
+                                    <i data-lucide="bar-chart-2" class="w-6 h-6 text-red-600"></i>
+                                </div>
+                                <h2 class="text-2xl font-bold text-slate-800 m-0">4. Perbedaan EDO, SDRAM, DDR</h2>
+                            </div>
+
+                            <p class="mb-6 text-slate-600">
+                                Untuk memahami peningkatan kinerja antar generasi, kita perlu melihat spesifikasi fisik dan teknisnya. Semakin baru teknologinya, biasanya tegangan listrik semakin efisien namun jumlah pin (jalur data) semakin banyak untuk bandwidth yang lebih lebar.
+                            </p>
+
+                            <div class="overflow-hidden rounded-xl border border-slate-200 shadow-lg">
+                                <table class="w-full text-left border-collapse bg-white">
+                                    <thead>
+                                        <tr class="bg-slate-800 text-white">
+                                            <th class="p-5 border-b border-slate-700 font-semibold w-1/4">Tipe Memori</th>
+                                            <th class="p-5 border-b border-slate-700 font-semibold w-1/4">Spesifikasi Fisik</th>
+                                            <th class="p-5 border-b border-slate-700 font-semibold w-1/4">Tegangan</th>
+                                            <th class="p-5 border-b border-slate-700 font-semibold w-1/4">Karakteristik Kinerja</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-sm text-slate-700 divide-y divide-slate-100">
+                                        <!-- EDO RAM -->
+                                        <tr class="hover:bg-slate-50 transition-colors">
+                                            <td class="p-5">
+                                                <span class="font-bold text-slate-800 block text-base">EDO RAM</span>
+                                                <span class="text-xs text-slate-500">Extended Data Out</span>
+                                            </td>
+                                            <td class="p-5"><span class="bg-slate-100 px-3 py-1 rounded-full font-mono text-slate-600 border border-slate-200">72 Pin</span></td>
+                                            <td class="p-5 text-slate-400 italic">Standar Lama</td>
+                                            <td class="p-5 leading-relaxed">
+                                                Merupakan pengembangan awal dari DRAM konvensional. Memiliki sedikit peningkatan kecepatan baca dibanding pendahulunya, namun masih bekerja secara asinkron (tidak sinkron dengan clock CPU), sehingga sering terjadi waktu tunggu (latency).
+                                            </td>
+                                        </tr>
+                                        
+                                        <!-- SDRAM -->
+                                        <tr class="hover:bg-slate-50 transition-colors">
+                                            <td class="p-5">
+                                                <span class="font-bold text-slate-800 block text-base">SDRAM</span>
+                                                <span class="text-xs text-slate-500">Synchronous DRAM</span>
+                                            </td>
+                                            <td class="p-5"><span class="bg-slate-100 px-3 py-1 rounded-full font-mono text-slate-600 border border-slate-200">168 Pin</span></td>
+                                            <td class="p-5"><span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-bold text-xs">2.5 Volt</span></td>
+                                            <td class="p-5 leading-relaxed">
+                                                Lompatan teknologi besar. Memori ini mensinkronkan dirinya dengan kecepatan clock bus sistem. Hal ini menghilangkan waktu tunggu yang tidak perlu, memungkinkan aliran data yang lebih lancar dan stabil.
+                                            </td>
+                                        </tr>
+
+                                        <!-- DDR SDRAM -->
+                                        <tr class="bg-blue-50/30 hover:bg-blue-50 transition-colors">
+                                            <td class="p-5">
+                                                <span class="font-bold text-blue-700 block text-base">DDR-SDRAM</span>
+                                                <span class="text-xs text-blue-500">Double Data Rate</span>
+                                            </td>
+                                            <td class="p-5"><span class="bg-white px-3 py-1 rounded-full font-mono text-slate-600 border border-slate-200">184 Pin</span></td>
+                                            <td class="p-5"><span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full font-bold text-xs">2.5 Volt</span></td>
+                                            <td class="p-5 leading-relaxed">
+                                                <strong>Ultra-Performance</strong> pada masanya. Ia mampu mentransfer data pada saat gelombang clock naik DAN turun. Efeknya, kecepatan transfer data menjadi dua kali lipat dibanding SDRAM biasa pada frekuensi yang sama.
+                                            </td>
+                                        </tr>
+
+                                        <!-- DDR 2 -->
+                                        <tr class="bg-green-50/30 hover:bg-green-50 transition-colors">
+                                            <td class="p-5">
+                                                <span class="font-bold text-green-700 block text-base">DDR 2</span>
+                                                <span class="text-xs text-green-500">Generasi Kedua</span>
+                                            </td>
+                                            <td class="p-5"><span class="bg-white px-3 py-1 rounded-full font-mono text-slate-600 border border-slate-200">240 Pin</span></td>
+                                            <td class="p-5"><span class="bg-green-100 text-green-800 px-3 py-1 rounded-full font-bold text-xs">1.8 Volt</span></td>
+                                            <td class="p-5 leading-relaxed">
+                                                Penyempurnaan dari DDR. Menggunakan tegangan listrik yang jauh lebih rendah (lebih hemat daya dan dingin) serta memiliki kecepatan bus yang ditingkatkan, memberikan performa keseluruhan yang lebih tinggi.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                    
+                    <!-- Blog Footer Section -->
+                    <div class="bg-slate-50 p-8 border-t border-slate-200">
+                        <div class="flex flex-col justify-center items-center text-center space-y-2">
+                            <p class="text-slate-800 font-serif italic text-lg">"Memori adalah tempat menyimpan data selama dan sebelum data diproses ke processor."</p>
+                            <div class="h-1 w-20 bg-blue-500 rounded-full"></div>
+                        </div>
+                    </div>
+                </article>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12 mt-12 border-t border-slate-800">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <div class="mb-4">
+                <span class="text-2xl font-bold text-white tracking-tight">ZEEINCH<span class="text-blue-500">.my.id</span></span>
+            </div>
+            <p class="mb-2 text-sm">&copy; 2023 Kelas ARSIKOM - Pertemuan 8.</p>
+            <p class="text-xs text-slate-500">Referensi Materi: Ibnu Sani Wijaya, S.Kom, M.S.I</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
