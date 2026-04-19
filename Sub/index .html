@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dapur Oranye - Resep Makanan Sehat</title>
+    <!-- Menggunakan Tailwind CSS untuk styling yang cepat dan responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Menggunakan Google Fonts untuk tipografi yang lebih baik -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icon dari Lucide React -->
+    <script src="https://unpkg.com/lucide-react@0.292.0/dist/lucide-react.js"></script>
+
+    <style>
+        /* Custom style untuk menggunakan font Poppins */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #FFFAF0; /* Warna latar belakang sedikit krem */
+        }
+        /* Warna utama oranye */
+        .primary-orange {
+            color: #F97316;
+        }
+        .bg-primary-orange {
+            background-color: #F97316;
+        }
+        .bg-primary-orange-hover:hover {
+            background-color: #EA580C;
+        }
+        .border-primary-orange {
+            border-color: #F97316;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header / Navbar -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold primary-orange">
+                Dapur<span class="text-gray-800">Oranye</span>
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#" class="text-gray-600 hover:primary-orange transition duration-300">Beranda</a>
+                <a href="#" class="text-gray-600 hover:primary-orange transition duration-300">Resep</a>
+                <a href="#" class="text-gray-600 hover:primary-orange transition duration-300">Blog</a>
+                <a href="#" class="text-gray-600 hover:primary-orange transition duration-300">Tentang Kami</a>
+            </nav>
+           
+            <button class="md:hidden text-gray-800">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="container mx-auto px-6 py-16">
+        <div class="flex flex-col lg:flex-row items-center gap-12">
+            <!-- Teks di Kiri -->
+            <div class="lg:w-1/2 text-center lg:text-left">
+                <h1 class="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
+                    Temukan Resep <span class="primary-orange">Lezat & Sehat</span> Setiap Hari
+                </h1>
+                <p class="mt-6 text-lg text-gray-600">
+                    Jelajahi ribuan resep dari berbagai penjuru dunia yang mudah diikuti, cocok untuk pemula maupun koki berpengalaman.
+                </p>
+                <div class="mt-8 flex justify-center lg:justify-start gap-4">
+                    <a href="#" class="bg-primary-orange text-white px-8 py-3 rounded-full font-semibold text-lg bg-primary-orange-hover transition duration-300 shadow-lg">
+                        Lihat Resep
+                    </a>
+                    <a href="#" class="bg-white text-gray-800 px-8 py-3 rounded-full font-semibold text-lg hover:bg-gray-100 transition duration-300 border border-gray-200 shadow-lg">
+                        Kirim Resepmu
+                    </a>
+                </div>
+            </div>
+            <!-- Gambar di Kanan -->
+            <div class="lg:w-1/2 mt-10 lg:mt-0">
+                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop" 
+                     alt="Hidangan makanan lezat di atas meja" 
+                     class="rounded-3xl shadow-2xl w-full h-auto object-cover"
+                     onerror="this.onerror=null;this.src='https://placehold.co/600x400/FFFAF0/F97316?text=Gambar+Makanan';">
+            </div>
+        </div>
+    </main>
+
+    <!-- Section Kategori Populer -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-4">Kategori Populer</h2>
+            <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto">Dari hidangan pembuka hingga penutup, temukan kategori yang paling sesuai dengan seleramu.</p>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+                <!-- Card Kategori -->
+                <div class="text-center bg-gray-50 p-6 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                    <img src="https://placehold.co/100x100/F97316/FFFFFF?text=Salad" alt="Salad" class="mx-auto rounded-full mb-4" onerror="this.onerror=null;this.src='https://placehold.co/100x100/F97316/FFFFFF?text=Salad';">
+                    <h3 class="font-semibold text-lg">Salad Segar</h3>
+                </div>
+                <div class="text-center bg-gray-50 p-6 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                    <img src="https://placehold.co/100x100/F97316/FFFFFF?text=Kue" alt="Kue" class="mx-auto rounded-full mb-4" onerror="this.onerror=null;this.src='https://placehold.co/100x100/F97316/FFFFFF?text=Kue';">
+                    <h3 class="font-semibold text-lg">Kue & Roti</h3>
+                </div>
+                <div class="text-center bg-gray-50 p-6 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                    <img src="https://placehold.co/100x100/F97316/FFFFFF?text=Pasta" alt="Pasta" class="mx-auto rounded-full mb-4" onerror="this.onerror=null;this.src='https://placehold.co/100x100/F97316/FFFFFF?text=Pasta';">
+                    <h3 class="font-semibold text-lg">Pasta Lezat</h3>
+                </div>
+                <div class="text-center bg-gray-50 p-6 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                    <img src="https://placehold.co/100x100/F97316/FFFFFF?text=Sup" alt="Sup" class="mx-auto rounded-full mb-4" onerror="this.onerror=null;this.src='https://placehold.co/100x100/F97316/FFFFFF?text=Sup';">
+                    <h3 class="font-semibold text-lg">Sup Hangat</h3>
+                </div>
+                <div class="text-center bg-gray-50 p-6 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                    <img src="https://placehold.co/100x100/F97316/FFFFFF?text=Smoothie" alt="Smoothie" class="mx-auto rounded-full mb-4" onerror="this.onerror=null;this.src='https://placehold.co/100x100/F97316/FFFFFF?text=Smoothie';">
+                    <h3 class="font-semibold text-lg">Smoothie Sehat</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Section Artikel Blog Terbaru -->
+    <section class="py-20">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-4">Dari Blog Kami</h2>
+            <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto">Tips memasak, cerita dari dapur, dan inspirasi kuliner terbaru untuk Anda.</p>
+            <div class="flex flex-col lg:flex-row items-center bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="lg:w-1/2">
+                    <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=2070&auto=format&fit=crop" 
+                         alt="Bahan makanan sehat" 
+                         class="w-full h-64 lg:h-full object-cover"
+                         onerror="this.onerror=null;this.src='https://placehold.co/600x400/FFFAF0/F97316?text=Blog+Image';">
+                </div>
+                <div class="lg:w-1/2 p-8 md:p-12">
+                    <span class="text-sm font-semibold primary-orange">TIPS & TRIK</span>
+                    <h3 class="text-2xl font-bold mt-2 mb-4">5 Cara Membuat Makanan Anda Lebih Sehat Tanpa Kehilangan Rasa</h3>
+                    <p class="text-gray-600 mb-6">
+                        Makan sehat tidak harus membosankan. Dengan beberapa penyesuaian sederhana, Anda bisa mengubah hidangan favorit menjadi versi yang lebih bergizi dan tetap nikmat. Mari kita lihat caranya!
+                    </p>
+                    <a href="#" class="inline-flex items-center font-semibold primary-orange group">
+                        <span>Baca Selengkapnya</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right ml-2 group-hover:translate-x-1 transition-transform"><line x1="5" x2="19" y1="12" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Kolom 1: Logo & Deskripsi -->
+                <div>
+                    <h3 class="text-2xl font-bold text-white">Dapur<span class="primary-orange">Oranye</span></h3>
+                    <p class="mt-4 text-gray-400">Membawa kebahagiaan ke dapur Anda dengan resep yang mudah dan lezat.</p>
+                </div>
+                <!-- Kolom 2: Link Cepat -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Link Cepat</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Beranda</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Resep</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Tentang Kami</a></li>
+                    </ul>
+                </div>
+                <!-- Kolom 3: Bantuan -->
+                 <div>
+                    <h4 class="font-semibold text-lg mb-4">Bantuan</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">FAQ</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Kontak</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Kebijakan Privasi</a></li>
+                    </ul>
+                </div>
+                <!-- Kolom 4: Newsletter -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Berlangganan Newsletter</h4>
+                    <p class="text-gray-400 mb-4">Dapatkan resep terbaru langsung ke email Anda.</p>
+                    <div class="flex">
+                        <input type="email" placeholder="Email Anda" class="w-full px-4 py-2 rounded-l-md text-gray-800 focus:outline-none">
+                        <button class="bg-primary-orange px-4 py-2 rounded-r-md bg-primary-orange-hover">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500">
+                <p>&copy; 2024 DapurOranye. Seluruh Hak Cipta.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas 1 | Sejarah Komputer | Muh Kholaf Asmaul Ikhsan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #111827;
+            color: #e5e7eb;
+        }
+        .card-container {
+            perspective: 1000px;
+        }
+        .card {
+            transition: transform 0.5s, box-shadow 0.5s;
+            transform-style: preserve-3d;
+        }
+        .card:hover {
+            transform: rotateY(10deg) rotateX(5deg) scale(1.05);
+            box-shadow: 0 25px 50px -12px rgba(255, 255, 255, 0.1), 0 10px 10px -5px rgba(255, 255, 255, 0.04);
+        }
+        .card-content {
+            transform: translateZ(20px);
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #4ade80, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+        }
+        th, td {
+            border-bottom: 1px solid #374151;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            background-color: #1f2937;
+            color: #9ca3af;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        tbody tr {
+            transition: background-color 0.3s;
+        }
+        tbody tr:hover {
+            background-color: #374151;
+        }
+        th:first-child {
+            border-top-left-radius: 8px;
+        }
+        th:last-child {
+            border-top-right-radius: 8px;
+        }
+        tr:last-child td:first-child {
+            border-bottom-left-radius: 8px;
+        }
+        tr:last-child td:last-child {
+            border-bottom-right-radius: 8px;
+        }
+         tr:last-child td {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-bold gradient-text mb-2">Sejarah & Evolusi Komputer</h1>
+            <p class="text-lg text-gray-400">Tugas 1 Individu - Arsitektur dan Organisasi Komputer</p>
+            <p class="mt-4 text-xl font-semibold text-gray-200">Muh Kholaf Asmaul Ikhsan</p>
+        </header>
+
+        <!-- Timeline Generasi Komputer -->
+        <main>
+            <h2 class="text-3xl font-bold text-center mb-10 text-gray-100">Linimasa Generasi Komputer</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Generasi 1 -->
+                <div class="card-container">
+                    <div class="card bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700">
+                        <div class="card-content">
+                            <p class="text-sm font-semibold text-indigo-400">1940 - 1956</p>
+                            <h3 class="text-2xl font-bold mt-2 mb-3 gradient-text">Generasi Pertama</h3>
+                            <p class="text-gray-400 mb-4">Menggunakan tabung vakum (vacuum tube) sebagai sirkuitnya. Ukurannya sangat besar, mengonsumsi banyak daya listrik, dan menghasilkan panas berlebih. Program dibuat menggunakan bahasa mesin.</p>
+                            <div class="text-sm">
+                                <strong class="text-gray-200">Contoh:</strong>
+                                <span class="text-gray-400">ENIAC, UNIVAC I.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generasi 2 -->
+                <div class="card-container">
+                    <div class="card bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700">
+                        <div class="card-content">
+                            <p class="text-sm font-semibold text-indigo-400">1956 - 1963</p>
+                            <h3 class="text-2xl font-bold mt-2 mb-3 gradient-text">Generasi Kedua</h3>
+                            <p class="text-gray-400 mb-4">Transistor menggantikan tabung vakum. Komputer menjadi lebih kecil, lebih cepat, lebih murah, dan lebih hemat energi. Bahasa pemrograman simbolik (assembly) dan bahasa tingkat tinggi seperti FORTRAN dan COBOL mulai digunakan.</p>
+                             <div class="text-sm">
+                                <strong class="text-gray-200">Contoh:</strong>
+                                <span class="text-gray-400">IBM 7094, CDC 1604.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generasi 3 -->
+                <div class="card-container">
+                    <div class="card bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700">
+                        <div class="card-content">
+                            <p class="text-sm font-semibold text-indigo-400">1964 - 1971</p>
+                            <h3 class="text-2xl font-bold mt-2 mb-3 gradient-text">Generasi Ketiga</h3>
+                            <p class="text-gray-400 mb-4">Penggunaan Sirkuit Terpadu (Integrated Circuit - IC) yang menempatkan banyak transistor dalam satu kepingan silikon. Kinerja komputer meningkat pesat, ukurannya semakin kecil, dan sudah menggunakan sistem operasi (operating system).</p>
+                            <div class="text-sm">
+                                <strong class="text-gray-200">Contoh:</strong>
+                                <span class="text-gray-400">IBM System/360, DEC PDP-8.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generasi 4 -->
+                <div class="card-container">
+                    <div class="card bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700">
+                       <div class="card-content">
+                            <p class="text-sm font-semibold text-indigo-400">1971 - Sekarang</p>
+                            <h3 class="text-2xl font-bold mt-2 mb-3 gradient-text">Generasi Keempat</h3>
+                            <p class="text-gray-400 mb-4">Era mikroprosesor (microprocessor) yang memadatkan ribuan IC ke dalam satu chip. Muncullah Personal Computer (PC) yang bisa digunakan oleh perorangan. Jaringan komputer dan internet mulai berkembang.</p>
+                            <div class="text-sm">
+                                <strong class="text-gray-200">Contoh:</strong>
+                                <span class="text-gray-400">Apple Macintosh, IBM PC.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generasi 5 -->
+                <div class="card-container">
+                    <div class="card bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700">
+                        <div class="card-content">
+                            <p class="text-sm font-semibold text-indigo-400">Sekarang - Masa Depan</p>
+                            <h3 class="text-2xl font-bold mt-2 mb-3 gradient-text">Generasi Kelima</h3>
+                            <p class="text-gray-400 mb-4">Fokus pada pengembangan Kecerdasan Buatan (Artificial Intelligence - AI). Menggunakan teknologi pemrosesan paralel dan superkonduktor. Bertujuan menciptakan perangkat yang mampu merespon bahasa manusia dan belajar.</p>
+                             <div class="text-sm">
+                                <strong class="text-gray-200">Contoh:</strong>
+                                <span class="text-gray-400">Komputer kuantum, sistem pakar.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Perbandingan Generasi -->
+            <section class="mt-20">
+                <h2 class="text-3xl font-bold text-center mb-10 text-gray-100">Perbandingan Antar Generasi</h2>
+                <div class="overflow-x-auto bg-gray-900/60 rounded-lg shadow-lg border border-gray-700">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fitur</th>
+                                <th>Generasi 1</th>
+                                <th>Generasi 2</th>
+                                <th>Generasi 3</th>
+                                <th>Generasi 4</th>
+                                <th>Generasi 5</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-300">
+                            <tr>
+                                <td class="font-semibold text-gray-100">Teknologi Utama</td>
+                                <td>Tabung Vakum</td>
+                                <td>Transistor</td>
+                                <td>Integrated Circuit (IC)</td>
+                                <td>Microprocessor (VLSI)</td>
+                                <td>AI & Parallel Processing (ULSI)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold text-gray-100">Ukuran</td>
+                                <td>Sangat Besar (seukuran ruangan)</td>
+                                <td>Besar (seukuran lemari)</td>
+                                <td>Lebih Kecil (seukuran meja)</td>
+                                <td>Kecil (Desktop, Laptop)</td>
+                                <td>Sangat Kecil (Genggam)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold text-gray-100">Kecepatan</td>
+                                <td>Sangat Lambat (milidetik)</td>
+                                <td>Lambat (mikrodetik)</td>
+                                <td>Cepat (nanodetik)</td>
+                                <td>Sangat Cepat</td>
+                                <td>Super Cepat</td>
+                            </tr>
+                             <tr>
+                                <td class="font-semibold text-gray-100">Daya & Panas</td>
+                                <td>Sangat Tinggi & Sangat Panas</td>
+                                <td>Tinggi & Panas</td>
+                                <td>Rendah & Sedikit Panas</td>
+                                <td>Sangat Rendah & Dingin</td>
+                                <td>Sangat Rendah & Dingin</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold text-gray-100">Bahasa Pemrograman</td>
+                                <td>Bahasa Mesin</td>
+                                <td>Assembly, FORTRAN, COBOL</td>
+                                <td>Bahasa Tingkat Tinggi</td>
+                                <td>Bahasa Berorientasi Objek</td>
+                                <td>Bahasa Alami (Natural Language)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold text-gray-100">Input</td>
+                                <td>Punched Card, Paper Tape</td>
+                                <td>Punched Card, Magnetic Tape</td>
+                                <td>Keyboard, Mouse</td>
+                                <td>Keyboard, Mouse, GUI</td>
+                                <td>Suara, Sentuhan, AI</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Footer -->
+        <footer class="text-center mt-16 text-gray-500">
+            <p>&copy; 2024 | Dibuat untuk Tugas Arsitektur dan Organisasi Komputer</p>
+            <p>Muh Kholaf Asmaul Ikhsan</p>
+        </footer>
+
+    </div>
+</body>
+</html>
