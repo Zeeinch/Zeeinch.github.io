@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ular Tangga Premium</title>
+    <title>Ular Tangga Ultimate</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,25 +15,20 @@
     
     <style>
         body {
-            /* Menggunakan font Fredoka yang lebih playful untuk game */
-            font-family: 'Fredoka', sans-serif; 
-            /* Menghapus overflow: hidden agar bisa di-scroll di mobile */
+            font-family: 'Fredoka', sans-serif;
             overflow-x: hidden;
         }
 
-        /* Styling Papan */
         .square {
             position: relative;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
         }
 
-        /* Bidak Pemain */
         .player-token {
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             z-index: 20;
         }
 
-        /* Animasi Kocok Dadu */
         @keyframes roll {
             0% { transform: rotate(0deg) scale(1) translateY(0); }
             25% { transform: rotate(180deg) scale(1.2) translateY(-10px); }
@@ -45,7 +40,6 @@
             animation: roll 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Animasi Modal */
         @keyframes bounceIn {
             0% { transform: scale(0.8); opacity: 0; }
             60% { transform: scale(1.05); opacity: 1; }
@@ -55,580 +49,1099 @@
             animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Custom input range for offline players */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            margin-top: -8px; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-sky-100 via-indigo-50 to-purple-100 min-h-screen flex items-center justify-center py-8 px-4 text-slate-800">
+<body class="bg-gradient-to-br from-sky-100 via-indigo-50 to-purple-100 min-h-screen flex items-center justify-center p-4 text-slate-800">
 
-    <div class="w-full max-w-6xl flex flex-col lg:flex-row gap-8 bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-6 lg:p-8">
-        
-        <!-- BAGIAN PAPAN GAME -->
-        <div class="w-full lg:w-2/3 flex items-center justify-center">
-            <!-- aspect-square menjaga proporsi papan tetap kotak di semua layar -->
-            <div id="game-board-container" class="relative w-full max-w-2xl aspect-square">
-                <!-- Grid Papan -->
-                <div id="game-board" class="grid grid-cols-10 grid-rows-10 h-full w-full border-8 border-indigo-900 rounded-2xl overflow-hidden shadow-inner bg-amber-50"></div>
-                
-                <!-- Layer SVG (Tangga & Ular) -->
-                <div id="svg-layer" class="absolute top-0 left-0 w-full h-full pointer-events-none z-[10]"></div>
-                
-                <!-- Layer Bidak -->
-                <div id="token-layer" class="absolute top-0 left-0 w-full h-full pointer-events-none z-[20]"></div>
+    <!-- CONTAINER UTAMA -->
+    <div id="main-app" class="w-full max-w-6xl flex flex-col items-center justify-center relative">
+
+        <!-- SCREEN: MENU UTAMA -->
+        <div id="screen-main-menu" class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-10 w-full max-w-md text-center">
+            <h1 class="text-5xl font-bold text-indigo-600 mb-2 drop-shadow-sm">Ular Tangga</h1>
+            <p class="text-slate-500 mb-10 font-medium">Ultimate Edition</p>
+            
+            <div class="flex flex-col gap-4">
+                <button id="btn-menu-offline" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 text-white font-bold py-4 px-6 rounded-2xl text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg">
+                    🕹️ Main Offline
+                </button>
+                <button id="btn-menu-online" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-4 px-6 rounded-2xl text-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg">
+                    🌐 Multiplayer Online
+                </button>
             </div>
         </div>
 
-        <!-- BAGIAN KONTROL & UI -->
-        <div class="w-full lg:w-1/3 flex flex-col justify-between items-center bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
+        <!-- SCREEN: OFFLINE SETUP -->
+        <div id="screen-offline-setup" class="hidden bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8 w-full max-w-md text-center">
+            <button class="btn-back absolute top-6 left-6 text-slate-400 hover:text-slate-600">◀ Kembali</button>
+            <h2 class="text-3xl font-bold text-indigo-600 mb-6 mt-4">Pengaturan Offline</h2>
             
-            <!-- Header -->
-            <div class="text-center w-full mb-6">
-                <h1 class="text-4xl font-bold text-indigo-600 mb-2 drop-shadow-sm">Ular Tangga</h1>
-                <div class="bg-indigo-50 rounded-xl p-3 border border-indigo-100">
-                    <p id="status-message" class="text-lg font-medium text-indigo-900 min-h-[3rem] flex items-center justify-center">
-                        Selamat datang! Giliran Pemain 1.
-                    </p>
+            <!-- Jumlah Pemain -->
+            <div class="mb-6 text-left">
+                <label class="block text-slate-600 font-semibold mb-4 text-center">Jumlah Pemain (1-5)</label>
+                <div class="flex items-center justify-between mb-2 px-2 text-lg font-bold text-indigo-500" id="offline-player-display">
+                    <span>1 Orang</span>
+                </div>
+                <input type="range" id="offline-player-count" min="1" max="5" value="1" class="w-full appearance-none bg-transparent">
+                <div class="flex justify-between text-xs text-slate-400 mt-2 px-1">
+                    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
                 </div>
             </div>
 
-            <!-- Mode Kesulitan -->
-            <div class="w-full mb-6">
-                <h3 class="font-semibold text-slate-500 text-center mb-3 text-sm uppercase tracking-wider">Tingkat Kesulitan</h3>
-                <div id="difficulty-selector" class="grid grid-cols-2 gap-3">
+            <!-- Tingkat Kesulitan Offline -->
+            <div class="mb-8">
+                <label class="block text-slate-600 font-semibold mb-3 text-center">Tingkat Kesulitan</label>
+                <div class="grid grid-cols-2 gap-2" id="offline-diff-container">
                     <label class="cursor-pointer">
-                        <input type="radio" name="difficulty" value="keroco" class="peer hidden" checked>
-                        <div class="text-center py-2 px-3 rounded-xl border-2 border-slate-200 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 peer-checked:text-white transition-all font-medium">Santai</div>
+                        <input type="radio" name="diff_offline" value="keroco" class="peer hidden" checked>
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 peer-checked:text-white transition-all text-sm font-medium">Santai</div>
                     </label>
                     <label class="cursor-pointer">
-                        <input type="radio" name="difficulty" value="susah" class="peer hidden">
-                        <div class="text-center py-2 px-3 rounded-xl border-2 border-slate-200 peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-white transition-all font-medium">Menantang</div>
+                        <input type="radio" name="diff_offline" value="susah" class="peer hidden">
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-white transition-all text-sm font-medium">Menantang</div>
                     </label>
                     <label class="cursor-pointer">
-                        <input type="radio" name="difficulty" value="susah-banget" class="peer hidden">
-                        <div class="text-center py-2 px-3 rounded-xl border-2 border-slate-200 peer-checked:bg-rose-500 peer-checked:border-rose-500 peer-checked:text-white transition-all font-medium">Gila</div>
+                        <input type="radio" name="diff_offline" value="susah-banget" class="peer hidden">
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-rose-500 peer-checked:border-rose-500 peer-checked:text-white transition-all text-sm font-medium">Gila</div>
                     </label>
                     <label class="cursor-pointer">
-                        <input type="radio" name="difficulty" value="neraka" class="peer hidden">
-                        <div class="text-center py-2 px-3 rounded-xl border-2 border-slate-200 peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white transition-all font-medium">Neraka</div>
+                        <input type="radio" name="diff_offline" value="neraka" class="peer hidden">
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white transition-all text-sm font-medium">Neraka</div>
+                    </label>
+                    <label class="cursor-pointer col-span-2">
+                        <input type="radio" name="diff_offline" value="ular" class="peer hidden">
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-slate-800 peer-checked:border-slate-800 peer-checked:text-white transition-all text-sm font-medium">🐍 Mode Ular Saja 🐍</div>
                     </label>
                 </div>
             </div>
 
-            <!-- Dadu -->
-            <div class="flex items-center justify-center mb-8 relative">
-                <div class="absolute inset-0 bg-indigo-200 blur-xl opacity-50 rounded-full"></div>
-                <div id="dice-container" class="w-24 h-24 bg-gradient-to-b from-white to-slate-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-slate-200 flex items-center justify-center relative z-10">
-                    <svg id="dice-face" xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-slate-800" viewBox="0 0 24 24" fill="currentColor">
-                        <circle cx="12" cy="12" r="2.5" />
-                    </svg>
-                </div>
-            </div>
+            <button id="btn-start-offline" class="w-full bg-emerald-500 text-white font-bold py-4 px-6 rounded-xl text-xl hover:bg-emerald-600 active:scale-95 transition-all shadow-lg">
+                Mulai Bermain
+            </button>
+        </div>
+
+        <!-- SCREEN: MULTIPLAYER SETUP -->
+        <div id="screen-multi-setup" class="hidden bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-10 w-full max-w-md text-center">
+            <button class="btn-back absolute top-6 left-6 text-slate-400 hover:text-slate-600">◀ Kembali</button>
+            <h2 class="text-3xl font-bold text-purple-600 mb-8 mt-4">Multiplayer</h2>
             
-            <!-- Tombol Aksi -->
-            <div class="w-full flex flex-col gap-3">
-                <button id="roll-dice-btn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-4 px-6 rounded-xl text-xl hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition-all shadow-[0_4px_15px_rgba(99,102,241,0.4)]">
-                    Kocok Dadu
-                </button>
-                <button id="reset-btn" class="w-full bg-slate-100 text-slate-600 font-semibold py-3 px-4 rounded-xl hover:bg-slate-200 active:scale-95 transition-all">
-                    Mulai Ulang Game
-                </button>
+            <div class="mb-6 text-left">
+                <label class="block text-slate-600 font-semibold mb-2">Nama Kamu <span class="text-red-500">*</span></label>
+                <input type="text" id="input-player-name" placeholder="Masukkan nama..." class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-purple-500 focus:ring-0 outline-none transition-colors" maxlength="15">
             </div>
 
-            <!-- Posisi Pemain -->
-            <div class="mt-6 w-full bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <h2 class="font-semibold text-slate-500 text-sm uppercase tracking-wider text-center mb-3">Posisi Saat Ini</h2>
-                <div id="player-positions" class="flex flex-col gap-2"></div>
+            <div class="border-b-2 border-slate-100 my-6"></div>
+
+            <button id="btn-create-room" class="w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-xl text-lg hover:bg-purple-700 active:scale-95 transition-all shadow-md mb-4">
+                ➕ Buat Room Baru
+            </button>
+            
+            <div class="flex gap-2">
+                <input type="text" id="input-room-code" placeholder="Kode Room" class="w-2/3 px-4 py-3 rounded-xl border-2 border-slate-200 uppercase font-mono text-center tracking-widest focus:border-indigo-500 outline-none" maxlength="6">
+                <button id="btn-join-room" class="w-1/3 bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl hover:bg-indigo-600 active:scale-95 transition-all shadow-md">
+                    Gabung
+                </button>
             </div>
+        </div>
+
+        <!-- SCREEN: LOBBY MULTIPLAYER -->
+        <div id="screen-lobby" class="hidden bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-8 w-full max-w-md text-center">
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Lobby Permainan</h2>
+            <div class="bg-indigo-50 border border-indigo-100 rounded-xl py-3 px-4 inline-block mb-6">
+                <span class="text-slate-500 text-sm block mb-1">KODE ROOM</span>
+                <span id="display-room-code" class="text-3xl font-mono font-bold text-indigo-700 tracking-[0.2em]">------</span>
+            </div>
+
+            <!-- Tingkat Kesulitan Online (Host Only) -->
+            <div class="mb-6">
+                <label class="block text-slate-600 font-semibold mb-3 text-center text-sm">Tingkat Kesulitan <span id="diff-host-badge" class="text-xs text-indigo-500 ml-1 font-normal hidden">(Dipilih Host)</span></label>
+                <div class="grid grid-cols-2 gap-2" id="online-diff-container">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="diff_online" value="keroco" class="peer hidden" checked>
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 peer-checked:text-white transition-all text-sm font-medium">Santai</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="diff_online" value="susah" class="peer hidden">
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-amber-500 peer-checked:border-amber-500 peer-checked:text-white transition-all text-sm font-medium">Menantang</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="diff_online" value="susah-banget" class="peer hidden">
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-rose-500 peer-checked:border-rose-500 peer-checked:text-white transition-all text-sm font-medium">Gila</div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="diff_online" value="neraka" class="peer hidden">
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-checked:text-white transition-all text-sm font-medium">Neraka</div>
+                    </label>
+                    <label class="cursor-pointer col-span-2">
+                        <input type="radio" name="diff_online" value="ular" class="peer hidden">
+                        <div class="text-center py-2 px-2 rounded-xl border-2 border-slate-200 peer-checked:bg-slate-800 peer-checked:border-slate-800 peer-checked:text-white transition-all text-sm font-medium">🐍 Mode Ular Saja 🐍</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="text-left mb-6">
+                <h3 class="font-semibold text-slate-500 mb-3 text-sm uppercase tracking-wider">Daftar Pemain (<span id="lobby-player-count">0</span>/5)</h3>
+                <div id="lobby-players-list" class="flex flex-col gap-2 min-h-[150px]">
+                    <!-- Players dynamically inserted here -->
+                </div>
+            </div>
+
+            <div id="lobby-host-controls" class="hidden">
+                <p class="text-xs text-amber-600 mb-3 font-medium bg-amber-50 p-2 rounded-lg">* Minimal 2 pemain untuk memulai game</p>
+                <button id="btn-start-multiplayer" disabled class="w-full bg-indigo-600 text-white font-bold py-4 px-6 rounded-xl text-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg">
+                    Mulai Game Sekarang
+                </button>
+            </div>
+            <div id="lobby-guest-message" class="hidden bg-slate-50 text-slate-500 py-4 px-6 rounded-xl border border-slate-200 font-medium animate-pulse">
+                Menunggu Host memulai game...
+            </div>
+        </div>
+
+        <!-- SCREEN: GAME BOARD -->
+        <div id="screen-game" class="hidden w-full flex flex-col lg:flex-row gap-8 bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white p-6 lg:p-8">
+            <!-- BAGIAN PAPAN GAME -->
+            <div class="w-full lg:w-2/3 flex items-center justify-center">
+                <div id="game-board-container" class="relative w-full max-w-2xl aspect-square">
+                    <div id="game-board" class="grid grid-cols-10 grid-rows-10 h-full w-full border-8 border-indigo-900 rounded-2xl overflow-hidden shadow-inner bg-amber-50"></div>
+                    <div id="svg-layer" class="absolute top-0 left-0 w-full h-full pointer-events-none z-[10]"></div>
+                    <div id="token-layer" class="absolute top-0 left-0 w-full h-full pointer-events-none z-[20]"></div>
+                </div>
+            </div>
+
+            <!-- BAGIAN KONTROL & UI -->
+            <div class="w-full lg:w-1/3 flex flex-col justify-between items-center bg-white rounded-2xl shadow-lg border border-slate-100 p-6">
+                
+                <div class="text-center w-full mb-6">
+                    <div class="flex flex-col mb-4 gap-2">
+                        <h1 class="text-3xl font-bold text-indigo-600 drop-shadow-sm">Ular Tangga</h1>
+                        <span id="game-mode-badge" class="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-full uppercase tracking-wider border border-slate-200"></span>
+                    </div>
+                    <div class="bg-indigo-50 rounded-xl p-3 border border-indigo-100 shadow-sm relative overflow-hidden">
+                        <div id="turn-indicator-color" class="absolute left-0 top-0 bottom-0 w-2 bg-indigo-500 transition-colors"></div>
+                        <p id="status-message" class="text-lg font-bold text-indigo-900 min-h-[3rem] flex items-center justify-center pl-4">
+                            Memuat...
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Dadu -->
+                <div class="flex items-center justify-center mb-8 relative">
+                    <div class="absolute inset-0 bg-indigo-200 blur-xl opacity-50 rounded-full"></div>
+                    <div id="dice-container" class="w-24 h-24 bg-gradient-to-b from-white to-slate-100 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-slate-200 flex items-center justify-center relative z-10">
+                        <svg id="dice-face" xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-slate-800" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="2.5" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Tombol Aksi -->
+                <div class="w-full flex flex-col gap-3">
+                    <button id="roll-dice-btn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold py-4 px-6 rounded-xl text-xl hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition-all shadow-lg shadow-indigo-200">
+                        Kocok Dadu
+                    </button>
+                    <button id="quit-game-btn" class="w-full bg-slate-100 text-slate-600 font-semibold py-3 px-4 rounded-xl hover:bg-rose-100 hover:text-rose-600 active:scale-95 transition-all">
+                        Keluar Game
+                    </button>
+                </div>
+
+                <!-- Posisi Pemain -->
+                <div class="mt-6 w-full bg-slate-50 p-4 rounded-xl border border-slate-100 flex-1 overflow-y-auto">
+                    <h2 class="font-semibold text-slate-500 text-sm uppercase tracking-wider text-center mb-3">Status Pemain</h2>
+                    <div id="player-positions" class="flex flex-col gap-2"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL CUSTOM ALERT -->
+    <div id="custom-alert-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 opacity-0 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 text-center max-w-sm w-full transform scale-95 transition-transform" id="custom-alert-box">
+            <div class="w-16 h-16 bg-rose-100 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Peringatan</h3>
+            <p id="alert-message" class="text-slate-600 mb-6">Pesan error disini.</p>
+            <button onclick="closeAlert()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition-colors">Mengerti</button>
         </div>
     </div>
 
-    <!-- Modal Kemenangan -->
-    <div id="winner-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-sm w-full modal-animate border-4 border-amber-300">
-            <div class="text-6xl mb-4">🏆</div>
-            <h2 class="text-3xl font-bold text-slate-800 mb-2">Luar Biasa!</h2>
-            <p id="winner-message" class="text-xl text-indigo-600 font-semibold mb-8">Pemain 1 Memenangkan Game!</p>
-            <button id="play-again-btn" class="w-full bg-amber-400 text-amber-900 font-bold py-4 px-6 rounded-xl text-lg hover:bg-amber-500 active:scale-95 transition-all shadow-lg">
-                Main Lagi
+    <!-- MODAL LEADERBOARD / KEMENANGAN -->
+    <div id="leaderboard-modal" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center z-[80] p-4">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 text-center max-w-md w-full modal-animate border-4 border-amber-300">
+            <h2 class="text-4xl font-bold text-slate-800 mb-2">🏆 Papan Skor</h2>
+            <p class="text-slate-500 mb-6 font-medium">Game telah berakhir!</p>
+            
+            <div id="leaderboard-list" class="flex flex-col gap-3 mb-8">
+                <!-- Data Leaderboard -->
+            </div>
+
+            <button id="btn-back-to-menu" class="w-full bg-indigo-600 text-white font-bold py-4 px-6 rounded-xl text-lg hover:bg-indigo-700 active:scale-95 transition-all shadow-lg">
+                Kembali ke Menu Utama
             </button>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const BOARD_SIZE = 100;
-            const players = [
-                // Warna token diupdate menjadi solid untuk SVG
-                { id: 1, colorHex: '#ef4444', name: 'Pemain Merah' }, 
-                { id: 2, colorHex: '#3b82f6', name: 'Pemain Biru' }
-            ];
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // KONFIGURASI FIREBASE & ENV
+        // ==========================================
+        const userConfig = {
+            apiKey: "AIzaSyCi_WD_XNDQvXsGrntIlKuuZL00_jkc2dE",
+            authDomain: "ular-cc4f5.firebaseapp.com",
+            projectId: "ular-cc4f5",
+            storageBucket: "ular-cc4f5.firebasestorage.app",
+            messagingSenderId: "1068988412899",
+            appId: "1:1068988412899:web:e1cfe5f09ac3beb34766d6"
+        };
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userConfig;
+        const targetAppId = typeof __app_id !== 'undefined' ? __app_id : 'ular-tangga-app';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Variabel Global State
+        const BOARD_SIZE = 100;
+        const playerColors = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7']; // Merah, Biru, Hijau, Kuning, Ungu
+        const tokenOffsets = [{x:0, y:-12}, {x:12, y:-12}, {x:-12, y:0}, {x:12, y:0}, {x:0, y:12}];
+        
+        // Pilihan Kesulitan (Dikembalikan beserta mode ULAR)
+        const difficultyOptions = {
+            keroco:         { label: 'Santai', snakes: 3, ladders: 8, minSnake: 10, maxSnake: 25, minLadder: 15, maxLadder: 40 },
+            susah:          { label: 'Menantang', snakes: 7, ladders: 6, minSnake: 15, maxSnake: 40, minLadder: 10, maxLadder: 30 },
+            'susah-banget': { label: 'Gila', snakes: 11, ladders: 5, minSnake: 20, maxSnake: 60, minLadder: 10, maxLadder: 20 },
+            neraka:         { label: 'Neraka', snakes: 15, ladders: 3, minSnake: 30, maxSnake: 80, minLadder: 5,  maxLadder: 15 },
+            ular:           { label: 'Ular Saja', snakes: 20, ladders: 0, minSnake: 10, maxSnake: 80, minLadder: 0, maxLadder: 0 }
+        };
+
+        const diceFacesSVG = { 
+            1: `<circle cx="12" cy="12" r="2.5" />`, 
+            2: `<circle cx="8" cy="8" r="2.5" /><circle cx="16" cy="16" r="2.5" />`, 
+            3: `<circle cx="7" cy="7" r="2.5" /><circle cx="12" cy="12" r="2.5" /><circle cx="17" cy="17" r="2.5" />`, 
+            4: `<circle cx="7" cy="7" r="2.5" /><circle cx="17" cy="7" r="2.5" /><circle cx="7" cy="17" r="2.5" /><circle cx="17" cy="17" r="2.5" />`, 
+            5: `<circle cx="7" cy="7" r="2.5" /><circle cx="17" cy="7" r="2.5" /><circle cx="12" cy="12" r="2.5" /><circle cx="7" cy="17" r="2.5" /><circle cx="17" cy="17" r="2.5" />`, 
+            6: `<circle cx="7" cy="6" r="2.5" /><circle cx="17" cy="6" r="2.5" /><circle cx="7" cy="12" r="2.5" /><circle cx="17" cy="12" r="2.5" /><circle cx="7" cy="18" r="2.5" /><circle cx="17" cy="18" r="2.5" />` 
+        };
+
+        // State Aplikasi
+        let myUid = null;
+        let gameMode = 'offline'; 
+        let currentRoomCode = null;
+        let isHost = false;
+        let activeSnapshotUnsubscribe = null;
+        let lastActionTs = 0;
+        let isAnimating = false;
+
+        // State Game Lokal
+        let players = []; 
+        let snakesAndLadders = {};
+        let currentTurnIndex = 0;
+        let gameActive = false;
+        let finishedPlayersCount = 0;
+
+        // ==========================================
+        // UI & NAVIGATION FUNCTIONS
+        // ==========================================
+        const screens = {
+            main: document.getElementById('screen-main-menu'),
+            offline: document.getElementById('screen-offline-setup'),
+            multi: document.getElementById('screen-multi-setup'),
+            lobby: document.getElementById('screen-lobby'),
+            game: document.getElementById('screen-game')
+        };
+
+        function showScreen(screenKey) {
+            Object.values(screens).forEach(el => el.classList.add('hidden'));
+            screens[screenKey].classList.remove('hidden');
+        }
+
+        window.closeAlert = function() {
+            const modal = document.getElementById('custom-alert-modal');
+            modal.classList.remove('opacity-100');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+        function showCustomAlert(msg) {
+            const modal = document.getElementById('custom-alert-modal');
+            document.getElementById('alert-message').textContent = msg;
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.add('opacity-100'), 10);
+        }
+
+        function calculatePoints(rank, total) {
+            if (total <= 1) return 100;
+            if (rank === 1) return 100;
+            const step = 100 / (total - 1);
+            return Math.max(0, Math.round(100 - ((rank - 1) * step)));
+        }
+
+        function showLeaderboard(finalPlayersData) {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = '';
             
-            const difficultySettings = {
-                keroco:         { snakes: 3, ladders: 8, minSnake: 10, maxSnake: 25, minLadder: 15, maxLadder: 40 },
-                susah:          { snakes: 7, ladders: 6, minSnake: 15, maxSnake: 40, minLadder: 10, maxLadder: 30 },
-                'susah-banget': { snakes: 11, ladders: 5, minSnake: 20, maxSnake: 60, minLadder: 10, maxLadder: 20 },
-                neraka:         { snakes: 15, ladders: 3, minSnake: 30, maxSnake: 80, minLadder: 5,  maxLadder: 15 }
-            };
-
-            let snakesAndLadders = {};
-            let playerPositions = {};
-            let currentPlayerIndex = 0;
-            let gameActive = true;
-            let gameStarted = false;
-
-            const boardElement = document.getElementById('game-board');
-            const tokenLayer = document.getElementById('token-layer');
-            const svgLayer = document.getElementById('svg-layer');
-            const statusMessage = document.getElementById('status-message');
-            const playerPositionsDisplay = document.getElementById('player-positions');
-            const rollDiceBtn = document.getElementById('roll-dice-btn');
-            const resetBtn = document.getElementById('reset-btn');
-            const diceContainer = document.getElementById('dice-container');
-            const diceFace = document.getElementById('dice-face');
-            const winnerModal = document.getElementById('winner-modal');
-            const winnerMessage = document.getElementById('winner-message');
-            const playAgainBtn = document.getElementById('play-again-btn');
-            const difficultySelector = document.getElementById('difficulty-selector');
-
-            // Pola wajah dadu
-            const diceFacesSVG = { 
-                1: `<circle cx="12" cy="12" r="2.5" />`, 
-                2: `<circle cx="8" cy="8" r="2.5" /><circle cx="16" cy="16" r="2.5" />`, 
-                3: `<circle cx="7" cy="7" r="2.5" /><circle cx="12" cy="12" r="2.5" /><circle cx="17" cy="17" r="2.5" />`, 
-                4: `<circle cx="7" cy="7" r="2.5" /><circle cx="17" cy="7" r="2.5" /><circle cx="7" cy="17" r="2.5" /><circle cx="17" cy="17" r="2.5" />`, 
-                5: `<circle cx="7" cy="7" r="2.5" /><circle cx="17" cy="7" r="2.5" /><circle cx="12" cy="12" r="2.5" /><circle cx="7" cy="17" r="2.5" /><circle cx="17" cy="17" r="2.5" />`, 
-                6: `<circle cx="7" cy="6" r="2.5" /><circle cx="17" cy="6" r="2.5" /><circle cx="7" cy="12" r="2.5" /><circle cx="17" cy="12" r="2.5" /><circle cx="7" cy="18" r="2.5" /><circle cx="17" cy="18" r="2.5" />` 
-            };
-
-            // Membuat Logika Papan yang Benar (1 di kiri bawah, 100 di kiri atas)
-            function createBoard() {
-                boardElement.innerHTML = '';
-                for (let row = 9; row >= 0; row--) {
-                    for (let col = 0; col < 10; col++) {
-                        // Logika Zig-Zag (Boustrophedon)
-                        const num = (row % 2 === 0) ? (row * 10 + col + 1) : (row * 10 + (9 - col) + 1);
-                        const square = document.createElement('div');
-                        square.id = `square-${num}`;
-                        
-                        // Warna Papan catur yang cerah
-                        const isEven = (row + col) % 2 === 0;
-                        const bgColor = isEven ? 'bg-amber-100' : 'bg-orange-50';
-                        
-                        square.className = `square flex items-center justify-center text-sm md:text-lg font-bold text-amber-900/40 ${bgColor}`;
-                        
-                        // Tandai Start dan Finish
-                        if (num === 1) square.innerHTML = `<span class="z-0">START</span>`;
-                        else if (num === 100) square.innerHTML = `<span class="z-0">FINISH</span>`;
-                        else square.innerHTML = `<span class="z-0">${num}</span>`;
-                        
-                        boardElement.appendChild(square);
-                    }
-                }
-            }
-
-            function generateSnakesAndLadders(difficulty) {
-                const settings = difficultySettings[difficulty];
-                const connectors = {};
-                const occupiedSquares = new Set([1, 100]);
-
-                // Generate Tangga (Naik)
-                for (let i = 0; i < settings.ladders; i++) {
-                    let start, end, attempts = 0;
-                    do {
-                        start = Math.floor(Math.random() * 80) + 2; // Mulai dari 2 s.d 81
-                        const length = settings.minLadder + Math.floor(Math.random() * (settings.maxLadder - settings.minLadder));
-                        end = start + length;
-                        attempts++;
-                    } while ((occupiedSquares.has(start) || occupiedSquares.has(end) || end >= 100 || Math.floor((start-1)/10) === Math.floor((end-1)/10)) && attempts < 100);
-                    
-                    if (attempts < 100) {
-                        occupiedSquares.add(start); occupiedSquares.add(end);
-                        connectors[start] = end;
-                    }
-                }
-
-                // Generate Ular (Turun)
-                for (let i = 0; i < settings.snakes; i++) {
-                    let start, end, attempts = 0;
-                    do {
-                        start = Math.floor(Math.random() * 80) + 20; // Kepala minimal di 20
-                        const length = settings.minSnake + Math.floor(Math.random() * (settings.maxSnake - settings.minSnake));
-                        end = start - length; // Ekor di bawah
-                        attempts++;
-                    } while ((occupiedSquares.has(start) || occupiedSquares.has(end) || end <= 1 || Math.floor((start-1)/10) === Math.floor((end-1)/10)) && attempts < 100);
-                    
-                    if (attempts < 100) {
-                        occupiedSquares.add(start); occupiedSquares.add(end);
-                        connectors[start] = end;
-                    }
-                }
-                return connectors;
-            }
-
-            function drawConnectors() {
-                const svgNS = "http://www.w3.org/2000/svg";
-                const svgElement = document.createElementNS(svgNS, 'svg');
-                svgElement.setAttribute('width', '100%'); 
-                svgElement.setAttribute('height', '100%'); 
-                svgElement.style.overflow = 'visible';
-
-                // Definisi Filter & Gradient
-                const defs = document.createElementNS(svgNS, 'defs');
+            const sorted = [...finalPlayersData].sort((a, b) => (a.rank || 99) - (b.rank || 99));
+            
+            sorted.forEach((p, idx) => {
+                const points = calculatePoints(p.rank, finalPlayersData.length);
+                const isWinner = p.rank === 1;
                 
-                // Shadow
-                const filter = document.createElementNS(svgNS, 'filter');
-                filter.setAttribute('id', 'shadow');
-                filter.innerHTML = `<feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.25"/>`;
-                defs.appendChild(filter);
-                
-                // Array Warna Ular
-                const snakeColors = [
-                    { id: 'sg1', c1: '#22c55e', c2: '#14532d' }, // Hijau
-                    { id: 'sg2', c1: '#ef4444', c2: '#7f1d1d' }, // Merah
-                    { id: 'sg3', c1: '#a855f7', c2: '#4c1d95' }  // Ungu
-                ];
+                let rankBadge = `<span class="w-8 h-8 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm">#${p.rank}</span>`;
+                if(isWinner) rankBadge = `<span class="w-8 h-8 rounded-full bg-amber-400 text-white flex items-center justify-center font-bold text-sm shadow-md">🥇</span>`;
+                else if(p.rank === 2) rankBadge = `<span class="w-8 h-8 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center font-bold text-sm shadow-sm">🥈</span>`;
+                else if(p.rank === 3) rankBadge = `<span class="w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">🥉</span>`;
 
-                snakeColors.forEach(color => {
-                    const gradient = document.createElementNS(svgNS, 'linearGradient');
-                    gradient.setAttribute('id', color.id);
-                    gradient.innerHTML = `<stop offset="0%" stop-color="${color.c1}" /><stop offset="100%" stop-color="${color.c2}" />`;
-                    defs.appendChild(gradient);
-                });
-
-                svgElement.appendChild(defs); 
-                svgLayer.innerHTML = ''; 
-                svgLayer.appendChild(svgElement);
-
-                const boardRect = boardElement.getBoundingClientRect();
-
-                Object.entries(snakesAndLadders).forEach(([start, end]) => {
-                    const startNum = parseInt(start);
-                    const endNum = parseInt(end);
-                    const startSquare = document.getElementById(`square-${startNum}`);
-                    const endSquare = document.getElementById(`square-${endNum}`);
-                    
-                    if (!startSquare || !endSquare) return;
-
-                    const startRect = startSquare.getBoundingClientRect();
-                    const endRect = endSquare.getBoundingClientRect();
-                    
-                    const startX = startRect.left - boardRect.left + startRect.width / 2;
-                    const startY = startRect.top - boardRect.top + startRect.height / 2;
-                    const endX = endRect.left - boardRect.left + endRect.width / 2;
-                    const endY = endRect.top - boardRect.top + endRect.height / 2;
-                    
-                    const isSnake = startNum > endNum;
-                    const g = document.createElementNS(svgNS, "g");
-                    g.setAttribute('filter', 'url(#shadow)');
-
-                    if (isSnake) {
-                        // MENGGAMBAR ULAR (Kepala di START, Ekor di END)
-                        const colorTheme = snakeColors[startNum % snakeColors.length];
-                        
-                        // Hitung kurva
-                        const controlX1 = startX + (endX - startX) * 0.3 + (endY - startY) * 0.3;
-                        const controlY1 = startY + (endY - startY) * 0.3 - (endX - startX) * 0.3;
-                        const controlX2 = startX + (endX - startX) * 0.7 - (endY - startY) * 0.3;
-                        const controlY2 = startY + (endY - startY) * 0.7 + (endX - startX) * 0.3;
-                        
-                        // Rotasi kepala ular menatap menjauhi tubuh (menghadap mangsa)
-                        const angleDeg = Math.atan2(startY - controlY1, startX - controlX1) * 180 / Math.PI;
-
-                        // Badan
-                        const body = document.createElementNS(svgNS, "path");
-                        body.setAttribute('d', `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`); 
-                        body.setAttribute('stroke', `url(#${colorTheme.id})`); 
-                        body.setAttribute('stroke-width', '16'); 
-                        body.setAttribute('fill', 'none'); 
-                        body.setAttribute('stroke-linecap', 'round'); 
-                        g.appendChild(body);
-
-                        // Kepala
-                        const headGroup = document.createElementNS(svgNS, "g");
-                        headGroup.setAttribute('transform', `translate(${startX}, ${startY}) rotate(${angleDeg})`);
-                        
-                        const head = document.createElementNS(svgNS, "path");
-                        head.setAttribute('d', "M -10 -12 C 10 -15, 20 -8, 20 0 C 20 8, 10 15, -10 12 Z");
-                        head.setAttribute('fill', colorTheme.c1);
-                        headGroup.appendChild(head);
-
-                        // Mata Kiri
-                        const eye1 = document.createElementNS(svgNS, "circle"); 
-                        eye1.setAttribute('cx', '5'); eye1.setAttribute('cy', '-5'); eye1.setAttribute('r', '3'); eye1.setAttribute('fill', 'white'); 
-                        headGroup.appendChild(eye1);
-                        const pupil1 = document.createElementNS(svgNS, "circle"); 
-                        pupil1.setAttribute('cx', '6'); pupil1.setAttribute('cy', '-5'); pupil1.setAttribute('r', '1.5'); pupil1.setAttribute('fill', 'black'); 
-                        headGroup.appendChild(pupil1);
-
-                        // Mata Kanan
-                        const eye2 = document.createElementNS(svgNS, "circle"); 
-                        eye2.setAttribute('cx', '5'); eye2.setAttribute('cy', '5'); eye2.setAttribute('r', '3'); eye2.setAttribute('fill', 'white'); 
-                        headGroup.appendChild(eye2);
-                        const pupil2 = document.createElementNS(svgNS, "circle"); 
-                        pupil2.setAttribute('cx', '6'); pupil2.setAttribute('cy', '5'); pupil2.setAttribute('r', '1.5'); pupil2.setAttribute('fill', 'black'); 
-                        headGroup.appendChild(pupil2);
-
-                        // Lidah
-                        const tongue = document.createElementNS(svgNS, "path"); 
-                        tongue.setAttribute('d', 'M 20 0 L 28 -3 M 28 -3 L 26 0 L 28 3 M 20 0 L 26 0'); 
-                        tongue.setAttribute('stroke', '#ef4444'); 
-                        tongue.setAttribute('stroke-width', '1.5'); 
-                        tongue.setAttribute('fill', 'none');
-                        headGroup.appendChild(tongue); 
-                        
-                        g.appendChild(headGroup);
-
-                    } else {
-                        // MENGGAMBAR TANGGA (Bawah ke Atas)
-                        const ladderWidth = 20;
-                        const angle = Math.atan2(endY - startY, endX - startX);
-                        const offsetX = Math.sin(angle) * ladderWidth / 2;
-                        const offsetY = -Math.cos(angle) * ladderWidth / 2;
-
-                        // Tiang Kiri & Kanan (Kayu)
-                        const rails = document.createElementNS(svgNS, "path"); 
-                        rails.setAttribute('d', `M ${startX + offsetX} ${startY + offsetY} L ${endX + offsetX} ${endY + offsetY} M ${startX - offsetX} ${startY - offsetY} L ${endX - offsetX} ${endY - offsetY}`); 
-                        rails.setAttribute('stroke', '#92400e'); // Amber 800
-                        rails.setAttribute('stroke-width', '6'); 
-                        rails.setAttribute('stroke-linecap', 'round'); 
-                        g.appendChild(rails);
-
-                        // Pijakan (Anak Tangga)
-                        const distance = Math.sqrt((endX - startX)**2 + (endY - startY)**2);
-                        const numRungs = Math.floor(distance / 20);
-                        
-                        for (let i = 1; i <= numRungs; i++) {
-                            const rung = document.createElementNS(svgNS, "line");
-                            const t = i / (numRungs + 1);
-                            
-                            const rungX1 = (startX + offsetX) * (1 - t) + (endX + offsetX) * t;
-                            const rungY1 = (startY + offsetY) * (1 - t) + (endY + offsetY) * t;
-                            const rungX2 = (startX - offsetX) * (1 - t) + (endX - offsetX) * t;
-                            const rungY2 = (startY - offsetY) * (1 - t) + (endY - offsetY) * t;
-                            
-                            rung.setAttribute('x1', rungX1); rung.setAttribute('y1', rungY1); 
-                            rung.setAttribute('x2', rungX2); rung.setAttribute('y2', rungY2); 
-                            rung.setAttribute('stroke', '#b45309'); // Amber 700
-                            rung.setAttribute('stroke-width', '4'); 
-                            rung.setAttribute('stroke-linecap', 'round'); 
-                            g.appendChild(rung);
-                        }
-                    }
-                    svgElement.appendChild(g);
-                });
-            }
-
-            function createPlayerTokens() {
-                tokenLayer.innerHTML = '';
-                players.forEach(player => {
-                    const token = document.createElement('div');
-                    token.id = `token-${player.id}`;
-                    // Desain Bidak Modern (SVG Pin)
-                    token.className = `player-token absolute w-8 h-8 md:w-10 md:h-10 flex items-center justify-center`;
-                    token.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="${player.colorHex}" stroke="white" stroke-width="2" class="w-full h-full drop-shadow-md">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                        </svg>
-                    `;
-                    tokenLayer.appendChild(token);
-                });
-            }
-
-            function updateTokenPosition(playerId) {
-                const token = document.getElementById(`token-${playerId}`);
-                const position = playerPositions[playerId];
-                const square = document.getElementById(`square-${position}`);
-                
-                if (token && square) {
-                    const boardRect = boardElement.getBoundingClientRect();
-                    const squareRect = square.getBoundingClientRect();
-                    
-                    // Posisi tengah kotak
-                    let left = squareRect.left - boardRect.left + (squareRect.width / 2) - (token.offsetWidth / 2);
-                    let top = squareRect.top - boardRect.top + (squareRect.height / 2) - (token.offsetHeight / 2);
-                    
-                    // Offset agar bidak tidak menumpuk sempurna jika di kotak yang sama
-                    const offsetX = (playerId === 1) ? -10 : 10;
-                    const offsetY = (playerId === 1) ? -10 : 10;
-
-                    // Menggeser ke atas sedikit karena bentuk pin
-                    top -= 10;
-
-                    token.style.transform = `translate(${left + offsetX}px, ${top + offsetY}px)`;
-                }
-            }
-
-            // Animasi langkah demi langkah
-            async function movePlayerStepByStep(diceRoll) {
-                const player = players[currentPlayerIndex];
-                let currentPos = playerPositions[player.id];
-                let targetPos = currentPos + diceRoll;
-                
-                let overshoot = 0;
-                if (targetPos > BOARD_SIZE) {
-                    overshoot = targetPos - BOARD_SIZE;
-                    targetPos = BOARD_SIZE; // Jalan sampai ujung dulu
-                }
-
-                updateStatusMessage(`${player.name} maju ${diceRoll} langkah...`);
-
-                // Maju kotak per kotak
-                while (currentPos < targetPos) {
-                    currentPos++;
-                    playerPositions[player.id] = currentPos;
-                    updateTokenPosition(player.id);
-                    await new Promise(r => setTimeout(r, 250)); // Delay per langkah
-                }
-
-                // Mundur jika kelebihan (Overshoot)
-                if (overshoot > 0) {
-                    targetPos = BOARD_SIZE - overshoot;
-                    await new Promise(r => setTimeout(r, 200));
-                    while (currentPos > targetPos) {
-                        currentPos--;
-                        playerPositions[player.id] = currentPos;
-                        updateTokenPosition(player.id);
-                        await new Promise(r => setTimeout(r, 250));
-                    }
-                }
-
-                updatePlayerPositionsDisplay();
-                
-                // Cek Ular / Tangga setelah selesai jalan
-                setTimeout(() => handleSpecialSquares(currentPos), 300);
-            }
-
-            function handleRollDice() {
-                if (!gameActive) return;
-                if (!gameStarted) { 
-                    gameStarted = true; 
-                    setDifficultyInputs(false); 
-                }
-                
-                // Disable tombol
-                rollDiceBtn.disabled = true; 
-                rollDiceBtn.classList.add('opacity-50', 'cursor-not-allowed', 'scale-95');
-                diceContainer.classList.add('dice-rolling');
-                
-                setTimeout(() => {
-                    diceContainer.classList.remove('dice-rolling');
-                    const diceRoll = Math.floor(Math.random() * 6) + 1;
-                    updateDiceFace(diceRoll);
-                    
-                    // Panggil animasi langkah
-                    movePlayerStepByStep(diceRoll);
-                }, 600);
-            }
-
-            function handleSpecialSquares(position) {
-                const player = players[currentPlayerIndex];
-                
-                if (snakesAndLadders[position]) {
-                    const endPosition = snakesAndLadders[position];
-                    const isSnake = position > endPosition;
-                    
-                    if (isSnake) {
-                        updateStatusMessage(`Oh tidak! ${player.name} digigit ular! 🐍`);
-                    } else {
-                        updateStatusMessage(`Hore! ${player.name} naik tangga! 🪜`);
-                    }
-                    
-                    playerPositions[player.id] = endPosition;
-                    
-                    setTimeout(() => {
-                        updateTokenPosition(player.id);
-                        updatePlayerPositionsDisplay();
-                        setTimeout(checkWinCondition, 600);
-                    }, 800);
-                } else {
-                    checkWinCondition();
-                }
-            }
-
-            function checkWinCondition() {
-                const player = players[currentPlayerIndex];
-                if (playerPositions[player.id] === BOARD_SIZE) {
-                    gameActive = false;
-                    rollDiceBtn.disabled = true; 
-                    setTimeout(() => showWinnerModal(player.name), 500);
-                } else {
-                    nextTurn();
-                }
-            }
-
-            function nextTurn() {
-                currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
-                updateStatusMessage(`Giliran ${players[currentPlayerIndex].name}. Kocok dadu!`);
-                rollDiceBtn.disabled = false; 
-                rollDiceBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
-            }
-
-            function initGame() {
-                hideWinnerModal();
-                const selectedDifficulty = document.querySelector('input[name="difficulty"]:checked').value;
-                snakesAndLadders = generateSnakesAndLadders(selectedDifficulty);
-                currentPlayerIndex = 0; 
-                gameActive = true; 
-                gameStarted = false;
-                
-                setDifficultyInputs(true);
-                players.forEach(p => { playerPositions[p.id] = 1; });
-                
-                createBoard(); 
-                createPlayerTokens(); 
-                
-                // Tunggu DOM update sebelum pasang elemen
-                setTimeout(() => {
-                    drawConnectors();
-                    players.forEach(player => updateTokenPosition(player.id));
-                }, 100);
-
-                updateStatusMessage(`Game Siap! Giliran ${players[currentPlayerIndex].name}.`);
-                updatePlayerPositionsDisplay();
-                rollDiceBtn.disabled = false; 
-                rollDiceBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
-                updateDiceFace(1);
-            }
-
-            // Fungsi Pendukung UI
-            function updateStatusMessage(msg) { statusMessage.textContent = msg; }
-            function updatePlayerPositionsDisplay() { 
-                playerPositionsDisplay.innerHTML = players.map(p => `
-                    <div class="flex items-center justify-between bg-white px-4 py-2 rounded-lg border border-slate-200">
-                        <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full" style="background-color: ${p.colorHex}"></span>
-                            <span class="font-medium text-slate-700">${p.name}</span>
+                list.innerHTML += `
+                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100 ${isWinner ? 'ring-2 ring-amber-300 bg-amber-50' : ''}">
+                        <div class="flex items-center gap-3">
+                            ${rankBadge}
+                            <span class="w-3 h-3 rounded-full" style="background-color: ${playerColors[p.colorIndex]}"></span>
+                            <span class="font-bold text-slate-700">${p.name} ${p.id === myUid ? '(Kamu)' : ''}</span>
                         </div>
-                        <span class="font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md">Kotak ${playerPositions[p.id]}</span>
+                        <span class="font-black text-indigo-600 bg-indigo-100 px-3 py-1 rounded-lg">${points} PTS</span>
                     </div>
-                `).join(''); 
-            }
-            function updateDiceFace(num) { diceFace.innerHTML = diceFacesSVG[num]; }
-            function showWinnerModal(name) { 
-                winnerMessage.textContent = `${name} Memenangkan Game!`; 
-                winnerModal.classList.remove('hidden'); 
-            }
-            function hideWinnerModal() { winnerModal.classList.add('hidden'); }
-            function setDifficultyInputs(enabled) {
-                document.querySelectorAll('input[name="difficulty"]').forEach(input => input.disabled = !enabled);
-            }
-            
-            // Event Listeners
-            rollDiceBtn.addEventListener('click', handleRollDice);
-            resetBtn.addEventListener('click', initGame);
-            playAgainBtn.addEventListener('click', initGame);
-            difficultySelector.addEventListener('change', initGame);
-            window.addEventListener('resize', () => { 
-                drawConnectors(); 
-                players.forEach(player => updateTokenPosition(player.id)); 
+                `;
             });
 
-            // Mulai
-            initGame();
+            document.getElementById('leaderboard-modal').classList.remove('hidden');
+        }
+
+        function resetToMenu() {
+            if (activeSnapshotUnsubscribe) activeSnapshotUnsubscribe();
+            document.getElementById('leaderboard-modal').classList.add('hidden');
+            gameActive = false;
+            currentRoomCode = null;
+            showScreen('main');
+        }
+
+        // ==========================================
+        // INIT AUTHENTICATION (RULE 3)
+        // ==========================================
+        async function initAuthProcess() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                myUid = auth.currentUser.uid;
+            } catch (err) {
+                showCustomAlert("Gagal terhubung ke server autentikasi.");
+            }
+        }
+
+        // ==========================================
+        // DOM EVENT LISTENERS SETUP
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initAuthProcess();
+
+            // Menu Utama
+            document.getElementById('btn-menu-offline').addEventListener('click', () => showScreen('offline'));
+            document.getElementById('btn-menu-online').addEventListener('click', () => {
+                if (!myUid) return showCustomAlert("Sedang menghubungkan ke server, coba lagi.");
+                showScreen('multi');
+            });
+            document.querySelectorAll('.btn-back').forEach(btn => btn.addEventListener('click', () => showScreen('main')));
+
+            // Offline Setup
+            const offlineSlider = document.getElementById('offline-player-count');
+            offlineSlider.addEventListener('input', (e) => {
+                document.getElementById('offline-player-display').innerHTML = `<span>${e.target.value} Orang</span>`;
+            });
+            document.getElementById('btn-start-offline').addEventListener('click', () => {
+                const count = parseInt(offlineSlider.value);
+                const diffKey = document.querySelector('input[name="diff_offline"]:checked').value;
+                startOfflineGame(count, diffKey);
+            });
+
+            // Multiplayer Setup
+            document.getElementById('btn-create-room').addEventListener('click', createMultiplayerRoom);
+            document.getElementById('btn-join-room').addEventListener('click', joinMultiplayerRoom);
+            document.getElementById('btn-start-multiplayer').addEventListener('click', hostStartMultiplayerGame);
+
+            // Sync Difficulty Settings untuk Host Online
+            document.querySelectorAll('input[name="diff_online"]').forEach(radio => {
+                radio.addEventListener('change', async (e) => {
+                    if (isHost && currentRoomCode) {
+                        const roomRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'rooms', currentRoomCode);
+                        await updateDoc(roomRef, { difficulty: e.target.value });
+                    }
+                });
+            });
+
+            // Game Board
+            document.getElementById('roll-dice-btn').addEventListener('click', handleRollDiceClick);
+            document.getElementById('btn-back-to-menu').addEventListener('click', resetToMenu);
+            document.getElementById('quit-game-btn').addEventListener('click', resetToMenu);
+            
+            window.addEventListener('resize', () => { 
+                if (gameActive) {
+                    drawConnectors(); 
+                    players.forEach(player => updateTokenPosition(player.id)); 
+                }
+            });
         });
+
+        // ==========================================
+        // CORE GAME LOGIC (DRAWING & MOVEMENT)
+        // ==========================================
+        function createBoard() {
+            const boardElement = document.getElementById('game-board');
+            boardElement.innerHTML = '';
+            for (let row = 9; row >= 0; row--) {
+                for (let col = 0; col < 10; col++) {
+                    const num = (row % 2 === 0) ? (row * 10 + col + 1) : (row * 10 + (9 - col) + 1);
+                    const square = document.createElement('div');
+                    square.id = `square-${num}`;
+                    const isEven = (row + col) % 2 === 0;
+                    const bgColor = isEven ? 'bg-amber-100' : 'bg-orange-50';
+                    square.className = `square flex items-center justify-center text-sm md:text-lg font-bold text-amber-900/40 ${bgColor}`;
+                    
+                    if (num === 1) square.innerHTML = `<span class="z-0">START</span>`;
+                    else if (num === 100) square.innerHTML = `<span class="z-0">FINISH</span>`;
+                    else square.innerHTML = `<span class="z-0">${num}</span>`;
+                    
+                    boardElement.appendChild(square);
+                }
+            }
+        }
+
+        function generateSnakesAndLaddersData(diffKey) {
+            const settings = difficultyOptions[diffKey];
+            const connectors = {};
+            const occupiedSquares = new Set([1, 100]);
+
+            // Tangga
+            for (let i = 0; i < settings.ladders; i++) {
+                let start, end, attempts = 0;
+                do {
+                    start = Math.floor(Math.random() * 80) + 2;
+                    const length = settings.minLadder + Math.floor(Math.random() * (settings.maxLadder - settings.minLadder));
+                    end = start + length;
+                    attempts++;
+                } while ((occupiedSquares.has(start) || occupiedSquares.has(end) || end >= 100 || Math.floor((start-1)/10) === Math.floor((end-1)/10)) && attempts < 100);
+                if (attempts < 100) { occupiedSquares.add(start); occupiedSquares.add(end); connectors[start] = end; }
+            }
+
+            // Ular
+            for (let i = 0; i < settings.snakes; i++) {
+                let start, end, attempts = 0;
+                do {
+                    start = Math.floor(Math.random() * 80) + 20;
+                    const length = settings.minSnake + Math.floor(Math.random() * (settings.maxSnake - settings.minSnake));
+                    end = start - length;
+                    attempts++;
+                } while ((occupiedSquares.has(start) || occupiedSquares.has(end) || end <= 1 || Math.floor((start-1)/10) === Math.floor((end-1)/10)) && attempts < 100);
+                if (attempts < 100) { occupiedSquares.add(start); occupiedSquares.add(end); connectors[start] = end; }
+            }
+            return connectors;
+        }
+
+        function drawConnectors() {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svgLayer = document.getElementById('svg-layer');
+            const boardElement = document.getElementById('game-board');
+            const svgElement = document.createElementNS(svgNS, 'svg');
+            svgElement.setAttribute('width', '100%'); 
+            svgElement.setAttribute('height', '100%'); 
+            svgElement.style.overflow = 'visible';
+
+            const defs = document.createElementNS(svgNS, 'defs');
+            const filter = document.createElementNS(svgNS, 'filter');
+            filter.setAttribute('id', 'shadow');
+            filter.innerHTML = `<feDropShadow dx="0" dy="5" stdDeviation="4" flood-color="#000000" flood-opacity="0.25"/>`;
+            defs.appendChild(filter);
+            
+            const snakeColors = [
+                { id: 'sg1', c1: '#22c55e', c2: '#14532d' },
+                { id: 'sg2', c1: '#ef4444', c2: '#7f1d1d' },
+                { id: 'sg3', c1: '#a855f7', c2: '#4c1d95' } 
+            ];
+            snakeColors.forEach(color => {
+                const gradient = document.createElementNS(svgNS, 'linearGradient');
+                gradient.setAttribute('id', color.id);
+                gradient.innerHTML = `<stop offset="0%" stop-color="${color.c1}" /><stop offset="100%" stop-color="${color.c2}" />`;
+                defs.appendChild(gradient);
+            });
+
+            svgElement.appendChild(defs); 
+            svgLayer.innerHTML = ''; 
+            svgLayer.appendChild(svgElement);
+
+            const boardRect = boardElement.getBoundingClientRect();
+
+            Object.entries(snakesAndLadders).forEach(([start, end]) => {
+                const startNum = parseInt(start), endNum = parseInt(end);
+                const startSquare = document.getElementById(`square-${startNum}`);
+                const endSquare = document.getElementById(`square-${endNum}`);
+                if (!startSquare || !endSquare) return;
+
+                const startRect = startSquare.getBoundingClientRect();
+                const endRect = endSquare.getBoundingClientRect();
+                const startX = startRect.left - boardRect.left + startRect.width / 2;
+                const startY = startRect.top - boardRect.top + startRect.height / 2;
+                const endX = endRect.left - boardRect.left + endRect.width / 2;
+                const endY = endRect.top - boardRect.top + endRect.height / 2;
+                
+                const isSnake = startNum > endNum;
+                const g = document.createElementNS(svgNS, "g");
+                g.setAttribute('filter', 'url(#shadow)');
+
+                if (isSnake) {
+                    const colorTheme = snakeColors[startNum % snakeColors.length];
+                    const controlX1 = startX + (endX - startX) * 0.3 + (endY - startY) * 0.3;
+                    const controlY1 = startY + (endY - startY) * 0.3 - (endX - startX) * 0.3;
+                    const controlX2 = startX + (endX - startX) * 0.7 - (endY - startY) * 0.3;
+                    const controlY2 = startY + (endY - startY) * 0.7 + (endX - startX) * 0.3;
+                    const angleDeg = Math.atan2(startY - controlY1, startX - controlX1) * 180 / Math.PI;
+
+                    const body = document.createElementNS(svgNS, "path");
+                    body.setAttribute('d', `M ${startX} ${startY} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${endX} ${endY}`); 
+                    body.setAttribute('stroke', `url(#${colorTheme.id})`); body.setAttribute('stroke-width', '16'); body.setAttribute('fill', 'none'); body.setAttribute('stroke-linecap', 'round'); 
+                    g.appendChild(body);
+
+                    const headGroup = document.createElementNS(svgNS, "g");
+                    headGroup.setAttribute('transform', `translate(${startX}, ${startY}) rotate(${angleDeg})`);
+                    const head = document.createElementNS(svgNS, "path");
+                    head.setAttribute('d', "M -10 -12 C 10 -15, 20 -8, 20 0 C 20 8, 10 15, -10 12 Z");
+                    head.setAttribute('fill', colorTheme.c1);
+                    headGroup.appendChild(head);
+                    g.appendChild(headGroup);
+                } else {
+                    const ladderWidth = 20;
+                    const angle = Math.atan2(endY - startY, endX - startX);
+                    const offsetX = Math.sin(angle) * ladderWidth / 2;
+                    const offsetY = -Math.cos(angle) * ladderWidth / 2;
+
+                    const rails = document.createElementNS(svgNS, "path"); 
+                    rails.setAttribute('d', `M ${startX + offsetX} ${startY + offsetY} L ${endX + offsetX} ${endY + offsetY} M ${startX - offsetX} ${startY - offsetY} L ${endX - offsetX} ${endY - offsetY}`); 
+                    rails.setAttribute('stroke', '#92400e'); rails.setAttribute('stroke-width', '6'); rails.setAttribute('stroke-linecap', 'round'); 
+                    g.appendChild(rails);
+
+                    const distance = Math.sqrt((endX - startX)**2 + (endY - startY)**2);
+                    const numRungs = Math.floor(distance / 20);
+                    for (let i = 1; i <= numRungs; i++) {
+                        const rung = document.createElementNS(svgNS, "line");
+                        const t = i / (numRungs + 1);
+                        rung.setAttribute('x1', (startX + offsetX) * (1 - t) + (endX + offsetX) * t); 
+                        rung.setAttribute('y1', (startY + offsetY) * (1 - t) + (endY + offsetY) * t); 
+                        rung.setAttribute('x2', (startX - offsetX) * (1 - t) + (endX - offsetX) * t); 
+                        rung.setAttribute('y2', (startY - offsetY) * (1 - t) + (endY - offsetY) * t); 
+                        rung.setAttribute('stroke', '#b45309'); rung.setAttribute('stroke-width', '4'); rung.setAttribute('stroke-linecap', 'round'); 
+                        g.appendChild(rung);
+                    }
+                }
+                svgElement.appendChild(g);
+            });
+        }
+
+        function createPlayerTokens() {
+            const tokenLayer = document.getElementById('token-layer');
+            tokenLayer.innerHTML = '';
+            players.forEach((player, index) => {
+                const token = document.createElement('div');
+                token.id = `token-${player.id}`;
+                token.className = `player-token absolute w-8 h-8 md:w-10 md:h-10 flex items-center justify-center`;
+                token.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="${playerColors[player.colorIndex]}" stroke="white" stroke-width="2" class="w-full h-full drop-shadow-md">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                `;
+                tokenLayer.appendChild(token);
+            });
+        }
+
+        function updateTokenPosition(playerId) {
+            const player = players.find(p => p.id === playerId);
+            if (!player) return;
+            const token = document.getElementById(`token-${player.id}`);
+            const square = document.getElementById(`square-${player.position}`);
+            const boardElement = document.getElementById('game-board');
+            
+            if (token && square) {
+                const boardRect = boardElement.getBoundingClientRect();
+                const squareRect = square.getBoundingClientRect();
+                
+                let left = squareRect.left - boardRect.left + (squareRect.width / 2) - (token.offsetWidth / 2);
+                let top = squareRect.top - boardRect.top + (squareRect.height / 2) - (token.offsetHeight / 2);
+                
+                const offset = tokenOffsets[player.colorIndex % tokenOffsets.length];
+                token.style.transform = `translate(${left + offset.x}px, ${top + offset.y - 10}px)`; // -10 for pin look
+                
+                if(player.finished) token.style.opacity = '0.5';
+            }
+        }
+
+        function updateGameUI(msgText, isRollEnabled) {
+            document.getElementById('status-message').innerHTML = msgText;
+            const btn = document.getElementById('roll-dice-btn');
+            
+            // Set Color Indicator
+            const activePlayer = players[currentTurnIndex];
+            if (activePlayer) {
+                document.getElementById('turn-indicator-color').style.backgroundColor = playerColors[activePlayer.colorIndex];
+            }
+
+            // Generate Player List UI
+            const positionsHTML = players.map(p => `
+                <div class="flex items-center justify-between bg-white px-4 py-2 rounded-lg border border-slate-200 ${p.finished ? 'opacity-60 bg-slate-100' : ''}">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full shadow-sm" style="background-color: ${playerColors[p.colorIndex]}"></span>
+                        <span class="font-medium text-slate-700">${p.name} ${p.id === myUid ? '(Kamu)' : ''}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${p.finished ? `<span class="text-xs font-bold text-amber-500">RANK ${p.rank}</span>` : ''}
+                        <span class="font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md text-sm">Kotak ${p.position}</span>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('player-positions').innerHTML = positionsHTML;
+
+            if (isRollEnabled && !isAnimating) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // Animation logic wrapped in Promise
+        async function animateMovement(playerId, diceRoll) {
+            isAnimating = true;
+            updateGameUI(`Berjalan ${diceRoll} langkah...`, false);
+            
+            const player = players.find(p => p.id === playerId);
+            let currentPos = player.position;
+            let targetPos = currentPos + diceRoll;
+            let overshoot = 0;
+
+            if (targetPos > BOARD_SIZE) {
+                overshoot = targetPos - BOARD_SIZE;
+                targetPos = BOARD_SIZE;
+            }
+
+            while (currentPos < targetPos) {
+                currentPos++;
+                player.position = currentPos;
+                updateTokenPosition(player.id);
+                await new Promise(r => setTimeout(r, 250));
+            }
+
+            if (overshoot > 0) {
+                targetPos = BOARD_SIZE - overshoot;
+                await new Promise(r => setTimeout(r, 200));
+                while (currentPos > targetPos) {
+                    currentPos--;
+                    player.position = currentPos;
+                    updateTokenPosition(player.id);
+                    await new Promise(r => setTimeout(r, 250));
+                }
+            }
+
+            // Check Snake or Ladder
+            if (snakesAndLadders[currentPos]) {
+                const endPosition = snakesAndLadders[currentPos];
+                const isSnake = currentPos > endPosition;
+                document.getElementById('status-message').textContent = isSnake ? 'Oops, digigit ular! 🐍' : 'Naik tangga! 🪜';
+                
+                await new Promise(r => setTimeout(r, 600));
+                player.position = endPosition;
+                updateTokenPosition(player.id);
+                await new Promise(r => setTimeout(r, 500));
+            }
+
+            isAnimating = false;
+            return player.position;
+        }
+
+        // ==========================================
+        // OFFLINE MODE LOGIC
+        // ==========================================
+        function startOfflineGame(count, diffKey) {
+            gameMode = 'offline';
+            players = Array.from({length: count}, (_, i) => ({
+                id: `p${i+1}`,
+                name: `Pemain ${i+1}`,
+                colorIndex: i,
+                position: 1,
+                finished: false,
+                rank: null
+            }));
+            
+            snakesAndLadders = generateSnakesAndLaddersData(diffKey);
+            currentTurnIndex = 0;
+            finishedPlayersCount = 0;
+            myUid = 'p1'; 
+            
+            document.getElementById('game-mode-badge').textContent = `OFFLINE (${count}P) - ${difficultyOptions[diffKey].label}`;
+            setupGameScene();
+        }
+
+        async function processOfflineTurn(diceRoll) {
+            const activePlayer = players[currentTurnIndex];
+            const finalPos = await animateMovement(activePlayer.id, diceRoll);
+            
+            if (finalPos === 100) {
+                activePlayer.finished = true;
+                finishedPlayersCount++;
+                activePlayer.rank = finishedPlayersCount;
+            }
+
+            // Check End Game
+            const remaining = players.filter(p => !p.finished).length;
+            if (remaining <= 1 && players.length > 1) {
+                // Beri rank terakhir ke sisa pemain
+                players.forEach(p => { if (!p.finished) { p.finished = true; p.rank = finishedPlayersCount + 1; } });
+                showLeaderboard(players);
+                return;
+            } else if (remaining === 0 && players.length === 1) {
+                showLeaderboard(players);
+                return;
+            }
+
+            // Next Turn
+            let attempts = 0;
+            do {
+                currentTurnIndex = (currentTurnIndex + 1) % players.length;
+                attempts++;
+            } while (players[currentTurnIndex].finished && attempts < players.length);
+
+            updateGameUI(`Giliran ${players[currentTurnIndex].name}`, true);
+        }
+
+        // ==========================================
+        // MULTIPLAYER MODE LOGIC
+        // ==========================================
+        async function createMultiplayerRoom() {
+            const nameInput = document.getElementById('input-player-name').value.trim();
+            if (!nameInput) return showCustomAlert("Nama wajib diisi!");
+            if (!myUid) return showCustomAlert("Autentikasi gagal.");
+
+            const btn = document.getElementById('btn-create-room');
+            btn.disabled = true; btn.textContent = 'Membuat...';
+
+            try {
+                const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const roomRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'rooms', code);
+                
+                await setDoc(roomRef, {
+                    state: 'waiting',
+                    host: myUid,
+                    difficulty: 'keroco', // Default awal
+                    players: {
+                        [myUid]: { name: nameInput, colorIndex: 0, position: 1, finished: false, rank: null }
+                    },
+                    turnOrder: [myUid],
+                    turnIndex: 0,
+                    action: null,
+                    board: null,
+                    finishedCount: 0
+                });
+
+                gameMode = 'multiplayer';
+                currentRoomCode = code;
+                isHost = true;
+                listenToLobby();
+            } catch (err) {
+                showCustomAlert("Gagal membuat room. " + err.message);
+            }
+            btn.disabled = false; btn.innerHTML = '➕ Buat Room Baru';
+        }
+
+        async function joinMultiplayerRoom() {
+            const nameInput = document.getElementById('input-player-name').value.trim();
+            let codeInput = document.getElementById('input-room-code').value.trim().toUpperCase();
+            if (!nameInput) return showCustomAlert("Nama wajib diisi!");
+            if (!codeInput) return showCustomAlert("Kode room wajib diisi!");
+            if (!myUid) return showCustomAlert("Autentikasi gagal.");
+
+            const btn = document.getElementById('btn-join-room');
+            btn.disabled = true; btn.textContent = '...';
+
+            try {
+                const roomRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'rooms', codeInput);
+                const snap = await getDoc(roomRef);
+                
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.state !== 'waiting') {
+                        showCustomAlert("Game sudah dimulai atau selesai.");
+                    } else if (data.turnOrder.length >= 5 && !data.turnOrder.includes(myUid)) {
+                        showCustomAlert("Room penuh (Maksimal 5 pemain).");
+                    } else {
+                        if (!data.turnOrder.includes(myUid)) {
+                            const newColorIndex = data.turnOrder.length;
+                            await updateDoc(roomRef, {
+                                [`players.${myUid}`]: { name: nameInput, colorIndex: newColorIndex, position: 1, finished: false, rank: null },
+                                turnOrder: [...data.turnOrder, myUid]
+                            });
+                        }
+                        gameMode = 'multiplayer';
+                        currentRoomCode = codeInput;
+                        isHost = (data.host === myUid);
+                        listenToLobby();
+                    }
+                } else {
+                    showCustomAlert("Room tidak ditemukan!");
+                }
+            } catch (err) {
+                showCustomAlert("Gagal masuk room. " + err.message);
+            }
+            btn.disabled = false; btn.textContent = 'Gabung';
+        }
+
+        function listenToLobby() {
+            showScreen('lobby');
+            document.getElementById('display-room-code').textContent = currentRoomCode;
+            
+            const roomRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'rooms', currentRoomCode);
+            
+            if (activeSnapshotUnsubscribe) activeSnapshotUnsubscribe();
+            
+            activeSnapshotUnsubscribe = onSnapshot(roomRef, (snap) => {
+                if (!snap.exists()) return resetToMenu();
+                const data = snap.data();
+                
+                // Sync Difficulty
+                if (data.difficulty) {
+                    const radio = document.querySelector(`input[name="diff_online"][value="${data.difficulty}"]`);
+                    if (radio) radio.checked = true;
+                }
+
+                // Update Player List
+                const list = document.getElementById('lobby-players-list');
+                list.innerHTML = '';
+                document.getElementById('lobby-player-count').textContent = data.turnOrder.length;
+                
+                data.turnOrder.forEach(uid => {
+                    const p = data.players[uid];
+                    list.innerHTML += `
+                        <div class="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-100 shadow-sm">
+                            <span class="w-4 h-4 rounded-full" style="background-color: ${playerColors[p.colorIndex]}"></span>
+                            <span class="font-bold text-slate-700">${p.name} ${uid === data.host ? '👑' : ''} ${uid === myUid ? '(Kamu)' : ''}</span>
+                        </div>
+                    `;
+                });
+
+                // Host vs Guest Controls
+                if (isHost) {
+                    document.getElementById('lobby-host-controls').classList.remove('hidden');
+                    document.getElementById('lobby-guest-message').classList.add('hidden');
+                    document.getElementById('online-diff-container').classList.remove('pointer-events-none', 'opacity-80');
+                    document.getElementById('diff-host-badge').classList.add('hidden');
+                    document.getElementById('btn-start-multiplayer').disabled = data.turnOrder.length < 2;
+                } else {
+                    document.getElementById('lobby-host-controls').classList.add('hidden');
+                    document.getElementById('lobby-guest-message').classList.remove('hidden');
+                    document.getElementById('online-diff-container').classList.add('pointer-events-none', 'opacity-80');
+                    document.getElementById('diff-host-badge').classList.remove('hidden');
+                }
+
+                // If game started
+                if (data.state === 'playing' && !gameActive) {
+                    snakesAndLadders = data.board;
+                    setupMultiplayerGameListener(roomRef, data.difficulty); 
+                }
+
+            }, (error) => {
+                showCustomAlert("Koneksi terputus: " + error.message);
+                resetToMenu();
+            });
+        }
+
+        async function hostStartMultiplayerGame() {
+            const btn = document.getElementById('btn-start-multiplayer');
+            btn.disabled = true; btn.textContent = "Memulai...";
+            
+            const diffKey = document.querySelector('input[name="diff_online"]:checked').value;
+            const board = generateSnakesAndLaddersData(diffKey);
+            
+            const roomRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'rooms', currentRoomCode);
+            await updateDoc(roomRef, { state: 'playing', board: board, difficulty: diffKey });
+        }
+
+        function setupMultiplayerGameListener(roomRef, diffKey) {
+            showScreen('game');
+            document.getElementById('game-mode-badge').textContent = `ONLINE ROOM: ${currentRoomCode} - ${difficultyOptions[diffKey]?.label || ''}`;
+            gameActive = true;
+            createBoard();
+
+            if (activeSnapshotUnsubscribe) activeSnapshotUnsubscribe();
+
+            activeSnapshotUnsubscribe = onSnapshot(roomRef, async (snap) => {
+                if (!snap.exists()) return resetToMenu();
+                const data = snap.data();
+
+                // Map data ke lokal state
+                players = data.turnOrder.map(uid => ({
+                    id: uid,
+                    name: data.players[uid].name,
+                    colorIndex: data.players[uid].colorIndex,
+                    position: data.players[uid].position,
+                    finished: data.players[uid].finished,
+                    rank: data.players[uid].rank
+                }));
+
+                currentTurnIndex = data.turnIndex;
+                const activePlayerId = data.turnOrder[data.turnIndex];
+
+                // First time setup check
+                if (document.getElementById('token-layer').innerHTML === '') {
+                    createPlayerTokens();
+                    setTimeout(() => {
+                        drawConnectors();
+                        players.forEach(p => updateTokenPosition(p.id));
+                    }, 100);
+                }
+
+                // Cek Action Baru
+                if (data.action && data.action.ts > lastActionTs) {
+                    lastActionTs = data.action.ts;
+                    
+                    document.getElementById('dice-container').classList.add('dice-rolling');
+                    await new Promise(r => setTimeout(r, 600));
+                    document.getElementById('dice-container').classList.remove('dice-rolling');
+                    document.getElementById('dice-face').innerHTML = diceFacesSVG[data.action.roll];
+                    
+                    const finalPos = await animateMovement(data.action.uid, data.action.roll);
+                    
+                    // HOST/ACTIVE PLAYER updates firestore setelah animasi
+                    if (data.action.uid === myUid) {
+                        await finalizeMultiplayerTurn(roomRef, finalPos);
+                    }
+                } else {
+                    // Update paksa token kalau tidak ada animasi
+                    if(!isAnimating) {
+                        players.forEach(p => updateTokenPosition(p.id));
+                        const isMyTurn = (activePlayerId === myUid) && !data.players[myUid].finished;
+                        updateGameUI(`Giliran ${data.players[activePlayerId].name}`, isMyTurn);
+                    }
+                }
+
+                // Cek status finish
+                if (data.state === 'finished') {
+                    gameActive = false;
+                    setTimeout(() => showLeaderboard(players), 1000);
+                }
+
+            }, (error) => {
+                showCustomAlert("Sinkronisasi gagal: " + error.message);
+            });
+        }
+
+        async function finalizeMultiplayerTurn(roomRef, finalPos) {
+            const snap = await getDoc(roomRef);
+            const data = snap.data();
+            let isFinished = false;
+            let finishedCount = data.finishedCount;
+            let rank = null;
+
+            if (finalPos === 100) {
+                isFinished = true;
+                finishedCount++;
+                rank = finishedCount;
+            }
+
+            // Cari turn berikutnya
+            let nextTurnIndex = data.turnIndex;
+            let nextPlayerUid;
+            let attempts = 0;
+            do {
+                nextTurnIndex = (nextTurnIndex + 1) % data.turnOrder.length;
+                nextPlayerUid = data.turnOrder[nextTurnIndex];
+                attempts++;
+            } while ((data.players[nextPlayerUid].finished || (nextPlayerUid === myUid && isFinished)) && attempts < data.turnOrder.length);
+
+            const updates = {
+                [`players.${myUid}.position`]: finalPos,
+                [`players.${myUid}.finished`]: isFinished,
+                [`players.${myUid}.rank`]: rank,
+                finishedCount: finishedCount,
+                turnIndex: nextTurnIndex
+            };
+
+            const remaining = data.turnOrder.length - finishedCount;
+            if (remaining <= 1 && data.turnOrder.length > 1) {
+                // Game selesai
+                data.turnOrder.forEach(uid => {
+                    if (!data.players[uid].finished && uid !== myUid) {
+                        updates[`players.${uid}.finished`] = true;
+                        updates[`players.${uid}.rank`] = finishedCount + 1;
+                    }
+                });
+                updates.state = 'finished';
+            }
+
+            await updateDoc(roomRef, updates);
+        }
+
+        // ==========================================
+        // BERSAMAAN (COMMON UI LOGIC)
+        // ==========================================
+        function setupGameScene() {
+            showScreen('game');
+            gameActive = true;
+            createBoard();
+            createPlayerTokens();
+            setTimeout(() => {
+                drawConnectors();
+                players.forEach(p => updateTokenPosition(p.id));
+                updateGameUI(`Giliran ${players[0].name}`, true);
+            }, 100);
+        }
+
+        async function handleRollDiceClick() {
+            if (!gameActive || isAnimating) return;
+            
+            const btn = document.getElementById('roll-dice-btn');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const diceRoll = Math.floor(Math.random() * 6) + 1;
+
+            if (gameMode === 'offline') {
+                document.getElementById('dice-container').classList.add('dice-rolling');
+                setTimeout(() => {
+                    document.getElementById('dice-container').classList.remove('dice-rolling');
+                    document.getElementById('dice-face').innerHTML = diceFacesSVG[diceRoll];
+                    processOfflineTurn(diceRoll);
+                }, 600);
+            } else {
+                // Online mode: Tulis action ke Firestore, biarkan listener yang menganimasikan
+                const roomRef = doc(db, 'artifacts', targetAppId, 'public', 'data', 'rooms', currentRoomCode);
+                await updateDoc(roomRef, {
+                    action: { type: 'roll', roll: diceRoll, uid: myUid, ts: Date.now() }
+                });
+            }
+        }
     </script>
 </body>
 </html>
